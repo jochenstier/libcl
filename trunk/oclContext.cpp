@@ -1,0 +1,187 @@
+// Copyright [2011] [Geist Software Labs Inc.]
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+#include <windows.h>
+
+#include "oclContext.h" 
+#include "oclDevice.h" 
+
+char* oclContext::VENDOR_NVIDIA = "NVIDIA Corporation";
+char* oclContext::VENDOR_AMD = "Advanced Micro Devices, Inc.";
+char* oclContext::VENDOR_INTEL = "Intel Corporation";
+
+oclContext::oclContext(cl_context iContext, char* iVendor)
+: oclObject(getVendor(iVendor))
+, mContext(iContext)
+{
+    size_t lDeviceCount;
+    sStatusCL = clGetContextInfo(mContext, CL_CONTEXT_DEVICES, 0, NULL, &lDeviceCount);
+    oclSuccess("clGetContextInfo", this);
+
+    cl_device_id* lDevice = new cl_device_id[lDeviceCount];
+    clGetContextInfo(mContext, CL_CONTEXT_DEVICES, lDeviceCount, lDevice, NULL);
+    for (cl_uint i=0; i<lDeviceCount/sizeof(cl_device_id); i++)
+    {
+        mDevices.push_back(new oclDevice(*this, lDevice[i]));
+    }
+    delete [] lDevice;
+};
+
+oclContext::operator cl_context()  
+{  
+    return mContext;  
+}
+
+vector<oclDevice*>& oclContext::getDevices()
+{
+    return mDevices;
+};
+
+oclDevice& oclContext::getDevice(int iIndex)
+{
+    return *mDevices[iIndex];
+};
+
+typedef CL_API_ENTRY cl_int (CL_API_CALL *clGetGLContextInfoKHR_fn)(const cl_context_properties * /* properties */,
+                                                                    cl_gl_context_info /* param_name */,
+                                                                    size_t /* param_value_size */,
+                                                                    void * /* param_value */,
+                                                                    size_t * /*param_value_size_ret*/);
+
+
+oclContext* oclContext::create(const char* iVendor)
+{
+    cl_uint lPlatformCount = 0;
+    sStatusCL = clGetPlatformIDs(0, NULL, &lPlatformCount);
+    oclSuccess("clGetPlatformIDs");
+
+    clGetGLContextInfoKHR_fn _clGetGLContextInfoKHR = (clGetGLContextInfoKHR_fn)clGetExtensionFunctionAddress("clGetGLContextInfoKHR");
+
+    cl_platform_id lPlatform[100];
+    sStatusCL = clGetPlatformIDs(lPlatformCount, lPlatform, NULL);
+    oclSuccess("clGetPlatformIDs");
+
+    char lBuffer[200];
+    for (cl_uint i=0; i < lPlatformCount; i++) 
+    {
+        sStatusCL = clGetPlatformInfo(lPlatform[i],
+                                       CL_PLATFORM_VENDOR,
+                                       sizeof(lBuffer),
+                                       lBuffer,
+                                       NULL);
+        oclSuccess("clGetPlatformInfo");
+
+        cl_context_properties GL_PROPS[] = 
+        {
+            CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
+            CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
+            CL_CONTEXT_PLATFORM, (cl_context_properties)lPlatform[i], 
+            0
+        };
+
+        cl_context_properties CL_PROPS[] = 
+        {
+            CL_CONTEXT_PLATFORM, (cl_context_properties)lPlatform[i], 
+            0
+        };
+
+        if (!iVendor || !strcmp(lBuffer, iVendor))
+        {
+            // this is a fix because clGetDeviceIDs(...CL_DEVICE_TYPE_GPU.. crashes on intel platform);
+            if (!strcmp(lBuffer, VENDOR_INTEL))
+            {
+                // cpu context
+                cl_context lContextCL = clCreateContextFromType(CL_PROPS, CL_DEVICE_TYPE_CPU, NULL, NULL, &sStatusCL);
+                if (!oclSuccess("clCreateContextFromType"))
+                {
+                    continue;
+                }
+                return new oclContext(lContextCL, lBuffer);
+            }
+
+            // GPU First
+            cl_device_id lDevices[100];
+            cl_uint lDeviceCount;
+            sStatusCL = clGetDeviceIDs(lPlatform[i], CL_DEVICE_TYPE_GPU, 100, lDevices, &lDeviceCount);
+            if (!oclSuccess("clGetDeviceIDs"))
+            {
+                continue;
+            }
+
+            if (lDeviceCount)
+            {
+                size_t lDeviceGLCount;
+                cl_device_id lDeviceGL; 
+                sStatusCL = _clGetGLContextInfoKHR(GL_PROPS, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_device_id), &lDeviceGL, &lDeviceGLCount);
+                if (!oclSuccess("clGetDeviceIDs"))
+                {
+                    continue;
+                }
+
+                if (lDeviceGLCount)
+                {
+                    // gpu context with sharing enabled
+                    cl_context lContextCL = clCreateContext(GL_PROPS, lDeviceCount, lDevices, NULL, NULL, &sStatusCL);
+                    if (!oclSuccess("clCreateContext"))
+                    {
+                        continue;
+                    }
+                    return new oclContext(lContextCL, lBuffer);
+                }
+                else
+                {
+                    // gpu context without sharing
+                    cl_context lContextCL = clCreateContext(CL_PROPS, lDeviceCount, lDevices, NULL, NULL, &sStatusCL);
+                    if (!oclSuccess("clCreateContext"))
+                    {
+                        continue;
+                    }
+                    return new oclContext(lContextCL, lBuffer);
+                }
+            }
+            else
+            {
+                // cpu context
+                cl_context lContextCL = clCreateContextFromType(CL_PROPS, CL_DEVICE_TYPE_CPU, NULL, NULL, &sStatusCL);
+                if (!oclSuccess("clCreateContextFromType"))
+                {
+                    continue;
+                }
+                return new oclContext(lContextCL, lBuffer);
+            }
+        }
+    }
+    return 0;
+}
+
+
+//
+//
+//
+char* oclContext::getVendor(char* iName)
+{
+    if (!strcmp(iName, VENDOR_NVIDIA))
+    {
+        return VENDOR_NVIDIA;
+    }
+    if (!strcmp(iName, VENDOR_AMD))
+    {
+        return VENDOR_AMD;
+    }
+    if (!strcmp(iName, VENDOR_INTEL))
+    {
+        return VENDOR_INTEL;
+    }
+
+    return "Unknown Vendor";
+}
