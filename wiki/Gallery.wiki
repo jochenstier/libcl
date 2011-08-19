@@ -4,7 +4,7 @@
 
 Add your content here.
 
-<wiki:video url="http://www.youtube.com/watch?v=3LkNlTNHZzE"/>
+<wiki:video url="http://www.youtube.com/watch?v=g1m95ICzKTY"/>
 = Details =
 
 Add your content here.  Format your content with:
