@@ -115,14 +115,16 @@ __kernel void clFindBounds(__global uint* cellStart, __global uint* cellEnd, __g
 //
 // Compute smoothed particle hydrodynamics 
 //
-#define M_PI_F M_PI
+#ifndef M_PI_F
+	#define M_PI_F M_PI
+#endif
 
-#define DensityVariable(smoothinglength, distance) pow(smoothinglength*smoothinglength - distance*distance, 3)
-#define DensityConstant(smoothinglength) (315.0/(64.0*M_PI_F* pow(smoothinglength, 9.0)))
+#define DensityVariable(smoothinglength, distance) pow(smoothinglength*smoothinglength - distance*distance, 3.0f)
+#define DensityConstant(smoothinglength) (315.0/(64.0*M_PI_F* pow(smoothinglength, 9.0f)))
 #define PressureVariable(smoothinglength, vector, distance) (vector*(smoothinglength-distance)*(smoothinglength-distance))
-#define PressureConstant(smoothinglength) (-45.0 / (M_PI_F * pow(smoothinglength, 6.0)))
+#define PressureConstant(smoothinglength) (-45.0 / (M_PI_F * pow(smoothinglength, 6.0f)))
 #define ViscosityVariable(smoothinglength, distance) (smoothinglength-distance)
-#define ViscosityConstant(smoothinglength) (-45.0/(M_PI_F * pow(smoothinglength, 6.0)))
+#define ViscosityConstant(smoothinglength) (-45.0/(M_PI_F * pow(smoothinglength, 6.0f)))
 
 __kernel void clInitFluid(__global System* param)
 {
@@ -135,7 +137,7 @@ __kernel void clInitFluid(__global System* param)
     param->velocitylimit = 500;
     param->stiffness =  1;
 
-    param->spacing = 0.87*pow(param->mass/param->density, 1/3.0);
+    param->spacing = 0.87*pow(param->mass/param->density, 1/3.0f);
     param->particleRadius = 0.5*param->spacing;
     param->cellSize = 2.0*param->spacing;   
 
@@ -185,7 +187,7 @@ __kernel void clCalculateDensity(__global float4* position, __global float4* vel
     }
     if (count > 2)
     {
-        density = max(1.0, param->mass * param->kernelConstant* density);
+        density = max(1.0f, param->mass * param->kernelConstant* density);
         position[particle].w = density; // density
         velocity[particle].w = param->pressure + param->stiffness * (density - param->density);  // pressure
     }
@@ -291,7 +293,7 @@ __kernel void clIntegrateVelocity(__global float4* posIn, __global float4* velIn
 __kernel void clGravity(__global float4* force, float4 gravity)
 {
     uint particle = get_global_id(0);
-    force[particle] = -9.8*gravity;
+    force[particle] = -9.8f*gravity;
 }
 
 //

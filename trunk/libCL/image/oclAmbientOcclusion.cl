@@ -39,8 +39,8 @@ __kernel void clSSAO(__read_only image2d_t RGBDin, __read_only image2d_t NNNSin,
 					float4 sample = read_imagef(RGBDin, sampler, pixel+(float2)(x,y));
 					float sampleDepth = sample.w;
 
-					float zd = clamp(fabs(pixelDepth-sampleDepth), 0.0, pixelDepth*0.007)/(pixelDepth*0.007);
-					result += 1.0/(1.0+zd*zd);   
+					float zd = clamp(fabs(pixelDepth-sampleDepth), 0.0f, pixelDepth*0.007f)/(pixelDepth*0.007f);
+					result += 1.0f/(1.0f+zd*zd);   
 					count++;
 				}
 			}

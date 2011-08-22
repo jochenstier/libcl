@@ -27,9 +27,9 @@ class oclContext : public oclObject
         static char* VENDOR_NVIDIA;
         static char* VENDOR_AMD;
         static char* VENDOR_INTEL;
+        static oclContext* create(const char* iVendor, int iDeviceType);
 
         oclContext(cl_context iContext, char* iVendor=0);
-        static oclContext* create(const char* iVendor);
         operator cl_context();
 
         //

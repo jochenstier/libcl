@@ -59,7 +59,7 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *clGetGLContextInfoKHR_fn)(const cl_con
                                                                     size_t * /*param_value_size_ret*/);
 
 
-oclContext* oclContext::create(const char* iVendor)
+oclContext* oclContext::create(const char* iVendor, int iDeviceType)
 {
     cl_uint lPlatformCount = 0;
     sStatusCL = clGetPlatformIDs(0, NULL, &lPlatformCount);
@@ -95,62 +95,54 @@ oclContext* oclContext::create(const char* iVendor)
             0
         };
 
-        if (!iVendor || !strcmp(lBuffer, iVendor))
+        if (!strncmp(lBuffer, iVendor, 5))  // compare only first 5 letters -- Intel starts with "Intel" and "Intel(R)"
         {
-            // this is a fix because clGetDeviceIDs(...CL_DEVICE_TYPE_GPU.. crashes on intel platform);
-            if (!strcmp(lBuffer, VENDOR_INTEL))
+            switch (iDeviceType)
             {
-                // cpu context
-                cl_context lContextCL = clCreateContextFromType(CL_PROPS, CL_DEVICE_TYPE_CPU, NULL, NULL, &sStatusCL);
-                if (!oclSuccess("clCreateContextFromType"))
-                {
-                    continue;
-                }
-                return new oclContext(lContextCL, lBuffer);
-            }
-
-            // GPU First
-            cl_device_id lDevices[100];
-            cl_uint lDeviceCount;
-            sStatusCL = clGetDeviceIDs(lPlatform[i], CL_DEVICE_TYPE_GPU, 100, lDevices, &lDeviceCount);
-            if (!oclSuccess("clGetDeviceIDs"))
-            {
-                continue;
-            }
-
-            if (lDeviceCount)
-            {
-                size_t lDeviceGLCount;
-                cl_device_id lDeviceGL; 
-                sStatusCL = _clGetGLContextInfoKHR(GL_PROPS, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_device_id), &lDeviceGL, &lDeviceGLCount);
+            case CL_DEVICE_TYPE_GPU:
+                // GPU First
+                cl_device_id lDevices[100];
+                cl_uint lDeviceCount;
+                sStatusCL = clGetDeviceIDs(lPlatform[i], CL_DEVICE_TYPE_GPU, 100, lDevices, &lDeviceCount);
                 if (!oclSuccess("clGetDeviceIDs"))
                 {
                     continue;
                 }
 
-                if (lDeviceGLCount)
+                if (lDeviceCount)
                 {
-                    // gpu context with sharing enabled
-                    cl_context lContextCL = clCreateContext(GL_PROPS, lDeviceCount, lDevices, NULL, NULL, &sStatusCL);
-                    if (!oclSuccess("clCreateContext"))
+                    size_t lDeviceGLCount;
+                    cl_device_id lDeviceGL; 
+                    sStatusCL = _clGetGLContextInfoKHR(GL_PROPS, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_device_id), &lDeviceGL, &lDeviceGLCount);
+                    if (!oclSuccess("clGetDeviceIDs"))
                     {
                         continue;
                     }
-                    return new oclContext(lContextCL, lBuffer);
-                }
-                else
-                {
-                    // gpu context without sharing
-                    cl_context lContextCL = clCreateContext(CL_PROPS, lDeviceCount, lDevices, NULL, NULL, &sStatusCL);
-                    if (!oclSuccess("clCreateContext"))
+
+                    if (lDeviceGLCount)
                     {
-                        continue;
+                        // gpu context with sharing enabled
+                        cl_context lContextCL = clCreateContext(GL_PROPS, lDeviceCount, lDevices, NULL, NULL, &sStatusCL);
+                        if (!oclSuccess("clCreateContext"))
+                        {
+                            continue;
+                        }
+                        return new oclContext(lContextCL, lBuffer);
                     }
-                    return new oclContext(lContextCL, lBuffer);
+                    else
+                    {
+                        // gpu context without sharing
+                        cl_context lContextCL = clCreateContext(CL_PROPS, lDeviceCount, lDevices, NULL, NULL, &sStatusCL);
+                        if (!oclSuccess("clCreateContext"))
+                        {
+                            continue;
+                        }
+                        return new oclContext(lContextCL, lBuffer);
+                    }
                 }
-            }
-            else
-            {
+                break;
+
+            case CL_DEVICE_TYPE_CPU:
                 // cpu context
                 cl_context lContextCL = clCreateContextFromType(CL_PROPS, CL_DEVICE_TYPE_CPU, NULL, NULL, &sStatusCL);
                 if (!oclSuccess("clCreateContextFromType"))
@@ -158,6 +150,7 @@ oclContext* oclContext::create(const char* iVendor)
                     continue;
                 }
                 return new oclContext(lContextCL, lBuffer);
+                break;
             }
         }
     }
@@ -178,7 +171,7 @@ char* oclContext::getVendor(char* iName)
     {
         return VENDOR_AMD;
     }
-    if (!strcmp(iName, VENDOR_INTEL))
+    if (!strncmp(iName, VENDOR_INTEL, 5))
     {
         return VENDOR_INTEL;
     }
