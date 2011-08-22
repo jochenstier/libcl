@@ -45,7 +45,7 @@ __kernel void clCombine(__read_only image2d_t RGBDin, __read_only image2d_t LUMi
 	float glare = 0.0;//log(l) * (1.0 - 0.99/(0.99 + log(l)));
 
 	// Retinex
-	float4 result = RGBA*(exp(glare + log(luminance)-0.45*log(LLLL)));
+	float4 result = RGBA*(exp(glare + log(luminance)-0.45f*log(LLLL)));
 
 	// Ashikhmin
 	//float4 result = RGBA*(exp(glare + log(luminance)-0.45*log(l)));

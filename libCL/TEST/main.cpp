@@ -9,12 +9,18 @@
 #include "sort\\oclRadixSort.h"
 #include "phys\\oclFluid3D.h"
 #include "geom\\oclBvhTrimesh.h"
+#include "image\\oclRecursiveGaussian.h"
+#include "image\\oclBilateralGaussian.h"
+#include "image\\oclToneMapping.h"
+#include "image\\oclBloom.h"
+#include "image\\oclAmbientOcclusion.h"
 
 
 void testRadixSort(oclContext& iContext);
 void testFluid3D0(oclContext& iContext);
 void testFluid3D1(oclContext& iContext);
 void testBvhTrimesh(oclContext& iContext);
+void testCompile(oclContext& iContext);
 
 
 //
@@ -27,36 +33,49 @@ int _tmain(int argc, _TCHAR* argv[])
     oclInit("..\\"); 
 
     // find the first available platform
-    oclContext* lContext = oclContext::create(oclContext::VENDOR_NVIDIA);
+    oclContext* lContext = oclContext::create(oclContext::VENDOR_NVIDIA, CL_DEVICE_TYPE_GPU);
     if (!lContext)
     {
-        lContext = oclContext::create(oclContext::VENDOR_AMD);
-        if (lContext)
+        lContext = oclContext::create(oclContext::VENDOR_AMD, CL_DEVICE_TYPE_GPU);
+        if (!lContext)
         {
-            lContext = oclContext::create(oclContext::VENDOR_INTEL);
+            lContext = oclContext::create(oclContext::VENDOR_INTEL, CL_DEVICE_TYPE_CPU);
+            if (!lContext)
+            {
+                lContext = oclContext::create(oclContext::VENDOR_AMD, CL_DEVICE_TYPE_CPU);
+            }
         }
     }
 
     if (!lContext)
     {
         Log(ERR) << "no OpenCL capable platform detected";
+        return -1; 
+    }
+    else 
+    {
+        Log(INFO) << "\n*\n*\n*    Running LibCL 1.0 using vendor platform: " << lContext->getName() << "\n*\n*";
     }
 
     // run tests
-    Log(INFO) << "****** calling testRadixSort";
+    Log(INFO) << "****** calling radix sort ...";
     testRadixSort(*lContext);
     Log(INFO) << "\n\n";
 
-    Log(INFO) << "****** calling testFluid3D0";
+    Log(INFO) << "****** calling fluid test 0 ...";
     testFluid3D0(*lContext);
     Log(INFO) << "\n\n";
 
-    Log(INFO) << "****** calling testFluid3D1";
+    Log(INFO) << "****** calling fluid test 1 ...";
     testFluid3D1(*lContext);
     Log(INFO) << "\n\n";
 
-    Log(INFO) << "****** calling testBvhTrimesh";
+    Log(INFO) << "****** calling BVH construction ...";
     testBvhTrimesh(*lContext);
+    Log(INFO) << "\n\n";
+
+    Log(INFO) << "****** compiling all ...";
+    testCompile(*lContext);
     Log(INFO) << "\n\n";
 
     return 0;
@@ -145,7 +164,7 @@ void testFluid3D0(oclContext& iContext)
             lBuffer->unmap(lDevice);
        }
 
-        for (int i=0; i<1000; i++)
+        for (int i=0; i<500; i++)
         {
             clProgram.compute(lDevice);
         }
@@ -243,7 +262,7 @@ void testFluid3D1(oclContext& iContext)
 
         clProgram.addEventHandler(evtHandler);
 
-        for (int i=0; i<1000; i++)
+        for (int i=0; i<500; i++)
         {
             clProgram.compute(lDevice);
         }
@@ -332,3 +351,24 @@ void testBvhTrimesh(oclContext& iContext)
 };
 
 
+
+
+void testCompile(oclContext& iContext)
+{
+    oclDevice& lDevice = iContext.getDevice(0);
+
+    oclRecursiveGaussian clRecursiveGaussian(iContext);
+    clRecursiveGaussian.compile();
+ 
+    oclBilateralGaussian clBilateralGaussian(iContext);
+    clBilateralGaussian.compile();
+
+    oclToneMapping clToneMapping(iContext);
+    clToneMapping.compile();
+
+    oclBloom clBloom(iContext);
+    clBloom.compile();
+
+    oclAmbientOcclusion clAmbientOcclusion(iContext);
+    clAmbientOcclusion.compile();
+}
