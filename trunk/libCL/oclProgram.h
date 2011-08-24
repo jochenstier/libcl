@@ -55,8 +55,8 @@ class oclProgram : public oclObject
         void clrSource();
         void addSourceCode(char* iCode);
         void addSourceFile(char* iPath);
-        char* getSourceCode(unsigned int iIndex);
-        char* getSourcePath(unsigned int iIndex);
+
+        vector<srtSource>& getSource();
 
         static void setRootPath(char* iRootPath);
 
@@ -64,7 +64,6 @@ class oclProgram : public oclObject
 
         vector<srtSource> mSource;
         static char sRootPath[400];
-
 
     //
     // Kernel Interface
@@ -102,31 +101,27 @@ class oclProgram : public oclObject
 
 struct srtEvent
 {
-    srtEvent()
-    : mName("")
-    , mData(0)
-    {
-    }
-    srtEvent(char* iName, void* iIndex=0)
-    : mName(iName)
-    , mData(iIndex)
-    {
-    }
+    srtEvent();
+    srtEvent(char* iName, void* iData=0);
 
     virtual bool operator() (oclProgram&) = 0;
 
-    template <class TYPE> TYPE getData()
-    {
-        return (TYPE) mData;
-    }
-    template <class TYPE> void setData(TYPE iData)
-    {
-        mData = (void*) iData;
-    }
+    template <class TYPE> TYPE getData();
+    template <class TYPE> void setData(TYPE iData);
 
     void* mData;
     char* mName;
 };
+
+template <class TYPE> TYPE srtEvent::getData()
+{
+    return (TYPE) mData;
+}
+
+template <class TYPE> void srtEvent::setData(TYPE iData)
+{
+    mData = (void*) iData;
+}
 
 //
 //
@@ -134,14 +129,11 @@ struct srtEvent
 
 struct srtSource
 {
+    srtSource();
+
     char mPath[400];
     char* mText;
-
-    srtSource()
-    : mText(0)
-    {
-        mPath[0] = 0;
-    }
+    size_t mLines;
 };
 
 

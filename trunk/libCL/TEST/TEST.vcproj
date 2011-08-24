@@ -178,6 +178,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\console.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
@@ -189,6 +193,10 @@
 		<Filter
 			Name="Header Files"
 			>
+			<File
+				RelativePath=".\console.h"
+				>
+			</File>
 			<File
 				RelativePath=".\stdafx.h"
 				>

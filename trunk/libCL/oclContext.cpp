@@ -19,11 +19,28 @@
 char* oclContext::VENDOR_NVIDIA = "NVIDIA Corporation";
 char* oclContext::VENDOR_AMD = "Advanced Micro Devices, Inc.";
 char* oclContext::VENDOR_INTEL = "Intel Corporation";
+char* oclContext::VENDOR_UNKNOWN = "Unknown Vendor";
 
 oclContext::oclContext(cl_context iContext, char* iVendor)
-: oclObject(getVendor(iVendor))
+: oclObject("")
 , mContext(iContext)
+, mVendor(VENDOR_UNKNOWN)
 {
+    if (!strcmp(iVendor, VENDOR_NVIDIA))
+    {
+        mVendor = VENDOR_NVIDIA;
+    }
+    else if (!strcmp(iVendor, VENDOR_AMD))
+    {
+        mVendor = VENDOR_AMD;
+    }
+    else if (!strncmp(iVendor, VENDOR_INTEL, 5))
+    {
+        mVendor = VENDOR_INTEL;
+    }
+
+    setName(mVendor);
+
     size_t lDeviceCount;
     sStatusCL = clGetContextInfo(mContext, CL_CONTEXT_DEVICES, 0, NULL, &lDeviceCount);
     oclSuccess("clGetContextInfo", this);
@@ -100,7 +117,7 @@ oclContext* oclContext::create(const char* iVendor, int iDeviceType)
             switch (iDeviceType)
             {
             case CL_DEVICE_TYPE_GPU:
-                // GPU First
+                // gpu context
                 cl_device_id lDevices[100];
                 cl_uint lDeviceCount;
                 sStatusCL = clGetDeviceIDs(lPlatform[i], CL_DEVICE_TYPE_GPU, 100, lDevices, &lDeviceCount);
@@ -111,12 +128,12 @@ oclContext* oclContext::create(const char* iVendor, int iDeviceType)
 
                 if (lDeviceCount)
                 {
-                    size_t lDeviceGLCount;
+                    size_t lDeviceGLCount = 0;
                     cl_device_id lDeviceGL; 
                     sStatusCL = _clGetGLContextInfoKHR(GL_PROPS, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_device_id), &lDeviceGL, &lDeviceGLCount);
                     if (!oclSuccess("clGetDeviceIDs"))
                     {
-                        continue;
+                        //continue; AMD drivers produce an error here if not OpenGL context is present
                     }
 
                     if (lDeviceGLCount)
@@ -161,20 +178,7 @@ oclContext* oclContext::create(const char* iVendor, int iDeviceType)
 //
 //
 //
-char* oclContext::getVendor(char* iName)
+char* oclContext::getVendor()
 {
-    if (!strcmp(iName, VENDOR_NVIDIA))
-    {
-        return VENDOR_NVIDIA;
-    }
-    if (!strcmp(iName, VENDOR_AMD))
-    {
-        return VENDOR_AMD;
-    }
-    if (!strncmp(iName, VENDOR_INTEL, 5))
-    {
-        return VENDOR_INTEL;
-    }
-
-    return "Unknown Vendor";
-}
+    return mVendor;
+};
