@@ -1,8 +1,11 @@
 // TEST.cpp : Defines the entry point for the console application.
 //
 #include "stdafx.h"
+#include "console.h"
 
 #include <math.h>
+#include <time.h>
+#include <windows.h>
 
 #include "oclContext.h"
 
@@ -47,6 +50,7 @@ int _tmain(int argc, _TCHAR* argv[])
         }
     }
 
+
     if (!lContext)
     {
         Log(ERR) << "no OpenCL capable platform detected";
@@ -56,27 +60,28 @@ int _tmain(int argc, _TCHAR* argv[])
     {
         Log(INFO) << "\n*\n*\n*    Running LibCL 1.0 using vendor platform: " << lContext->getName() << "\n*\n*";
     }
+    Log(INFO) << "\n\n";
 
     // run tests
     Log(INFO) << "****** calling radix sort ...";
     testRadixSort(*lContext);
-    Log(INFO) << "\n\n";
+    Log(INFO) << "****** done\n";
 
     Log(INFO) << "****** calling fluid test 0 ...";
     testFluid3D0(*lContext);
-    Log(INFO) << "\n\n";
+    Log(INFO) << "****** done\n";
 
     Log(INFO) << "****** calling fluid test 1 ...";
     testFluid3D1(*lContext);
-    Log(INFO) << "\n\n";
+    Log(INFO) << "****** done\n";
 
     Log(INFO) << "****** calling BVH construction ...";
     testBvhTrimesh(*lContext);
-    Log(INFO) << "\n\n";
+    Log(INFO) << "****** done\n";
 
     Log(INFO) << "****** compiling all ...";
     testCompile(*lContext);
-    Log(INFO) << "\n\n";
+    Log(INFO) << "****** done\n";
 
     return 0;
 }
@@ -162,12 +167,17 @@ void testFluid3D0(oclContext& iContext)
                 lPtr[i].s[3] = 0;
             }
             lBuffer->unmap(lDevice);
-       }
+        }
 
-        for (int i=0; i<500; i++)
+        Log(INFO) << "Computing particles for 7 seconds ";
+        DWORD lEnd = GetTickCount() + 7000;
+        while (lEnd > GetTickCount())
         {
             clProgram.compute(lDevice);
+            clFinish(lDevice);
+            cout << ".";
         }
+        cout << "\n";
 
         if (lBuffer->map(lDevice, CL_MAP_READ))
         {
@@ -262,11 +272,15 @@ void testFluid3D1(oclContext& iContext)
 
         clProgram.addEventHandler(evtHandler);
 
-        for (int i=0; i<500; i++)
+        Log(INFO) << "Computing particles for 7 seconds ";
+        DWORD lEnd = GetTickCount() + 7000;
+        while (lEnd > GetTickCount())
         {
             clProgram.compute(lDevice);
+            clFinish(lDevice);
+            cout << ".";
         }
-
+        cout << "\n";
 
         if (lBuffer->map(lDevice, CL_MAP_READ))
         {

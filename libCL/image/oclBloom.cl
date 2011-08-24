@@ -45,7 +45,7 @@ __kernel void clCombine(__read_only image2d_t RGBAin, __read_only image2d_t Bloo
 	float2 pixel = (float2)(gx,gy);
 
 	float4 RGBA = read_imagef(RGBAin, sampler, pixel);
-	float luminance = dot((float4)(0.2126,0.7152,0.0722,0.0),RGBA);
+	float4 BLOOM = read_imagef(Bloom, sampler, pixel)*exp(intensity*dot((float4)(0.2126,0.7152,0.0722,0.0),RGBA));
 
-	write_imagef(RGBAout, (int2)(gx,gy), RGBA + read_imagef(Bloom, sampler, pixel)*exp(intensity*luminance));
+	write_imagef(RGBAout, (int2)(gx,gy), RGBA + BLOOM);
 }

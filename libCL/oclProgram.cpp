@@ -117,6 +117,14 @@ void oclProgram::addSourceCode(char* iText)
 {
     srtSource lSource;
     lSource.mText = iText;
+    lSource.mLines = 0;
+    while (*iText)
+    {
+        if (*iText++=='\n')
+        {
+            lSource.mLines++;
+        }
+    }
     mSource.push_back(lSource);
 }
 
@@ -149,23 +157,10 @@ void oclProgram::addSourceFile(char* iPath)
     _chdir(lPath);
 }
 
-char* oclProgram::getSourceCode(unsigned int iIndex)
+vector<srtSource>& oclProgram::getSource()
 {
-    if (iIndex < mSource.size())
-    {
-        return mSource.at(iIndex).mText;
-    }
-    return 0;
-}
-
-char* oclProgram::getSourcePath(unsigned int iIndex)
-{
-    if (iIndex < mSource.size())
-    {
-        return mSource.at(iIndex).mPath;
-    }
-    return 0;
-}
+    return mSource;
+};
 
 //
 // Kernel Interface
@@ -217,3 +212,26 @@ srtEvent* oclProgram::getEventHandler(char* iName)
     }
     return 0;
 };
+
+
+//
+//
+//
+
+srtSource::srtSource()
+: mText(0)
+{
+    mPath[0] = 0;
+}
+
+srtEvent::srtEvent()
+: mName("")
+, mData(0)
+{
+}
+
+srtEvent::srtEvent(char* iName, void* iData)
+: mName(iName)
+, mData(iData)
+{
+}

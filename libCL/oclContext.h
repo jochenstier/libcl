@@ -27,6 +27,7 @@ class oclContext : public oclObject
         static char* VENDOR_NVIDIA;
         static char* VENDOR_AMD;
         static char* VENDOR_INTEL;
+        static char* VENDOR_UNKNOWN;
         static oclContext* create(const char* iVendor, int iDeviceType);
 
         oclContext(cl_context iContext, char* iVendor=0);
@@ -37,15 +38,13 @@ class oclContext : public oclObject
 
         oclDevice& getDevice(int iIndex);
         vector<oclDevice*>& getDevices();
+        char* getVendor();
 
     private:
 
         cl_context mContext;
         vector<oclDevice*> mDevices;
-
-    private:
-
-        char* getVendor(char* iName);
+        char* mVendor;
 
     private:
 

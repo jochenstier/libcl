@@ -34,7 +34,7 @@ __kernel void clBlockSort(__global uint* keyIn,
 	key[threadid] = 0xFFFFFFFF;
 	val[threadid] = 0xFFFFFFFF;
 	if (globalId < size)
-	{
+	{  
 		key[threadid] = keyIn[globalId];
 		val[threadid] = valIn[globalId];
 	}
@@ -137,7 +137,7 @@ __kernel void clBlockScan(__global uint4* blockScan, __global uint* scanSum, uin
 	{
 		for (int i=1; i<BLOCKSIZE; i++)
 		{
-			prefixSum[i] += prefixSum[i-1];
+			prefixSum[i] += prefixSum[i-1]; 
 		}
 	}
     barrier(CLK_LOCAL_MEM_FENCE);

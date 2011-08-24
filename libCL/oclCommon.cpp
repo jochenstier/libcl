@@ -49,11 +49,11 @@ void info(const char* iValue, oclObject* iObject)
 {
     if (iObject)
     {
-        cout << "(info):" << iObject->getName() << ":" << iValue << "\n";
+        cout << iObject->getName() << ":" << iValue << "\n";
     }
     else 
     {
-        cout << "(info):" << iValue << "\n";
+        cout << iValue << "\n";
     }
 }
 void warn(const char* iValue, oclObject* iObject)
