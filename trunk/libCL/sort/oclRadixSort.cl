@@ -17,7 +17,7 @@
 #define WARPSIZE 32
 #define BLOCKSIZE 256
 
-__kernel void clBlockSort(__global uint* keyIn, 
+__kernel void clBlockSort(__global uint* keyIn,
 						  __global uint* keyOut, 
 						  __global uint* valIn, 
 						  __global uint* valOut, 
@@ -28,7 +28,7 @@ __kernel void clBlockSort(__global uint* keyIn,
 	int totalBlocks = get_num_groups(0);
 	int blockid = get_group_id(0);
 
-	__local uint key[BLOCKSIZE];
+	__local uint key[BLOCKSIZE]; 
 	__local uint val[BLOCKSIZE];
 
 	key[threadid] = 0xFFFFFFFF;
