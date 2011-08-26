@@ -1,3 +1,0 @@
-#summary One-sentence summary of this page.
-
-<wiki:video url="http://www.youtube.com/watch?v=bvjOXl4KUiM&autoplay=1"/>
