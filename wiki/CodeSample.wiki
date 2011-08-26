@@ -3,9 +3,11 @@
 
 = Introduction =
 
-The following source code illustrates how to extend libCL with an additional algorithm using the fundamental wrapper and base classes of the library. An extension basically consists of an OpenCL program and a C++ algorithm class derived from “oclProgram”. The .cl, .h and .cpp of the extension are located in a appropriate subdirectory of libCL, classified according to the type of algorithm. 
+The following source code illustrates how to extend libCL with an additional algorithm using the fundamental wrapper and base classes of the library. An extension basically consists of an OpenCL program and a C++ _algorithm class_ derived from _oclProgram_. The .cl, .h and .cpp of the extension are located in a appropriate subdirectory of libCL, classified according to the type of algorithm. 
 
-An algorithm class may instantiate buffers and associate additional algorithm classes as needed.  The example illustrated here implements a tone mapping operator that applies to an input image and stores the result in an output image. Internally the tone mapping class instantiates two additional buffers as well as recursive Gaussian algorithm object. 
+An algorithm class may instantiate buffers and associate additional algorithms as needed. The example illustrated here implements a tone mapping operator that applies to an input image and stores the result in an output image. Internally the tone mapping class instantiates two additional buffers as well as recursive Gaussian algorithm object. 
+
+
 
 
 == oclToneMapping.h ==
@@ -36,10 +38,10 @@ class oclToneMapping : public oclProgram
 };      
 }}}
 
-=== Comments ===
+==== Comments ====
 
   * oclProgram is the base class for all algorithm
-
+  * oclRecursiveGaussian is another algorithm class
 
 == oclToneMapping.cpp ==
 
@@ -48,13 +50,10 @@ class oclToneMapping : public oclProgram
 
 oclToneMapping::oclToneMapping(oclContext& iContext, cl_image_format iFormat)
 : oclProgram(iContext, "oclToneMapping")
-// buffers
 , bfTempA(iContext, "bfTemp0")
 , bfTempB(iContext, "bfTemp1")
-// kernels
 , clLuminance(*this)
 , clCombine(*this)
-// programs
 , mGaussian(iContext)
 {
     bfTempA.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, iFormat, 256, 256);
@@ -108,7 +107,7 @@ int oclToneMapping::compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& 
 
     clSetKernelArg(clLuminance, 0, sizeof(cl_mem), bfSrce);
     clSetKernelArg(clLuminance, 1, sizeof(cl_mem), bfTempA);
-    sStatusCL = clEnqueueNDRangeKernel(iDevice, clLuminance, 2, NULL, lGlobalSize, NULL, 0, NULL, clLuminance.getEvent());
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clLuminance,2,NULL, lGlobalSize, NULL, 0, NULL, clLuminance.getEvent());
     ENQUEUE_VALIDATE
 
     if (!mGaussian.compute(iDevice, bfTempA, bfTempB, bfTempA))
@@ -119,7 +118,7 @@ int oclToneMapping::compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& 
     clSetKernelArg(clCombine, 0, sizeof(cl_mem), bfSrce);
     clSetKernelArg(clCombine, 1, sizeof(cl_mem), bfTempA);
     clSetKernelArg(clCombine, 2, sizeof(cl_mem), bfDest);
-    sStatusCL = clEnqueueNDRangeKernel(iDevice, clCombine, 2, NULL, lGlobalSize, NULL, 0, NULL, clCombine.getEvent());
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clCombine,2,NULL, lGlobalSize, NULL, 0, NULL, clCombine.getEvent());
     ENQUEUE_VALIDATE
 
     return true;
@@ -132,3 +131,7 @@ void oclToneMapping::setSmoothing(cl_float iValue)
 }}}
 
 === Comments ===
+
+  * KERNEL_VALIDATE and ENQUEUE_VALIDATE are macros
+  * Buffer and kernel classes override various casting operators 
+  * All objects in libCL can be named for effective error reporting
