@@ -38,7 +38,7 @@ class oclToneMapping : public oclProgram
 ==== Comments ====
 
   * oclProgram is the base class for all extensions
-  * oclRecursiveGaussian is another algorithm class
+  * oclRecursiveGaussian is another extension class
 
 == oclToneMapping.cpp ==
 
