@@ -127,7 +127,7 @@ void oclToneMapping::setSmoothing(cl_float iValue)
 }
 }}}
 
-=== Comments ===
+==== Comments ====
 
   * KERNEL_VALIDATE and ENQUEUE_VALIDATE are macros
   * Buffer and kernel classes override various casting operators 
