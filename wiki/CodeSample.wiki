@@ -1,4 +1,4 @@
-#summary A few snippets of source code illustrating how to extend libCL.
+#summary A source code example illustrating how to extend libCL.
 #labels Phase-Implementation,Featured
 
 = Introduction =
@@ -37,7 +37,7 @@ class oclToneMapping : public oclProgram
 
 ==== Comments ====
 
-  * oclProgram is the base class for all algorithm
+  * oclProgram is the base class for all extensions
   * oclRecursiveGaussian is another algorithm class
 
 == oclToneMapping.cpp ==
