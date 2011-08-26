@@ -1,0 +1,47 @@
+#summary A few snippets of source code illustrating how to extend libCL.
+#labels Phase-Implementation,Featured
+
+= Introduction =
+
+The following is an example of how to intgerate additional OpenCL algorithms into libCL. 
+
+= Details =
+
+
+{{{
+#ifndef _oclToneMapping
+#define _oclToneMapping
+
+#include "oclRecursiveGaussian.h"
+
+class oclToneMapping : public oclProgram
+{
+    public: 
+
+		oclToneMapping(oclContext& iContext, cl_image_format iFormat = sDefaultFormat);
+
+		int compile();
+        int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
+
+        void setSmoothing(cl_float iValue);
+
+    protected:
+
+		oclRecursiveGaussian mGaussian;
+
+		oclKernel clLuminance;
+		oclKernel clCombine;
+
+		oclImage2D bfTempA;
+		oclImage2D bfTempB;
+
+		static cl_image_format sDefaultFormat;
+};      
+
+#endif
+}}}
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
