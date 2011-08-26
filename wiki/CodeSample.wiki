@@ -3,7 +3,10 @@
 
 = Introduction =
 
-The following is an example of how to intgerate additional OpenCL algorithms into libCL. 
+The following source code illustrates how to extend libCL with an additional algorithm using the fundamental wrapper and base classes of the library. An extension basically consists of an OpenCL program and a C++ algorithm class derived from “oclProgram”. The .cl, .h and .cpp of the extension are located in a appropriate subdirectory of libCL, classified according to the type of algorithm. 
+
+An algorithm class may instantiate buffers and associate additional algorithm classes as needed.  The example illustrated here implements a tone mapping operator that applies to an input image and stores the result in an output image. Internally the tone mapping class instantiates two additional buffers as well as recursive Gaussian algorithm object. 
+
 
 == oclToneMapping.h ==
 
