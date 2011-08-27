@@ -21,7 +21,6 @@ class oclImage2D : public oclMem
     public:
 
         oclImage2D(oclContext& iContext, char* iName="oclImage2D");
-        ~oclImage2D();
 
         virtual bool create(cl_mem_flags iMemFlags, cl_image_format& iFormat, size_t iDim0, size_t iDim1, void* iHostPtr=0);
         virtual bool map(oclDevice& iDevice, cl_map_flags iMapping);
@@ -39,7 +38,6 @@ class oclImage2D : public oclMem
 
         oclImage2D(const oclImage2D&);
         oclImage2D& operator = (const oclImage2D&);
-
 };
 
 //
@@ -52,6 +50,5 @@ template <class RESULT> RESULT oclImage2D::getImageInfo(cl_image_info iInfo)
     clGetImageInfo(*this, iInfo, sizeof(RESULT), &lResult, 0);
     return lResult;
 }
-
 
 #endif

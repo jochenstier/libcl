@@ -63,13 +63,9 @@ class Log
 
     private:
 
-        fnLogger mFunction;
-
-        oclObject* mObject;
-    
         std::stringstream mStream;
-
+        fnLogger mFunction;
+        oclObject* mObject;
 };
-
 
 #endif

@@ -38,6 +38,4 @@ class oclBilateralGaussian : public oclProgram
 		size_t mLocalSize[2];
 };      
 
-
-
 #endif

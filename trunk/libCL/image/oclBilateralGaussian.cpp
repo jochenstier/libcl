@@ -18,6 +18,7 @@
 
 oclBilateralGaussian::oclBilateralGaussian(oclContext& iContext)
 : oclProgram(iContext, "oclBilateralGaussian")
+// kernels
 , clBilateralGaussian(*this)
 {
 	addSourceFile("image\\oclBilateralGaussian.cl");

@@ -18,10 +18,6 @@ oclImage2D::oclImage2D(oclContext& iContext, char* iName)
 {
 };
 
-oclImage2D::~oclImage2D()
-{
-}
-
 bool oclImage2D::create(cl_mem_flags iMemFlags, cl_image_format& iFormat, size_t iDim0, size_t iDim1, void* iHostPtr)
 {
     mMemPtr = clCreateImage2D(mContext, iMemFlags, &iFormat, iDim0, iDim1, 0, iHostPtr, &sStatusCL);

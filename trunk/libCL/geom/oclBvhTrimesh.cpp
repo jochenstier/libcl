@@ -17,21 +17,25 @@
 
 oclBvhTrimesh::oclBvhTrimesh(oclContext& iContext)
 : oclProgram(iContext, "oclBvhTrimesh")
-, mRadixSort(iContext)
+// buffers
 , bfAABB(iContext, "bfAABB")
 , bfMortonKey(iContext, "bfMortonKey")
 , bfMortonVal(iContext, "bfMortonVal")
 , bfBvhRoot(iContext, "bfBvhRoot")
 , bfBvhNode(iContext, "bfBvhNode")
+// kernels
 , clAABB(*this)
 , clMorton(*this)
 , clCreateNodes(*this)
 , clLinkNodes(*this)
 , clCreateLeaves(*this)
 , clComputeAABBs(*this)
+// programs
+, mRadixSort(iContext)
+// members
 , mRootNode(0)
 {
-	bfAABB.create<AABB>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 1);
+	bfAABB.create<srtAABB>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 1);
 	bfMortonKey.create<cl_uint>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 256);
 	bfMortonVal.create<cl_uint>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 256);
 	bfBvhNode.create<cl_char>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 1);

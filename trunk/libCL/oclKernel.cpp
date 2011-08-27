@@ -39,9 +39,7 @@ oclKernel::oclKernel(oclProgram& iProgram, cl_kernel& iKernel)
         sStatusCL = clRetainKernel(mKernel);
         oclSuccess("clRetainKernel", this);
     }
-
 }
-
 
 oclKernel::~oclKernel()
 {
@@ -74,6 +72,9 @@ oclProgram& oclKernel::getProgram()
     return mProgram; 
 }
 
+//
+//
+//
 
 oclKernel& oclKernel::operator = (cl_kernel iKernel)
 {
@@ -98,6 +99,10 @@ oclKernel& oclKernel::operator = (cl_kernel iKernel)
     }
     return *this;
 }
+
+//
+//
+//
 
 void oclKernel::profile(cl_ulong& iStartTime, cl_ulong& iEndTime)
 {

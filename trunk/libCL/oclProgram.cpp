@@ -30,7 +30,6 @@ oclProgram::~oclProgram()
         sStatusCL = clReleaseProgram(mProgram);
         oclSuccess("clReleaseProgram", this);
     }
-
     clrSource();
 }
 
@@ -153,7 +152,6 @@ void oclProgram::addSourceFile(char* iPath)
         mSource.push_back(lSource);
     }
     else Log(ERR, this) << "Unable to open source file " << iPath;
-
     _chdir(lPath);
 }
 
@@ -179,6 +177,11 @@ void oclProgram::exportKernel(oclKernel& iKernel)
     iKernel.setOwner(this);
     mKernels.push_back(&iKernel);
 };
+
+vector<oclKernel*>& oclProgram::getKernels()
+{
+    return mKernels;
+}
 
 oclKernel* oclProgram::getKernel(char* iName)
 {

@@ -33,6 +33,4 @@ class oclAmbientOcclusion : public oclProgram
  		oclKernel clSSAO;
 };      
 
-
-
 #endif

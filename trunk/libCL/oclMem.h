@@ -54,8 +54,7 @@ class oclMem : public oclObject
         oclMem(const oclMem&);
         oclMem& operator = (const oclMem&);
 
-
-    // Memory counter 
+    // Memory counter -- unused so far
     public:
 
         static void incMemory(unsigned long iBytes);
