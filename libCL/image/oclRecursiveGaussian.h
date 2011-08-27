@@ -35,6 +35,4 @@ class oclRecursiveGaussian : public oclProgram
 
 };      
 
-
-
 #endif

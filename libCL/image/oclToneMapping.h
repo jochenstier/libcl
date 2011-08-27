@@ -20,26 +20,24 @@ class oclToneMapping : public oclProgram
 {
     public: 
 
-		oclToneMapping(oclContext& iContext, cl_image_format iFormat = sDefaultFormat);
+        oclToneMapping(oclContext& iContext, cl_image_format iFormat = sDefaultFormat);
 
-		int compile();
+        int compile();
         int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
 
         void setSmoothing(cl_float iValue);
 
     protected:
 
-		oclRecursiveGaussian mGaussian;
+        oclRecursiveGaussian mGaussian;
 
-		oclKernel clLuminance;
-		oclKernel clCombine;
+        oclKernel clLuminance;
+        oclKernel clCombine;
 
-		oclImage2D bfTempA;
-		oclImage2D bfTempB;
+        oclImage2D bfTempA;
+        oclImage2D bfTempB;
 
-		static cl_image_format sDefaultFormat;
+        static cl_image_format sDefaultFormat;
 };      
-
-
 
 #endif

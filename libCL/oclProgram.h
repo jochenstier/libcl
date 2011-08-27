@@ -55,7 +55,6 @@ class oclProgram : public oclObject
         void clrSource();
         void addSourceCode(char* iCode);
         void addSourceFile(char* iPath);
-
         vector<srtSource>& getSource();
 
         static void setRootPath(char* iRootPath);
@@ -70,16 +69,16 @@ class oclProgram : public oclObject
     //
     public:
 
-        oclKernel* getKernel(char* iName);
         cl_kernel createKernel(const char* iName);
 
-    protected:
-
-        void exportKernel(oclKernel& iKernel);
+        // exported only
+        vector<oclKernel*>& getKernels();
+        oclKernel* getKernel(char* iName);
 
     protected:
 
         vector<oclKernel*> mKernels;
+        void exportKernel(oclKernel& iKernel);
 
     //
     // Event Interface
@@ -92,7 +91,6 @@ class oclProgram : public oclObject
     protected:
 
         vector<srtEvent*> mEventHandler;
-
 };      
 
 //

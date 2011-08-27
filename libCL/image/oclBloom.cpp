@@ -18,8 +18,10 @@
 oclBloom::oclBloom(oclContext& iContext, cl_image_format iFormat)
 : oclProgram(iContext, "oclBloom")
 , mGaussian(iContext)
+// buffers
 , bfTempA(iContext, "bfTemp0")
 , bfTempB(iContext, "bfTemp1")
+// kernels
 , clFilter(*this)
 , clCombine(*this)
 {

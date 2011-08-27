@@ -78,6 +78,7 @@ void error(const char* iValue, oclObject* iObject)
         cout << "(error):" << iValue << "\n";
     }
 }
+
 fnLogger ERR = error;
 fnLogger WARN = warn;
 fnLogger INFO = info;

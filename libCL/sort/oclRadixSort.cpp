@@ -17,11 +17,13 @@
 
 oclRadixSort::oclRadixSort(oclContext& iContext)
 : oclProgram(iContext, "oclRadixSort")
+// buffers
 , bfTempKey(iContext, "bfTempKey")
 , bfTempVal(iContext, "bfTempVal")
 , bfBlockScan(iContext, "bfBlockScan")
 , bfBlockOffset(iContext, "bfBlockOffset")
 , bfBlockSum(iContext, "bfBlockSum")
+// kernels
 , clBlockSort(*this)
 , clBlockScan(*this)
 , clBlockPrefix(*this)

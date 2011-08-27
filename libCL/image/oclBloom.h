@@ -47,6 +47,4 @@ class oclBloom : public oclProgram
 		static cl_image_format sDefaultFormat;
 };      
 
-
-
 #endif

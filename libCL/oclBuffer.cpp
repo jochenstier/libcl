@@ -18,10 +18,6 @@ oclBuffer::oclBuffer(oclContext& iContext, char* iName)
 {
 };
 
-oclBuffer::~oclBuffer()
-{
-}
-
 //
 //
 //

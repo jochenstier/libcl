@@ -21,7 +21,6 @@ class oclBuffer : public oclMem
     public:
 
         oclBuffer(oclContext& iContext, char* iName="oclBuffer");
-        ~oclBuffer();
 
         //
         template <class TYPE> bool create(cl_mem_flags iMemFlags, size_t iElements, void* iHostPtr=0);

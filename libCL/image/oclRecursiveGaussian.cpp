@@ -17,6 +17,7 @@
 
 oclRecursiveGaussian::oclRecursiveGaussian(oclContext& iContext)
 : oclProgram(iContext, "oclRecursiveGaussian")
+// kernels
 , clRecursiveGaussian(*this)
 {
 	addSourceFile("image\\oclRecursiveGaussian.cl");

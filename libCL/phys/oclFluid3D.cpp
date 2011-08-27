@@ -17,7 +17,7 @@ char* oclFluid3D::EVT_INTEGRATE = "OnIntegrate";
 
 oclFluid3D::oclFluid3D(oclContext& iContext)
 : oclProgram(iContext, "oclFluid3D")
-, mRadixSort(iContext)
+// buffers
 , bfCell(iContext, "bfCell")
 , bfCellStart(iContext, "bfCellStart")
 , bfCellEnd(iContext, "bfCellEnd")
@@ -28,6 +28,7 @@ oclFluid3D::oclFluid3D(oclContext& iContext)
 , bfPosition(0)
 , bfVelocity(0)
 , bfForce(0)
+// kernels
 , clIntegrateForce(*this)
 , clIntegrateVelocity(*this)
 , clHash(*this)
@@ -39,6 +40,9 @@ oclFluid3D::oclFluid3D(oclContext& iContext)
 , clInitFluid(*this)
 , clClipBox(*this)
 , clGravity(*this)
+// programs
+, mRadixSort(iContext)
+// members
 , mParticleCount(cLocalSize)
 , mIntegrateCb(0)
 {
@@ -354,8 +358,6 @@ int oclFluid3D::compute(oclDevice& iDevice)
 		sStatusCL = clEnqueueNDRangeKernel(iDevice, clIntegrateVelocity, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clIntegrateVelocity.getEvent());
 		ENQUEUE_VALIDATE
 	}
-
-
 	return true;
 }
 

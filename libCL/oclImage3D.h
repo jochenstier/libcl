@@ -21,7 +21,6 @@ class oclImage3D : public oclMem
     public:
 
         oclImage3D(oclContext& iContext, char* iName="oclImage3D");
-        ~oclImage3D();
 
         virtual bool create(cl_mem_flags iMemFlags, cl_image_format& iFormat, size_t iDim0, size_t iDim1, size_t iDim2, void* iHostPtr=0);
         virtual bool map(oclDevice& iDevice, cl_map_flags iMapping);

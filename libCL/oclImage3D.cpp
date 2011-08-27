@@ -16,11 +16,7 @@
 oclImage3D::oclImage3D(oclContext& iContext, char* iName)
 : oclMem(iContext, iName)
 {
-};
-
-oclImage3D::~oclImage3D()
-{
-}
+};      
 
 bool oclImage3D::create(cl_mem_flags iMemFlags, cl_image_format& iFormat, size_t iDim0, size_t iDim1, size_t iDim2, void* iHostPtr)
 {

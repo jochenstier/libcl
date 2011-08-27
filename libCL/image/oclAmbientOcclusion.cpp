@@ -15,6 +15,7 @@
 
 oclAmbientOcclusion::oclAmbientOcclusion(oclContext& iContext)
 : oclProgram(iContext, "oclAmbientOcclusion")
+// kernels
 , clSSAO(*this)
 {
 	addSourceFile("image\\oclAmbientOcclusion.cl");

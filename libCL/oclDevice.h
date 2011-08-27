@@ -47,7 +47,6 @@ class oclDevice : public oclObject
         oclDevice& operator = (const oclDevice&);
 };
 
-
 //
 //
 //

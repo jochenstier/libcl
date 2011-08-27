@@ -54,7 +54,8 @@ class oclBvhTrimesh : public oclProgram
 			cl_float4 bbMin;
 			cl_float4 bbMax;
 			cl_int flag;
-		} AABB;
+		} 
+        srtAABB;
 
         static const int sBVH	= 0x001;
 
@@ -75,7 +76,5 @@ class oclBvhTrimesh : public oclProgram
 
 		cl_uint mRootNode;
 };      
-
-
 
 #endif
