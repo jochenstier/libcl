@@ -18,6 +18,7 @@ oclObject::oclObject(char* iName)
 : mName(iName)
 , mData(0)
 , mOwner(0)
+, mError(0)
 {
 }
 
@@ -43,4 +44,25 @@ void oclObject::setName(char* iData)
 char* oclObject::getName()
 {
     return mName;
+}
+
+//
+//
+//
+
+
+
+void oclObject::setError()
+{
+    mError = true;
+}
+
+void oclObject::clrError()
+{
+    mError = false;
+}
+
+bool oclObject::getError()
+{
+    return mError;
 }

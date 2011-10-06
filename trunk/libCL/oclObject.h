@@ -33,11 +33,16 @@ class oclObject
         void setOwner(void* iPtr);
         template <class TYPE> TYPE* getOwner();
 
+        bool getError();
+        void clrError();
+        void setError();
+
     protected:
 
         void* mData;
         void* mOwner;
         char* mName;
+        bool mError;
 
     private:
 

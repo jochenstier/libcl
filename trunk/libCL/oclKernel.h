@@ -83,5 +83,11 @@ if (!kernel)\
     return 0;\
 }\
 
+#define RETURN_ON_ERROR(val)\
+if (getError())\
+{\
+    return val;\
+}\
+
 
 #endif

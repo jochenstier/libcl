@@ -148,6 +148,13 @@ Log::Log(fnLogger iFunction, oclObject* iObject, const char* iFile, int iLine)
     {
         mStream << "(" << iFile << ":" << iLine << "):";
     }
+    if (iFunction == ERR)
+    {
+        if (iObject)
+        {
+            iObject->setError();
+        }
+    }
 }
 
 Log::~Log()
