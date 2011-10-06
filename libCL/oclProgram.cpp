@@ -49,6 +49,7 @@ oclProgram::operator cl_program ()
 
 int oclProgram::compile()
 {
+    clrError();
     if (mProgram)
     {
         sStatusCL = clReleaseProgram(mProgram);
