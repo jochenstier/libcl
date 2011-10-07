@@ -20,7 +20,7 @@ oclRecursiveGaussian::oclRecursiveGaussian(oclContext& iContext)
 // kernels
 , clRecursiveGaussian(*this)
 {
-	addSourceFile("image\\oclRecursiveGaussian.cl");
+	addSourceFile("memory\\oclRecursiveGaussian.cl");
 
 	exportKernel(clRecursiveGaussian);
 }
