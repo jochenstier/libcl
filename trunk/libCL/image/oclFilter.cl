@@ -12,12 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-__kernel void clBilateralGaussian(__read_only image2d_t depthIn, 
-								  __write_only image2d_t depthOut,  
-                                  int r, 
-								  float delta,
-                                  int w,
-                                  int h)
+__kernel void clBilateral(__read_only image2d_t imageIn, __write_only image2d_t imageOut,  int r, float4 scalar, int w, int h)
 {
 	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
 
@@ -30,17 +25,17 @@ __kernel void clBilateralGaussian(__read_only image2d_t depthIn,
         float4 t = 0.0f;
         float4 factor;
 
-        float4 dc = read_imagef(depthIn, sampler, (float2)(x,y)); 
+        float4 dc = read_imagef(imageIn, sampler, (float2)(x,y)); 
 		for(int i = -r; i <= r; i++)
 		{
 			for(int j = -r; j <= r; j++)
 			{
 				int lx = min(max(x+j, 0), w-1); 
 				int ly = min(max(y+i, 0), h-1);
-				float4 dp = read_imagef(depthIn, sampler, (float2)(lx,ly)); 
+				float4 dp = read_imagef(imageIn, sampler, (float2)(lx,ly)); 
 
 				// range domain
-				float r2 = (dc.w-dp.w)/(2*delta*delta);
+				float r2 = 0.5f*dot(dc-dp,scalar*scalar);
 				float g = exp(-r2*r2);
 
 				// spatial domain
@@ -52,7 +47,6 @@ __kernel void clBilateralGaussian(__read_only image2d_t depthIn,
 			}
 		}
 
-		write_imagef(depthOut, (int2)(x,y), (float4)(t/sum));
-		//write_imagef(depthOut, (int2)(x,y), (float4)(dc.w));
+		write_imagef(imageOut, (int2)(x,y), (float4)(t/sum));
 	}
 }

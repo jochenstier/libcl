@@ -309,30 +309,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\image\oclBilateralGaussian.cl"
-					>
-				</File>
-				<File
-					RelativePath=".\image\oclBilateralGaussian.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\image\oclBilateralGaussian.h"
-					>
-				</File>
-				<File
-					RelativePath=".\image\oclBilateralGrid.cl"
-					>
-				</File>
-				<File
-					RelativePath=".\image\oclBilateralGrid.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\image\oclBilateralGrid.h"
-					>
-				</File>
-				<File
 					RelativePath=".\image\oclBloom.cl"
 					>
 				</File>
@@ -354,6 +330,18 @@
 				</File>
 				<File
 					RelativePath=".\image\oclColor.h"
+					>
+				</File>
+				<File
+					RelativePath=".\image\oclFilter.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\image\oclFilter.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\image\oclFilter.h"
 					>
 				</File>
 				<File

@@ -11,31 +11,24 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef _oclBilateralGaussian
-#define _oclBilateralGaussian
+#ifndef _oclFilter
+#define _oclFilter
 
 #include "oclProgram.h"
 #include "oclImage2D.h"
 
-class oclBilateralGaussian : public oclProgram
+class oclFilter : public oclProgram
 {
     public: 
 
-	    oclBilateralGaussian(oclContext& iContext);
+	    oclFilter(oclContext& iContext);
 
 		int compile();
-		int compute(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest);
-
-		void setRadius(cl_uint iValue);
-		void setScalar(cl_float iValue);
+		int bilateral(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, cl_int iRadius, cl_float4 iRange);
 
     protected:
 
-		oclKernel clBilateralGaussian;
-
-    private:
-
-		size_t mLocalSize[2];
+		oclKernel clBilateral;
 };      
 
 #endif
