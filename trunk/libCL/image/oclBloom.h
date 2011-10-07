@@ -19,7 +19,7 @@
 #include "oclKernel.h"
 #include "oclContext.h"
 
-#include "image\\oclRecursiveGaussian.h"
+#include "memory\\oclRecursiveGaussian.h"
 
 class oclBloom : public oclProgram
 {

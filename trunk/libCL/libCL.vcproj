@@ -345,15 +345,15 @@
 					>
 				</File>
 				<File
-					RelativePath=".\image\oclRecursiveGaussian.cl"
+					RelativePath=".\image\oclColor.cl"
 					>
 				</File>
 				<File
-					RelativePath=".\image\oclRecursiveGaussian.cpp"
+					RelativePath=".\image\oclColor.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\image\oclRecursiveGaussian.h"
+					RelativePath=".\image\oclColor.h"
 					>
 				</File>
 				<File
@@ -366,6 +366,34 @@
 				</File>
 				<File
 					RelativePath=".\image\oclToneMapping.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="memory"
+				>
+				<File
+					RelativePath=".\memory\oclConvolution.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\memory\oclConvolution.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\memory\oclConvolution.h"
+					>
+				</File>
+				<File
+					RelativePath=".\memory\oclRecursiveGaussian.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\memory\oclRecursiveGaussian.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\memory\oclRecursiveGaussian.h"
 					>
 				</File>
 			</Filter>

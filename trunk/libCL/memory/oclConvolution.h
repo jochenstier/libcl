@@ -11,33 +11,33 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef _oclToneMapping
-#define _oclToneMapping
+#ifndef _oclConvolution
+#define _oclConvolution
 
-#include "memory/oclRecursiveGaussian.h"
+#include "oclProgram.h"
+#include "oclBuffer.h"
 
-class oclToneMapping : public oclProgram
+class oclConvolution : public oclProgram
 {
     public: 
 
-        oclToneMapping(oclContext& iContext, cl_image_format iFormat = sDefaultFormat);
+	    oclConvolution(oclContext& iContext);
 
-        int compile();
-        int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
+		int compile();
+        
+        // apply separable convolution over iAxis to 3D buffer
+		int compute(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], cl_int4 iAxis, oclBuffer& bfFilter);
 
-        void setSmoothing(cl_float iValue);
+        // apply 2D kernel to 3D buffer
+		//int compute(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], oclImage2D& bfFilter);
 
     protected:
 
-        oclRecursiveGaussian mGaussian;
+ 		oclKernel clConvoluteBuffer3D;
 
-        oclKernel clLuminance;
-        oclKernel clCombine;
-
-        oclImage2D bfTempA;
-        oclImage2D bfTempB;
-
-        static cl_image_format sDefaultFormat;
+        oclBuffer bfGauss3;
+        oclBuffer bfGauss5;
+        oclBuffer bfLoG;
 };      
 
 #endif

@@ -11,33 +11,26 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef _oclToneMapping
-#define _oclToneMapping
+#ifndef _oclBilateralGrid
+#define _oclBilateralGrid
 
-#include "memory/oclRecursiveGaussian.h"
+#include "oclProgram.h"
+#include "oclImage2D.h"
 
-class oclToneMapping : public oclProgram
+class oclBilateralGrid : public oclProgram
 {
     public: 
 
-        oclToneMapping(oclContext& iContext, cl_image_format iFormat = sDefaultFormat);
+	    oclBilateralGrid(oclContext& iContext);
 
-        int compile();
-        int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
+		int compile();
+		int compute(oclDevice& iDevice, oclImage2D& bfImage, oclImage2D& bfDepth);
 
-        void setSmoothing(cl_float iValue);
+		void setSigma(cl_float iValue);
 
     protected:
 
-        oclRecursiveGaussian mGaussian;
-
-        oclKernel clLuminance;
-        oclKernel clCombine;
-
-        oclImage2D bfTempA;
-        oclImage2D bfTempB;
-
-        static cl_image_format sDefaultFormat;
+ 		oclKernel clSSAO;
 };      
 
 #endif
