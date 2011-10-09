@@ -14,7 +14,7 @@
 #ifndef _oclToneMapping
 #define _oclToneMapping
 
-#include "memory/oclRecursiveGaussian.h"
+#include "filter/oclRecursiveGaussian.h"
 
 class oclToneMapping : public oclProgram
 {
