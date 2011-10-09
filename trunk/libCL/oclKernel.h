@@ -17,6 +17,7 @@
 #include "oclObject.h"
 
 class oclProgram;
+class oclDevice;
 
 class oclKernel : public oclObject
 {
@@ -32,6 +33,14 @@ class oclKernel : public oclObject
         //
         template <class RETURN> RETURN getKernelWorkGroupInfo(cl_uint iValue, cl_device_id iDevice);
         template <class RETURN> RETURN getKernelInfo(cl_kernel_info iInfo);
+
+        //
+        size_t* localSize1(oclDevice& iDevice);
+        size_t* localSize2(oclDevice& iDevice);
+        size_t* localSize3(oclDevice& iDevice);
+        size_t* globalSize1(size_t* iLocalSize, size_t iDim1);
+        size_t* globalSize2(oclDevice& iDevice, size_t iDim1, size_t iDim2);
+        size_t* globalSize3(oclDevice& iDevice, size_t iDim1, size_t iDim2, size_t iDim3);
 
         //
         void profile(cl_ulong& iStartTime, cl_ulong& iEndTime);

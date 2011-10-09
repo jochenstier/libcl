@@ -12,41 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-__kernel void clBilateral(__read_only image2d_t imageIn, __write_only image2d_t imageOut,  int r, float4 scalar, int w, int h)
+
+//Kyprianidis, J. E., & Döllner, J. (2008). Image Abstraction by Structure Adaptive Filtering. In: Proc. 
+//EG UK Theory and Practice of Computer Graphics, pp. 51–58.
+__kernel void clTangent(__read_only image2d_t dx, __read_only image2d_t dy, __write_only image2d_t dt, int w, int h)
 {
 	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
-
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
-
     if (x < w && y < h) 
 	{
-        float4 sum = 0.0f;
-        float4 t = 0.0f;
-        float4 factor;
+		float4 dFx = read_imagef(dx, sampler, (float2)(x,y)); 
+		float4 dFy = read_imagef(dy, sampler, (float2)(x,y)); 
 
-        float4 dc = read_imagef(imageIn, sampler, (float2)(x,y)); 
-		for(int i = -r; i <= r; i++)
-		{
-			for(int j = -r; j <= r; j++)
-			{
-				int lx = min(max(x+j, 0), w-1); 
-				int ly = min(max(y+i, 0), h-1);
-				float4 dp = read_imagef(imageIn, sampler, (float2)(lx,ly)); 
+		float E = dot(dFx,dFx);
+		float F = dot(dFx,dFy);
+		float G = dot(dFy,dFy);
 
-				// range domain
-				float r2 = 0.5f*dot(dc-dp,scalar*scalar);
-				float g = exp(-r2*r2);
-
-				// spatial domain
-				float4 r = dp.w;
-				float4 w = exp(-r*r);
-
-				t += dp * w * g;
-				sum += w * g;
-			}
-		}
-
-		write_imagef(imageOut, (int2)(x,y), (float4)(t/sum));
+		float Lambda2 = 0.5*(E+G-sqrt((E-G)*(E-G)+4*F*F));
+		write_imagef(dt, (int2)(x,y), (float4)(Lambda2-G, F, 0, 0));
 	}
 }
+

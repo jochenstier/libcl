@@ -11,33 +11,26 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef _oclConvolution
-#define _oclConvolution
+#ifndef _oclTangent
+#define _oclTangent
 
 #include "oclProgram.h"
 #include "oclBuffer.h"
+#include "oclImage2D.h"
 
-class oclConvolution : public oclProgram
+class oclTangent : public oclProgram
 {
     public: 
 
-	    oclConvolution(oclContext& iContext);
+	    oclTangent(oclContext& iContext);
 
 		int compile();
-        
-        // apply separable convolution over iAxis to 3D buffer
-		int compute(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], cl_int4 iAxis, oclBuffer& bfFilter);
 
-        // apply 2D kernel to 3D buffer
-		//int compute(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], oclImage2D& bfFilter);
+		int compute(oclDevice& iDevice, oclImage2D& bfDx, oclImage2D& bfDy, oclImage2D& bfDest);
 
     protected:
 
- 		oclKernel clConvoluteBuffer3D;
-
-        oclBuffer bfGauss3;
-        oclBuffer bfGauss5;
-        oclBuffer bfLoG;
+		oclKernel clTangent;
 };      
 
 #endif
