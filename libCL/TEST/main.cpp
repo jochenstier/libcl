@@ -12,12 +12,18 @@
 #include "sort\\oclRadixSort.h"
 #include "phys\\oclFluid3D.h"
 #include "geom\\oclBvhTrimesh.h"
-#include "memory\\oclRecursiveGaussian.h"
+
+#include "filter\\oclRecursiveGaussian.h"
+#include "filter\\oclBilateral.h"
+#include "filter\\oclSobel.h"
+#include "filter\\oclTangent.h"
+
+#include "color\\oclColor.h"
+#include "color\\oclQuantize.h"
+
 #include "image\\oclToneMapping.h"
 #include "image\\oclBloom.h"
 #include "image\\oclAmbientOcclusion.h"
-#include "image\\oclFilter.h"
-#include "image\\oclColor.h"
 
 
 void testRadixSort(oclContext& iContext);
@@ -375,17 +381,24 @@ void testCompile(oclContext& iContext)
     oclRecursiveGaussian clRecursiveGaussian(iContext);
     clRecursiveGaussian.compile();
  
-    oclFilter clFilter(iContext);
-    clFilter.compile();
+    // fitler
+    oclSobel clSobel(iContext);
+    clSobel.compile();
+    oclBilateral clBilateral(iContext);
+    clBilateral.compile();
+    
+
+    // color
     oclColor clColor(iContext);
     clColor.compile();
+    oclQuantize clQuantize(iContext);
+    clQuantize.compile();
 
+    // image
     oclToneMapping clToneMapping(iContext);
     clToneMapping.compile();
-
     oclBloom clBloom(iContext);
     clBloom.compile();
-
     oclAmbientOcclusion clAmbientOcclusion(iContext);
     clAmbientOcclusion.compile();
 }
