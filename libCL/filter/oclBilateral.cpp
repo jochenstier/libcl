@@ -10,18 +10,17 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.#ifndef _oclFilter
+// limitations under the License.#ifndef _oclBilateral
 #include <math.h>
 
-#include "oclFilter.h"
+#include "oclBilateral.h"
 
-
-oclFilter::oclFilter(oclContext& iContext)
-: oclProgram(iContext, "oclFilter")
+oclBilateral::oclBilateral(oclContext& iContext)
+: oclProgram(iContext, "oclBilateral")
 // kernels
 , clBilateral(*this)
 {
-	addSourceFile("image\\oclFilter.cl");
+	addSourceFile("filter\\oclBilateral.cl");
 
 	exportKernel(clBilateral);
 }
@@ -30,7 +29,7 @@ oclFilter::oclFilter(oclContext& iContext)
 //
 //
 
-int oclFilter::compile()
+int oclBilateral::compile()
 {
 	clBilateral = 0;
 
@@ -48,19 +47,19 @@ int oclFilter::compile()
 //
 //
 
-int oclFilter::bilateral(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, cl_int iRadius, cl_float4 iScalar)
+int oclBilateral::compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float4 iScalar)
 {
 	size_t lLocalSize[2];
 	lLocalSize[0] = floor(sqrt(1.0*clBilateral.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
 	lLocalSize[1] = floor(sqrt(1.0*clBilateral.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
 
-	cl_uint lImageWidth = bfSource.getImageInfo<size_t>(CL_IMAGE_WIDTH);
-	cl_uint lImageHeight = bfSource.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+	cl_uint lImageWidth = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+	cl_uint lImageHeight = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
 	size_t lGlobalSize[2];
 	lGlobalSize[0] = ceil((float)lImageWidth/lLocalSize[0])*lLocalSize[0];
 	lGlobalSize[1] = ceil((float)lImageHeight/lLocalSize[1])*lLocalSize[1];
 
-	clSetKernelArg(clBilateral, 0, sizeof(cl_mem), bfSource);
+	clSetKernelArg(clBilateral, 0, sizeof(cl_mem), bfSrce);
 	clSetKernelArg(clBilateral, 1, sizeof(cl_mem), bfDest);
 	clSetKernelArg(clBilateral, 2, sizeof(cl_uint), &iRadius);
 	clSetKernelArg(clBilateral, 3, sizeof(cl_float4), &iScalar);

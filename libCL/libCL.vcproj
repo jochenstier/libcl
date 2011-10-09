@@ -321,27 +321,27 @@
 					>
 				</File>
 				<File
-					RelativePath=".\image\oclColor.cl"
+					RelativePath=".\image\oclFilter2D.cl"
 					>
 				</File>
 				<File
-					RelativePath=".\image\oclColor.cpp"
+					RelativePath=".\image\oclFilter2D.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\image\oclColor.h"
+					RelativePath=".\image\oclFilter2D.h"
 					>
 				</File>
 				<File
-					RelativePath=".\image\oclFilter.cl"
+					RelativePath=".\image\oclInit2D.cl"
 					>
 				</File>
 				<File
-					RelativePath=".\image\oclFilter.cpp"
+					RelativePath=".\image\oclInit2D.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\image\oclFilter.h"
+					RelativePath=".\image\oclInit2D.h"
 					>
 				</File>
 				<File
@@ -361,15 +361,15 @@
 				Name="memory"
 				>
 				<File
-					RelativePath=".\memory\oclConvolution.cl"
+					RelativePath=".\memory\oclFilter1D.cl"
 					>
 				</File>
 				<File
-					RelativePath=".\memory\oclConvolution.cpp"
+					RelativePath=".\memory\oclFilter1D.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\memory\oclConvolution.h"
+					RelativePath=".\memory\oclFilter1D.h"
 					>
 				</File>
 				<File
@@ -382,6 +382,114 @@
 				</File>
 				<File
 					RelativePath=".\memory\oclRecursiveGaussian.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="filter"
+				>
+				<File
+					RelativePath=".\filter\oclBilateral.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclBilateral.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclBilateral.h"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclConvolute.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclConvolute.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclConvolute.h"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclRecursiveGaussian.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclRecursiveGaussian.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclRecursiveGaussian.h"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclSobel.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclSobel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclSobel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclTangent.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclTangent.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclTangent.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="color"
+				>
+				<File
+					RelativePath=".\color\oclColor.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\color\oclColor.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\color\oclColor.h"
+					>
+				</File>
+				<File
+					RelativePath=".\color\oclQuantize.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\color\oclQuantize.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\color\oclQuantize.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="math"
+				>
+				<File
+					RelativePath=".\math\oclVector.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\math\oclVector.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\math\oclVector.h"
 					>
 				</File>
 			</Filter>

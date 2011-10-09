@@ -11,24 +11,27 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef _oclFilter
-#define _oclFilter
+#ifndef _oclQuantize
+#define _oclQuantize
 
 #include "oclProgram.h"
 #include "oclImage2D.h"
 
-class oclFilter : public oclProgram
+class oclQuantize : public oclProgram
 {
     public: 
 
-	    oclFilter(oclContext& iContext);
+	    oclQuantize(oclContext& iContext);
 
 		int compile();
-		int bilateral(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, cl_int iRadius, cl_float4 iRange);
+
+        int quantizeLAB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
+
 
     protected:
 
-		oclKernel clBilateral;
+
+ 		oclKernel clQuantizeLAB;
 };      
 
 #endif
