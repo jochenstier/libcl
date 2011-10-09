@@ -321,30 +321,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\image\oclFilter2D.cl"
-					>
-				</File>
-				<File
-					RelativePath=".\image\oclFilter2D.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\image\oclFilter2D.h"
-					>
-				</File>
-				<File
-					RelativePath=".\image\oclInit2D.cl"
-					>
-				</File>
-				<File
-					RelativePath=".\image\oclInit2D.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\image\oclInit2D.h"
-					>
-				</File>
-				<File
 					RelativePath=".\image\oclToneMapping.cl"
 					>
 				</File>
@@ -354,34 +330,6 @@
 				</File>
 				<File
 					RelativePath=".\image\oclToneMapping.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="memory"
-				>
-				<File
-					RelativePath=".\memory\oclFilter1D.cl"
-					>
-				</File>
-				<File
-					RelativePath=".\memory\oclFilter1D.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\memory\oclFilter1D.h"
-					>
-				</File>
-				<File
-					RelativePath=".\memory\oclRecursiveGaussian.cl"
-					>
-				</File>
-				<File
-					RelativePath=".\memory\oclRecursiveGaussian.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\memory\oclRecursiveGaussian.h"
 					>
 				</File>
 			</Filter>
