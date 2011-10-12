@@ -25,24 +25,30 @@ class oclConvolute : public oclProgram
 	    oclConvolute(oclContext& iContext);
 
 		int compile();
-        
-        // apply separable convolution over iAxis to buffer Object
-		int conv3D(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], cl_int4 iAxis, oclBuffer& bfFilter);
 
-        // apply separable convolution over iAxis to image
-		int conv2D(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, cl_int4 iAxis, oclBuffer& bfFilter);
+        // 2D convolutions on images and buffers
+		int iso2D(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclBuffer& bfFilter, int iFilterW, int iFilterH);
+		int iso2Dsep(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, cl_int2 iAxis, oclBuffer& bfFilter);
+		int aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclImage2D& iLine, oclBuffer& bfFilter);
+		int aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclImage2D& iLine, oclBuffer& bfFilter);
 
-        // apply 2D kernel to 3D buffer
-		//int compute(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], oclImage2D& bfFilter);
+        // 3D convolutions on images and buffers
+		int iso3D(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], cl_int4 iAxis, oclBuffer& bfFilter);
+
+        // create kernels
+        static bool gauss1D(float iSigma, oclBuffer& iBuffer);
+        static bool gauss2D(float iSigma, oclBuffer& iBuffer, int iFilterW, int iFilterH);
+
+        static bool DoG2D(float iSigmaA, float iSigmaB, float iSensitivity, oclBuffer& iBuffer, int iKernelW, int iKernelH);
 
     protected:
 
- 		oclKernel clConv2D;
- 		oclKernel clConv3D;
+ 		oclKernel clIso3Dsep;
 
-        oclBuffer bfGauss3;
-        oclBuffer bfGauss5;
-        oclBuffer bfLoG;
+ 		oclKernel clIso2D;
+ 		oclKernel clIso2Dsep;
+ 		oclKernel clAniso2Dtang;
+ 		oclKernel clAniso2Dorth;
 };      
 
 #endif

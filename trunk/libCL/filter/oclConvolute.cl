@@ -12,7 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-__kernel void clConv3D(__global float4* srce, __global float4* dest, int4 axis, __constant float* filter, int size)
+
+//
+// 3D Convolution
+//
+
+__kernel void clIso3Dsep(__global float4* srce, __global float4* dest, int4 axis, __constant float* filter, int size)
 {
 	int x = get_global_id(0);
 	int y = get_global_id(1);
@@ -34,22 +39,73 @@ __kernel void clConv3D(__global float4* srce, __global float4* dest, int4 axis, 
 	dest[z*sx*sy+y*sx+x] = DEST;
 }
 
-__kernel void clConv2D(__read_only image2d_t imageIn, __write_only image2d_t imageOut, int4 axis, __constant float* filter, int size, int w, int h)
+
+//
+// 2D Convolution
+//
+
+__kernel void clIso2D(__read_only image2d_t imageIn, __write_only image2d_t imageOut, __constant float* filter, int filterw, int filterh, int imgw, int imgh)
 {
 	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
-
-    if (x < w && y < h) 
+    if (x < imgw && y < imgh) 
 	{
-		int limit = size/2;
-		float4 dc = (float4)0;
-		for (int i=-limit; i<limit+1; i++)
+		int rx = filterw/2;
+		int ry = filterh/2;
+		float4 ds = (float4)0;
+		for (int i=-rx; i<=rx; i++)
 		{
-			int lx = min(max(x+i*axis.x,0),w-1);
-			int ly = min(max(y+i*axis.y,0),h-1);
-			dc += read_imagef(imageIn, sampler, (float2)(lx,ly))*filter[i+limit];
+			for (int j=-ry; j<=ry; j++)
+			{
+				int lx = min(max(x+i,0),imgw-1);
+				int ly = min(max(y+j,0),imgh-1);
+				ds += read_imagef(imageIn, sampler, (float2)(lx,ly))*filter[(ry+j)*filterw+(rx+i)];
+			}
 		}
+		write_imagef(imageOut, (int2)(x,y), ds);
+	}
+}
+
+__kernel void clIso2Dsep(__read_only image2d_t imageIn, __write_only image2d_t imageOut, int2 axis, __constant float* filter, int size, int imgw, int imgh)
+{
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+    int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
+    int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
+    if (x < imgw && y < imgh) 
+	{
+		int r = size/2;
+		float4 ds = (float4)0;
+		for (int i=-r; i<=r; i++)
+		{
+			int lx = min(max(x+i*axis.x,0),imgw-1);
+			int ly = min(max(y+i*axis.y,0),imgh-1);
+			ds += read_imagef(imageIn, sampler, (float2)(lx,ly))*filter[i+r];
+		}
+		write_imagef(imageOut, (int2)(x,y),ds);
+	}
+}
+
+__kernel void clAniso2Dtang(__read_only image2d_t imageIn, __write_only image2d_t imageOut, __read_only image2d_t tangent, __constant float* filter, int size, int imgw, int imgh)
+{
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+    int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
+    int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
+    if (x < imgw && y < imgh) 
+	{
+		float4 dc = (float4)0;
+		write_imagef(imageOut, (int2)(x,y), dc);
+	}
+}
+
+__kernel void clAniso2Dorth(__read_only image2d_t imageIn, __write_only image2d_t imageOut, __read_only image2d_t tangent, __constant float* filter, int size, int imgw, int imgh)
+{
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+    int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
+    int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
+    if (x < imgw && y < imgh) 
+	{
+		float4 dc = (float4)0;
 		write_imagef(imageOut, (int2)(x,y), dc);
 	}
 }

@@ -34,3 +34,44 @@ __kernel void clTangent(__read_only image2d_t dx, __read_only image2d_t dy, __wr
 	}
 }
 
+__kernel void clLineConv(__read_only image2d_t vector, __read_only image2d_t srce, __write_only image2d_t dest, int depth, int w, int h)
+{
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP;
+	int x = get_global_id(0);
+	int y = get_global_id(1);
+    if (x < w && y < h) 
+	{
+		float2 lMin = (float2)(0,0);
+		float2 lMax = (float2)(get_global_size(0)-1, get_global_size(1)-1);
+
+		float2 p = (float2)(x,y);
+		float4 c = read_imagef(vector, sampler, p);
+		float4 result = read_imagef(srce, sampler, p);
+
+		// forward
+		float n = 0.25;
+		float4 dxy = c;
+		p = (float2)(x,y);
+		for (int d=0; d<depth; d++)
+		{
+			p = clamp(p+dxy.xy, lMin, lMax);
+			dxy = read_imagef(vector, sampler, p);
+			result += read_imagef(srce, sampler, p);//*0.5*n;
+			n*=0.5;
+		}
+
+		// backward
+		n = 0.25;
+		dxy = c;
+		p = (float2)(x,y);
+		for (int d=0; d<depth; d++)
+		{
+			p = clamp(p-dxy.xy, lMin, lMax);
+			dxy = read_imagef(vector, sampler, p);
+			result += read_imagef(srce, sampler, p);//*0.5*n;
+			n*=0.5;
+		}
+	
+		write_imagef(dest, (int2)(x,y), result/(2*depth+1));
+	}
+}
