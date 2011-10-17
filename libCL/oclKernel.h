@@ -35,15 +35,12 @@ class oclKernel : public oclObject
         template <class RETURN> RETURN getKernelInfo(cl_kernel_info iInfo);
 
         //
-        size_t* localSize1(oclDevice& iDevice);
-        size_t* localSize2(oclDevice& iDevice);
-        size_t* localSize3(oclDevice& iDevice);
-        size_t* globalSize1(size_t* iLocalSize, size_t iDim1);
-        size_t* globalSize2(oclDevice& iDevice, size_t iDim1, size_t iDim2);
-        size_t* globalSize3(oclDevice& iDevice, size_t iDim1, size_t iDim2, size_t iDim3);
+        void localSize2D(oclDevice& iDevice, size_t lGlobalSize[2], size_t lLocalSize[2], int iW, int iH);
 
         //
-        void profile(cl_ulong& iStartTime, cl_ulong& iEndTime);
+        cl_ulong getStartTime();
+        cl_ulong getEndTime();
+        void profile(bool iState);
 
         //
         cl_kernel& getKernel();
@@ -56,6 +53,10 @@ class oclKernel : public oclObject
 
         cl_kernel mKernel;
         cl_event mEvent;
+        bool mProfiling;
+
+        cl_ulong mStartTime;
+        cl_ulong mEndTime;
 
     private:
 

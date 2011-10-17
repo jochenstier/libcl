@@ -33,13 +33,14 @@ class oclConvolute : public oclProgram
 		int aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclImage2D& iLine, oclBuffer& bfFilter);
 
         // 3D convolutions on images and buffers
-		int iso3D(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], cl_int4 iAxis, oclBuffer& bfFilter);
+		int iso3Dsep(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], cl_int4 iAxis, oclBuffer& bfFilter);
 
         // create kernels
         static bool gauss1D(float iSigma, oclBuffer& iBuffer);
         static bool gauss2D(float iSigma, oclBuffer& iBuffer, int iFilterW, int iFilterH);
 
         static bool DoG2D(float iSigmaA, float iSigmaB, float iSensitivity, oclBuffer& iBuffer, int iKernelW, int iKernelH);
+        static bool DoG1D(float iSigmaA, float iSigmaB, float iSensitivity, oclBuffer& iBuffer);
 
     protected:
 

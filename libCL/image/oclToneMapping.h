@@ -14,30 +14,30 @@
 #ifndef _oclToneMapping
 #define _oclToneMapping
 
-#include "filter/oclRecursiveGaussian.h"
+#include "filter/oclBilinearPyramid.h"
+#include "color/oclColor.h"
+#include "util/oclMemory.h"
 
 class oclToneMapping : public oclProgram
 {
     public: 
 
-        oclToneMapping(oclContext& iContext, cl_image_format iFormat = sDefaultFormat);
+        oclToneMapping(oclContext& iContext);
 
         int compile();
         int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
 
-        void setSmoothing(cl_float iValue);
-
     protected:
 
-        oclRecursiveGaussian mGaussian;
-
-        oclKernel clLuminance;
-        oclKernel clCombine;
+        oclBilinearPyramid mPyramid;
+        oclMemory mMemory;
 
         oclImage2D bfTempA;
         oclImage2D bfTempB;
 
-        static cl_image_format sDefaultFormat;
+        oclKernel clCombine;
+
+        oclColor mColor;
 };      
 
 #endif

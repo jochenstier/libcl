@@ -50,6 +50,8 @@ class Log
 
         Log& operator<< (int iValue);
         Log& operator<< (unsigned int iValue);
+        Log& operator<< (cl_long iValue);
+        Log& operator<< (cl_ulong iValue);
         Log& operator<< (float iValue);
         Log& operator<< (char* iValue);
 

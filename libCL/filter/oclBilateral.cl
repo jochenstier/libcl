@@ -131,9 +131,9 @@ __kernel void clAniso2Dorth(__read_only image2d_t imageIn, __write_only image2d_
 		// forward
 		float4 dxy = c;
 		p = (float2)(x,y);
-		for (int d=1; d<radius; d++)
+		for (int d=1; d<=radius; d++)
 		{
-			p = clamp(p+dxy.yx, lMin, lMax);
+			p = clamp(p+(float2)(-dxy.y, dxy.x), lMin, lMax);
 			dxy = read_imagef(vector, sampler, p);
 			float4 dp = read_imagef(imageIn, sampler, p); 
 			float factor = gaussian(dc,dp,mask,scalar);
@@ -144,9 +144,9 @@ __kernel void clAniso2Dorth(__read_only image2d_t imageIn, __write_only image2d_
 		// backward
 		dxy = c;
 		p = (float2)(x,y);
-		for (int d=1; d<radius; d++)
+		for (int d=1; d<=radius; d++)
 		{
-			p = clamp(p-dxy.yx, lMin, lMax);
+			p = clamp(p-(float2)(-dxy.y, dxy.x), lMin, lMax);
 			dxy = read_imagef(vector, sampler, p);
 			float4 dp = read_imagef(imageIn, sampler, p); 
 			float factor = gaussian(dc,dp,mask,scalar);

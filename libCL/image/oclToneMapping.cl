@@ -12,45 +12,50 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-__kernel void clLuminance(__read_only image2d_t RGBAin, __write_only image2d_t LUMout)
+__kernel void clCombine(__read_only image2d_t imageIn, __read_only image2d_t resultIn, __read_only image2d_t level0, __read_only image2d_t level1, int level, __write_only image2d_t resultOut)
 {
-    const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
+    const sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP_TO_EDGE;
 
-    const int gx = get_global_id(0);
-    const int gy = get_global_id(1);
-    const int gw = get_global_size(0);
+    const int x = get_global_id(0);
+    const int y = get_global_id(1);
+    const int w = get_global_size(0);
+    const int h = get_global_size(1);
 
-    float4 RGBA = read_imagef(RGBAin, sampler, (float2)(gx,gy));
+    float2 pixel = (float2)((x+0.5)/w,(y+0.5)/h);
+	float4 l0 = read_imagef(level0, sampler, pixel);
+	float4 l1 = read_imagef(level1, sampler, pixel);
 
-    write_imagef(LUMout, (int2)(gx,gy), dot((float4)(0.2126,0.7152,0.0722,0.0),RGBA));
-}
+	float lum0 = l0.x/100.0;
+	float lum1 = l1.x/100.0;
 
-__kernel void clCombine(__read_only image2d_t RGBDin, __read_only image2d_t LUMin, __write_only image2d_t RGBDout)
-{
-    const sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP;
+	float scale = min(0.35, 0.35*1.6*(level)); 
+	float lumX = 0.18*pow(2.0f,8.0f)/scale;
+	float activity = (lum0-lum1)/(lumX+lum0);
 
-    const int gx = get_global_id(0);
-    const int gy = get_global_id(1);
-    const int gw = get_global_size(0);
-    const int gh = get_global_size(1);
+	if (fabs(activity) > 0.00005)
+	{
+		float4 result = read_imagef(resultIn, sampler, pixel);
+		if (result.x == 0)
+		{
+			float4 image = read_imagef(imageIn, sampler, pixel);
+			image.x = image.x/(100.0f*(1.0f+l0.x));
+			write_imagef(resultOut, (int2)(x,y),image);
+		}
+	}
 
-    float2 pixel = (float2)((gx+0.5)/gw,(gy+0.5)/gh);
+	/*
+	if (l1.x-l0.x != 0)
+	{
+		write_imagef(resultOut, (int2)(x,y),(float4)(100,40,0,1));
+	}
+	else
+	{
+		write_imagef(resultOut, (int2)(x,y),(float4)(0,0,90,1));
+	}
+	*/
+	
+	//float4 image = read_imagef(imageIn, sampler, pixel);
+	//write_imagef(resultOut, (int2)(x,y),fabs(l1-l0)*10000);
 
-    float4 RGBA = read_imagef(RGBDin, sampler, pixel);
-    float4 LLLL = read_imagef(LUMin, sampler, pixel);
-
-    float luminance = dot((float4)(0.2126,0.7152,0.0722,0.0),RGBA);
-
-
-    float glare = 0.0;//log(l) * (1.0 - 0.99/(0.99 + log(l)));
-
-    // Retinex
-    float4 result = RGBA*(exp(glare + log(luminance)-0.45f*log(LLLL)));
-
-    // Ashikhmin
-    //float4 result = RGBA*(exp(glare + log(luminance)-0.45*log(l)));
-
-    //write_imagef(RGBDout, (int2)(gx,gy), Lum[gy*gw+gx]);
-    write_imagef(RGBDout, (int2)(gx,gy), result);
 }
 

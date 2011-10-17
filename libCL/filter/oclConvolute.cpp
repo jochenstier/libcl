@@ -66,92 +66,6 @@ void calcGauss2D(float iSigma, float* iBuffer, int iWidth, int iHeigth)
     }
 }
 
-//
-//
-//
-
-
-
-
-//
-//
-//
-/*
-bool oclConvolute::DoG2D(float iSigmaA, float iSigmaB, float iSensitivity, oclBuffer& iBuffer, int iKernelW, int iKernelH)
-{
-    if (!iBuffer.map(iBuffer.getContext().getDevice(0), CL_MAP_WRITE))
-    {
-        return false;
-    }
-    if (iKernelW % 2 == 0 || iKernelH % 2 == 0)
-    {
-        Log(ERR) << "Invalid buffer size of DoG2D." << iBuffer.dim(0)/sizeof(cl_float) << " Kernel dimensions must be odd";
-        return false;
-    }
-    int lSize = iBuffer.dim(0)/sizeof(cl_float);
-    if (iKernelW*iKernelH > lSize)
-    {
-        Log(ERR) << "Invalid buffer size for given kernel dimension :" << iBuffer.dim(0)/sizeof(cl_float) << "*cl_float";
-        return false;
-    }
-    
-    float t1a = 1.0f/pow(sqrt(2.0f*M_PI)*iSigmaA, 2);
-    float t2a = 1.0f/(2.0f*iSigmaA*iSigmaA);
-    float t1b = 1.0f/pow(sqrt(2.0f*M_PI)*iSigmaB, 2);
-    float t2b = 1.0f/(2.0f*iSigmaB*iSigmaB);
-
-    float ntotal = 0.0f;
-    float ptotal = 0.0f;
-
-    float* lBuffer = iBuffer.ptr<cl_float>();
-    int rx = iKernelW/2;
-    int ry = iKernelH/2;
-    float nx = 1.0/(rx*rx);
-    float ny = 1.0/(ry*ry);
-    for (int x=-rx; x<=rx; x++) 
-    {
-        for (int y=-ry; y<=ry; y++) 
-        {
-            float d = sqrt(nx*x*x+ny*y*y);
-            float v = t1b*exp(-d*d*t2b) - iSensitivity*t1a*exp(-d*d*t2a); 
-            lBuffer[(ry+y)*iKernelW+(rx+x)] = v;
-if (y==0)
-    Log(WARN) << v;
-            if (v > 0)
-            {
-                ptotal += v;
-            }
-            else 
-            {
-                ntotal += -v;
-            }
-       }
-    }
-              //  Log(WARN) << "+TOT:" <<  ptotal;
-              //  Log(WARN) << "-TOT:" <<  ntotal;
-
-    for (int x=-rx; x<=rx; x++) 
-    {
-        for (int y=-ry; y<=ry; y++) 
-        {
-            float v = lBuffer[(ry+y)*iKernelW+(rx+x)];
-            if (v > 0)
-            {
-                v/=ptotal;
-            }
-            else
-            {
-                v/=ntotal;
-            }
-           lBuffer[(ry+y)*iKernelW+(rx+x)] = v;
-        }
-    }
-    iBuffer.unmap(iBuffer.getContext().getDevice(0));
-    
-    return true;
-}
-*/
-
 oclConvolute::oclConvolute(oclContext& iContext)
 : oclProgram(iContext, "oclConvolute")
 // kernels
@@ -248,6 +162,49 @@ bool oclConvolute::gauss2D(float iSigma, oclBuffer& iBuffer, int iKernelW, int i
     return false;
 }
 
+//
+//
+//
+
+bool oclConvolute::DoG1D(float iSigmaA, float iSigmaB, float iSensitivity, oclBuffer& iBuffer)
+{
+    if (iBuffer.map(iBuffer.getContext().getDevice(0), CL_MAP_WRITE))
+    {
+        int lKernelW = iBuffer.dim(0)/sizeof(cl_float);
+        if (lKernelW < 3 || lKernelW % 2 == 0)
+        {
+            Log(ERR) << "Invalid buffer size of DoG1D size = " << iBuffer.dim(0)/sizeof(cl_float) << "*cl_float. Must be > 2 and odd";
+            return false;
+        }
+        
+        cl_float* lGaussA = new cl_float[lKernelW];
+        calcGauss1D(iSigmaA, lGaussA, lKernelW);
+        cl_float* lGaussB = new cl_float[lKernelW];
+        calcGauss1D(iSigmaB, lGaussB, lKernelW);
+        cl_float* lBuffer = iBuffer.ptr<cl_float>();
+
+        cl_float total = 0;
+        for (int i=0; i<lKernelW; i++)
+        {
+            lBuffer[i] = (lGaussA[i] - iSensitivity*lGaussB[i]);
+            total += lBuffer[i];
+            //Log(WARN) << lBuffer[i];
+        }
+        total /= lKernelW;
+        for (int i=0; i<lKernelW; i++)
+        {
+            lBuffer[i] -= total;
+        }
+
+
+        iBuffer.unmap(iBuffer.getContext().getDevice(0));
+        delete lGaussA;
+        delete lGaussB;
+        return true;
+    }
+    return false;
+}
+
 bool oclConvolute::DoG2D(float iSigmaA, float iSigmaB, float iSensitivity, oclBuffer& iBuffer, int iKernelW, int iKernelH)
 {
     if (iBuffer.map(iBuffer.getContext().getDevice(0), CL_MAP_WRITE))
@@ -269,18 +226,19 @@ bool oclConvolute::DoG2D(float iSigmaA, float iSigmaB, float iSensitivity, oclBu
         cl_float* lGaussB = new cl_float[iKernelW*iKernelH];
         calcGauss2D(iSigmaB, lGaussB, iKernelW, iKernelH);
         cl_float* lBuffer = iBuffer.ptr<cl_float>();
-        float total = 0.0;
+        cl_float total = 0;
         for (int i=0; i<iKernelW*iKernelH; i++)
         {
-            lBuffer[i] = (lGaussB[i] - iSensitivity*lGaussA[i]);
+            lBuffer[i] = (lGaussA[i] - iSensitivity*lGaussB[i]);
             total += lBuffer[i];
         }
-       // for (int i=0; i<iKernelW*iKernelH; i++)
-       // {
-       //     lBuffer[i]/=total;
-       // }
-        iBuffer.unmap(iBuffer.getContext().getDevice(0));
+        total /= iKernelW*iKernelH;
+        for (int i=0; i<iKernelW*iKernelH; i++)
+        {
+            lBuffer[i] -= total;
+        }
 
+        iBuffer.unmap(iBuffer.getContext().getDevice(0));
         delete lGaussA;
         delete lGaussB;
         return true;
@@ -292,7 +250,7 @@ bool oclConvolute::DoG2D(float iSigmaA, float iSigmaB, float iSensitivity, oclBu
 //
 //
 
-int oclConvolute::iso3D(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], cl_int4 iAxis, oclBuffer& bfFilter)
+int oclConvolute::iso3Dsep(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], cl_int4 iAxis, oclBuffer& bfFilter)
 {
     cl_int lFilterSize = bfFilter.dim(0)/sizeof(cl_float);
 	clSetKernelArg(clIso3Dsep, 0, sizeof(cl_mem), bfSource);
@@ -364,12 +322,64 @@ int oclConvolute::iso2Dsep(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& b
 
 
 
-int oclConvolute::aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclImage2D& iLine, oclBuffer& bfFilter)
+int oclConvolute::aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, oclImage2D& bfLine, oclBuffer& bfFilter)
 {	
-    return true;
+	size_t lLocalSize[2];
+	lLocalSize[0] = floor(sqrt(1.0*clAniso2Dtang.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
+	lLocalSize[1] = floor(sqrt(1.0*clAniso2Dtang.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
+
+	cl_uint lImageWidth = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+	cl_uint lImageHeight = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+	size_t lGlobalSize[2];
+	lGlobalSize[0] = ceil((float)lImageWidth/lLocalSize[0])*lLocalSize[0];
+	lGlobalSize[1] = ceil((float)lImageHeight/lLocalSize[1])*lLocalSize[1];
+
+    cl_int lFilterSize = bfFilter.dim(0)/sizeof(cl_float);
+    if (lFilterSize %2 == 0)
+    {
+        Log(ERR, this) << "Failure in call to oclConvolute::iso2D : kernel size must be odd ";
+    }
+
+	clSetKernelArg(clAniso2Dtang, 0, sizeof(cl_mem), bfSrce);
+	clSetKernelArg(clAniso2Dtang, 1, sizeof(cl_mem), bfDest);
+	clSetKernelArg(clAniso2Dtang, 2, sizeof(cl_mem), bfLine);
+	clSetKernelArg(clAniso2Dtang, 3, sizeof(cl_mem), bfFilter);
+	clSetKernelArg(clAniso2Dtang, 4, sizeof(cl_uint), &lFilterSize);
+ 	clSetKernelArg(clAniso2Dtang, 5, sizeof(cl_uint), &lImageWidth);
+	clSetKernelArg(clAniso2Dtang, 6, sizeof(cl_uint), &lImageHeight);
+	sStatusCL = clEnqueueNDRangeKernel(iDevice, clAniso2Dtang, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clAniso2Dtang.getEvent());
+	ENQUEUE_VALIDATE
+
+	return true;
 }   
 
-int oclConvolute::aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclImage2D& iLine, oclBuffer& bfFilter)
+int oclConvolute::aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, oclImage2D& bfLine, oclBuffer& bfFilter)
 {	
+	size_t lLocalSize[2];
+	lLocalSize[0] = floor(sqrt(1.0*clAniso2Dorth.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
+	lLocalSize[1] = floor(sqrt(1.0*clAniso2Dorth.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
+
+	cl_uint lImageWidth = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+	cl_uint lImageHeight = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+	size_t lGlobalSize[2];
+	lGlobalSize[0] = ceil((float)lImageWidth/lLocalSize[0])*lLocalSize[0];
+	lGlobalSize[1] = ceil((float)lImageHeight/lLocalSize[1])*lLocalSize[1];
+
+    cl_int lFilterSize = bfFilter.dim(0)/sizeof(cl_float);
+    if (lFilterSize %2 == 0)
+    {
+        Log(ERR, this) << "Failure in call to oclConvolute::iso2D : kernel size must be odd ";
+    }
+
+	clSetKernelArg(clAniso2Dorth, 0, sizeof(cl_mem), bfSrce);
+	clSetKernelArg(clAniso2Dorth, 1, sizeof(cl_mem), bfDest);
+	clSetKernelArg(clAniso2Dorth, 2, sizeof(cl_mem), bfLine);
+	clSetKernelArg(clAniso2Dorth, 3, sizeof(cl_mem), bfFilter);
+	clSetKernelArg(clAniso2Dorth, 4, sizeof(cl_uint), &lFilterSize);
+ 	clSetKernelArg(clAniso2Dorth, 5, sizeof(cl_uint), &lImageWidth);
+	clSetKernelArg(clAniso2Dorth, 6, sizeof(cl_uint), &lImageHeight);
+	sStatusCL = clEnqueueNDRangeKernel(iDevice, clAniso2Dorth, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clAniso2Dorth.getEvent());
+	ENQUEUE_VALIDATE
+
     return true;
 }   

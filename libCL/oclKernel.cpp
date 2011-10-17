@@ -11,7 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <math.h>
+
 #include "oclKernel.h"
+#include "oclDevice.h"
 #include "oclCommon.h"
 
 oclKernel::oclKernel(oclProgram& iProgram)
@@ -19,6 +22,9 @@ oclKernel::oclKernel(oclProgram& iProgram)
 , mKernel()
 , mEvent(0)
 , mProgram(iProgram)
+, mProfiling(false)
+, mStartTime(0)
+, mEndTime(0)
 {
 }
 
@@ -27,6 +33,8 @@ oclKernel::oclKernel(oclProgram& iProgram, cl_kernel& iKernel)
 , mKernel(iKernel)
 , mEvent(0)
 , mProgram(iProgram)
+, mStartTime(0)
+, mEndTime(0)
 {
     if (mKernel)
     {
@@ -49,6 +57,13 @@ oclKernel::~oclKernel()
         oclSuccess("clReleaseKernel", this);
         delete [] mName;
         mName = 0;
+        cl_uint lCount;
+        clGetEventInfo (mEvent, CL_EVENT_REFERENCE_COUNT, sizeof(cl_uint), &lCount, NULL);
+        if (mEvent)
+        {
+            clReleaseEvent(mEvent);
+            mEvent = 0;
+        }
     }
 }
 
@@ -64,13 +79,42 @@ cl_kernel& oclKernel::getKernel()
 
 cl_event* oclKernel::getEvent()
 { 
-    return &mEvent; 
+    if (mProfiling)
+    {
+        if (mEvent)
+        {
+           // sStatusCL = clReleaseEvent(mEvent); this causes a memory leak but at least profing works on NVIDIA
+            oclSuccess("clReleaseEvent", this);
+            mEvent = 0;
+        }
+        return &mEvent; 
+    }
+    else
+    {
+        mEndTime = 0;
+        mStartTime = 0;
+        return NULL;
+    }
 }
 
 oclProgram& oclKernel::getProgram()
 { 
     return mProgram; 
 }
+
+//
+//
+//
+
+void oclKernel::localSize2D(oclDevice& iDevice, size_t lGlobalSize[2], size_t lLocalSize[2], int iW, int iH)
+{
+    size_t lSize = getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice);
+    lLocalSize[0] = floor(sqrt(1.0*lSize));
+    lLocalSize[1] = floor(sqrt(1.0*lSize));
+    lGlobalSize[0] = ceil((float)iW/lLocalSize[0])*lLocalSize[0];
+    lGlobalSize[1] = ceil((float)iH/lLocalSize[1])*lLocalSize[1];
+}
+
 
 //
 //
@@ -84,6 +128,13 @@ oclKernel& oclKernel::operator = (cl_kernel iKernel)
         oclSuccess("clReleaseKernel", this);
         delete [] mName;
         mName = 0;
+        cl_uint lCount;
+        clGetEventInfo (mEvent, CL_EVENT_REFERENCE_COUNT, sizeof(cl_uint), &lCount, NULL);
+        if (lCount)
+        {
+            clReleaseEvent(mEvent);
+            mEvent = 0;
+        }
     }
     mKernel = iKernel;
     if (iKernel)
@@ -104,24 +155,40 @@ oclKernel& oclKernel::operator = (cl_kernel iKernel)
 //
 //
 
-void oclKernel::profile(cl_ulong& iStartTime, cl_ulong& iEndTime)
+void oclKernel::profile(bool iState)
 {
-    if (mEvent)
-    {
-        clWaitForEvents (1, &mEvent);
+    mProfiling = iState;
+}
 
-        size_t lRead;
-        clGetEventProfilingInfo(mEvent,
-                                CL_PROFILING_COMMAND_START,
-                                sizeof(cl_ulong),
-                                &iStartTime,
-                                &lRead);
-        clGetEventProfilingInfo(mEvent,
-                                CL_PROFILING_COMMAND_END,
-                                sizeof(cl_ulong),
-                                &iEndTime,
-                                &lRead);
+cl_ulong oclKernel::getStartTime()
+{
+    cl_ulong lStartTime;
+    clWaitForEvents (1, &mEvent);
+    sStatusCL = clGetEventProfilingInfo(mEvent,
+                                      CL_PROFILING_COMMAND_START,
+                                      sizeof(cl_ulong),
+                                      &lStartTime,
+                                      0);
+    if (oclSuccess("clGetEventProfilingInfo", this))
+    {
+        mStartTime = lStartTime;
     }
+    return mStartTime;
+}
+cl_ulong oclKernel::getEndTime()
+{
+    cl_ulong lEndtime;
+    clWaitForEvents (1, &mEvent);
+    sStatusCL = clGetEventProfilingInfo(mEvent,
+                                      CL_PROFILING_COMMAND_END,
+                                      sizeof(cl_ulong),
+                                      &lEndtime,
+                                      0);
+    if (oclSuccess("clGetEventProfilingInfo", this))
+    {
+        mEndTime = lEndtime;
+    }
+    return mEndTime;
 }
 
 //
