@@ -178,6 +178,18 @@ Log& Log::operator<< (unsigned int iValue)
     return *this;
 }
 
+Log& Log::operator<< (cl_long iValue) 
+{
+    mStream << iValue;
+    return *this;
+}
+
+Log& Log::operator<< (cl_ulong iValue) 
+{
+    mStream << iValue;
+    return *this;
+}
+
 Log& Log::operator<< (float iValue) 
 {
     mStream << iValue;

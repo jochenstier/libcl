@@ -20,13 +20,16 @@ __kernel void clQuantizeLAB(__read_only image2d_t srce, __write_only image2d_t d
 	float4 LAB = read_imagef(srce, sampler, (int2)(x,y));
 
 	const float binL = 10.2;
-	const float binA = 20.1;
+	const float binA = 10.1;
+	const float binB = 10.1;
 	const float sharpness = 10.099;
 
 	float bL = LAB.x - fmod(LAB.x, binL) + binL/2.0;
 	float bA = LAB.y - fmod(LAB.y, binA) + binA/2.0;
+	float bB = LAB.z - fmod(LAB.z, binB) + binB/2.0;
 	LAB.x = bL + binL/2.0f*tanh(sharpness*(LAB.x - bL));
-	LAB.y = bA + binL/2.0f*tanh(sharpness*(LAB.y - bA));
+	LAB.y = bA + binA/2.0f*tanh(sharpness*(LAB.y - bA));
+	LAB.z = bB + binB/2.0f*tanh(sharpness*(LAB.z - bB));
 
 	write_imagef(dest, (int2)(x,y), LAB);
 }

@@ -17,6 +17,8 @@
 #include "filter\\oclBilateral.h"
 #include "filter\\oclSobel.h"
 #include "filter\\oclTangent.h"
+#include "filter\\oclBilinearPyramid.h"
+#include "filter\\oclConvolute.h"
 
 #include "color\\oclColor.h"
 #include "color\\oclQuantize.h"
@@ -378,15 +380,19 @@ void testCompile(oclContext& iContext)
 {
     oclDevice& lDevice = iContext.getDevice(0);
 
-    oclRecursiveGaussian clRecursiveGaussian(iContext);
-    clRecursiveGaussian.compile();
- 
     // fitler
-    oclSobel clSobel(iContext);
-    clSobel.compile();
+    oclConvolute clConvolute(iContext);
+    clConvolute.compile();
     oclBilateral clBilateral(iContext);
     clBilateral.compile();
-    
+    oclBilinearPyramid clBilinearPyramid(iContext);
+    clBilinearPyramid.compile();
+    oclRecursiveGaussian clRecursiveGaussian(iContext);
+    clRecursiveGaussian.compile();
+    oclSobel clSobel(iContext);
+    clSobel.compile();
+    oclTangent clTangent(iContext);
+    clTangent.compile();
 
     // color
     oclColor clColor(iContext);

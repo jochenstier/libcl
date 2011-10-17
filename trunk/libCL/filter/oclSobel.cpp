@@ -66,6 +66,7 @@ int oclSobel::compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDx, 
  	clSetKernelArg(clSobel, 3, sizeof(cl_uint), &lImageWidth);
 	clSetKernelArg(clSobel, 4, sizeof(cl_uint), &lImageHeight);
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clSobel, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clSobel.getEvent());
+
 	ENQUEUE_VALIDATE
 	return true;
 }

@@ -349,6 +349,18 @@
 					>
 				</File>
 				<File
+					RelativePath=".\filter\oclBilinearPyramid.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclBilinearPyramid.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\filter\oclBilinearPyramid.h"
+					>
+				</File>
+				<File
 					RelativePath=".\filter\oclConvolute.cl"
 					>
 				</File>
@@ -438,6 +450,22 @@
 				</File>
 				<File
 					RelativePath=".\math\oclVector.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="util"
+				>
+				<File
+					RelativePath=".\util\oclMemory.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\util\oclMemory.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\util\oclMemory.h"
 					>
 				</File>
 			</Filter>

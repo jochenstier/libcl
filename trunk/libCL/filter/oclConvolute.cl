@@ -86,26 +86,82 @@ __kernel void clIso2Dsep(__read_only image2d_t imageIn, __write_only image2d_t i
 	}
 }
 
-__kernel void clAniso2Dtang(__read_only image2d_t imageIn, __write_only image2d_t imageOut, __read_only image2d_t tangent, __constant float* filter, int size, int imgw, int imgh)
+__kernel void clAniso2Dtang(__read_only image2d_t imageIn, __write_only image2d_t imageOut, __read_only image2d_t vector, __constant float* filter, int size, int imgw, int imgh)
 {
 	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
+
     if (x < imgw && y < imgh) 
 	{
-		float4 dc = (float4)0;
+		float2 lMin = (float2)(0,0);
+		float2 lMax = (float2)(imgw-1, imgh-1);
+		int radius = size/2;
+
+		float2 p = (float2)(x,y);
+		float4 dc = read_imagef(imageIn, sampler, p)*filter[radius];
+		float4 vc = read_imagef(vector, sampler, p);
+
+		// forward
+		float4 dxy = vc;
+		p = (float2)(x,y);
+		for (int d=1; d<=radius; d++)
+		{
+			p = clamp(p+dxy.xy, lMin, lMax);
+			dxy = read_imagef(vector, sampler, p);
+			//dc += read_imagef(imageIn, sampler, p)*filter[radius-d]; 
+		}
+
+		// backward
+		dxy = vc;
+		p = (float2)(x,y);
+		for (int d=1; d<=radius; d++)
+		{
+			p = clamp(p-dxy.xy, lMin, lMax);
+			dxy = read_imagef(vector, sampler, p);
+			//dc += read_imagef(imageIn, sampler, p)*filter[radius+d]; 
+		}
+	
 		write_imagef(imageOut, (int2)(x,y), dc);
-	}
+	}	
 }
 
-__kernel void clAniso2Dorth(__read_only image2d_t imageIn, __write_only image2d_t imageOut, __read_only image2d_t tangent, __constant float* filter, int size, int imgw, int imgh)
+__kernel void clAniso2Dorth(__read_only image2d_t imageIn, __write_only image2d_t imageOut, __read_only image2d_t vector, __constant float* filter, int size, int imgw, int imgh)
 {
 	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
+
     if (x < imgw && y < imgh) 
 	{
-		float4 dc = (float4)0;
+		float2 lMin = (float2)(0,0);
+		float2 lMax = (float2)(imgw-1, imgh-1);
+		int radius = size/2;
+
+		float2 p = (float2)(x,y);
+		float4 dc = read_imagef(imageIn, sampler, p)*filter[radius];
+		float4 vc = read_imagef(vector, sampler, p);
+
+		// forward
+		float4 dxy = vc;
+		p = (float2)(x,y);
+		for (int d=1; d<=radius; d++)
+		{
+			p = clamp(p+(float2)(-dxy.y, dxy.x), lMin, lMax);
+			dxy = read_imagef(vector, sampler, p);
+			dc += read_imagef(imageIn, sampler, p)*filter[radius-d]; 
+		}
+
+		// backward
+		dxy = vc;
+		p = (float2)(x,y);
+		for (int d=1; d<=radius; d++)
+		{
+			p = clamp(p-(float2)(-dxy.y, dxy.x), lMin, lMax);
+			dxy = read_imagef(vector, sampler, p);
+			dc += read_imagef(imageIn, sampler, p)*filter[radius+d]; 
+		}
+	
 		write_imagef(imageOut, (int2)(x,y), dc);
-	}
+	}	
 }
