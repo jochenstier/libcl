@@ -46,7 +46,7 @@ __kernel void clIso3Dsep(__global float4* srce, __global float4* dest, int4 axis
 
 __kernel void clIso2D(__read_only image2d_t imageIn, __write_only image2d_t imageOut, __constant float* filter, int filterw, int filterh, int imgw, int imgh)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
     if (x < imgw && y < imgh) 
@@ -69,7 +69,7 @@ __kernel void clIso2D(__read_only image2d_t imageIn, __write_only image2d_t imag
 
 __kernel void clIso2Dsep(__read_only image2d_t imageIn, __write_only image2d_t imageOut, int2 axis, __constant float* filter, int size, int imgw, int imgh)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
     if (x < imgw && y < imgh) 
@@ -88,7 +88,7 @@ __kernel void clIso2Dsep(__read_only image2d_t imageIn, __write_only image2d_t i
 
 __kernel void clAniso2Dtang(__read_only image2d_t imageIn, __write_only image2d_t imageOut, __read_only image2d_t vector, __constant float* filter, int size, int imgw, int imgh)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
 
@@ -128,7 +128,7 @@ __kernel void clAniso2Dtang(__read_only image2d_t imageIn, __write_only image2d_
 
 __kernel void clAniso2Dorth(__read_only image2d_t imageIn, __write_only image2d_t imageOut, __read_only image2d_t vector, __constant float* filter, int size, int imgw, int imgh)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
 

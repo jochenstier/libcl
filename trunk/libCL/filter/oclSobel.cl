@@ -14,7 +14,7 @@
 
 __kernel void clSobel(__read_only image2d_t imageIn, __write_only image2d_t dx, __write_only image2d_t dy, int w, int h)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
 
