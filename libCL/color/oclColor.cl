@@ -33,13 +33,13 @@ float maxComp(float4 v)
 
 float4 RGBtoHSV(float4 RGB)
 {
-	float4 HSV = (float4)0;
+	float4 HSV = (float4)0.0f;
 	float minVal = minComp(RGB);
 	float maxVal = maxComp(RGB);
 	float delta = maxVal - minVal;           
-	if (delta != 0) 
+	if (delta != 0.0f) 
 	{                   
-		float4 delRGB = ((((float4)(maxVal) - RGB)/6.0) + (delta/2.0))/delta;
+		float4 delRGB = ((((float4)(maxVal) - RGB)/6.0f) + (delta/2.0f))/delta;
 
 		HSV.y = delta / maxVal;
 
@@ -50,10 +50,10 @@ float4 RGBtoHSV(float4 RGB)
 		else if (RGB.z == maxVal) 
 			HSV.x = (2.0/3.0) + delRGB.y - delRGB.x;
 
-		if (HSV.x < 0.0)  
-			HSV.x += 1.0;
-		if (HSV.x > 1.0)
-			HSV.x -= 1.0;
+		if (HSV.x < 0.0f)  
+			HSV.x += 1.0f;
+		if (HSV.x > 1.0f)
+			HSV.x -= 1.0f;
     }
 	HSV.z = maxVal;
  	HSV.w = RGB.w;
@@ -62,14 +62,14 @@ float4 RGBtoHSV(float4 RGB)
 
 float4 HSVtoRGB(float4 HSV)
 {
-	float4 RGB = (float4)0;
-	if (HSV.z != 0) 
+	float4 RGB = (float4)0.0f;
+	if (HSV.z != 0.0f) 
 	{
-		float var_h = HSV.x * 6;
-		float var_i = floor(var_h-0.000001);   
-		float var_1 = HSV.z * (1.0 - HSV.y);
-		float var_2 = HSV.z * (1.0 - HSV.y * (var_h-var_i));
-		float var_3 = HSV.z * (1.0 - HSV.y * (1-(var_h-var_i)));
+		float var_h = HSV.x * 6.0f;
+		float var_i = floor(var_h-0.000001f);   
+		float var_1 = HSV.z * (1.0f - HSV.y);
+		float var_2 = HSV.z * (1.0f - HSV.y * (var_h-var_i));
+		float var_3 = HSV.z * (1.0f - HSV.y * (1-(var_h-var_i)));
 		switch((int)(var_i))
 		{
 			case 0: RGB = (float4)(HSV.z, var_3, var_1, HSV.w); break;
@@ -109,13 +109,13 @@ __kernel void clHSVtoRGB(__read_only image2d_t srce, __write_only image2d_t dest
 
 float4 RGBtoXYZ(float4 RGB)
 {
-    float r = (RGB.x > 0.04045)? pow((RGB.x + 0.055)/(1 + 0.055), 2.2) : (RGB.x/12.92) ;
-    float g = (RGB.y > 0.04045)? pow((RGB.y + 0.055)/(1 + 0.055), 2.2) : (RGB.y/12.92) ;
-    float b = (RGB.z > 0.04045)? pow((RGB.z + 0.055)/(1 + 0.055), 2.2) : (RGB.z/12.92) ;
+    float r = (RGB.x > 0.04045f)? pow((RGB.x + 0.055f)/(1 + 0.055f), 2.2f) : (RGB.x/12.92f) ;
+    float g = (RGB.y > 0.04045f)? pow((RGB.y + 0.055f)/(1 + 0.055f), 2.2f) : (RGB.y/12.92f) ;
+    float b = (RGB.z > 0.04045f)? pow((RGB.z + 0.055f)/(1 + 0.055f), 2.2f) : (RGB.z/12.92f) ;
 
-	return (float4)((r*0.4124 + g*0.3576 + b*0.1805),
-					(r*0.2126 + g*0.7152 + b*0.0722),
-					(r*0.0193 + g*0.1192 + b*0.9505),
+	return (float4)((r*0.4124f + g*0.3576f + b*0.1805f),
+					(r*0.2126f + g*0.7152f + b*0.0722f),
+					(r*0.0193f + g*0.1192f + b*0.9505f),
 					RGB.w
 				  );
 }
@@ -123,13 +123,13 @@ float4 RGBtoXYZ(float4 RGB)
 float4 XYZtoRGB(float4 XYZ)
 {
     float4 val;
-    val.x =  XYZ.x*3.2410 - XYZ.y*1.5374 - XYZ.z*0.4986;
-    val.y = -XYZ.x*0.9692 + XYZ.y*1.8760 - XYZ.z*0.0416;
-    val.z =  XYZ.x*0.0556 - XYZ.y*0.2040 + XYZ.z*1.0570;
+    val.x =  XYZ.x*3.2410f - XYZ.y*1.5374f - XYZ.z*0.4986f;
+    val.y = -XYZ.x*0.9692f + XYZ.y*1.8760f - XYZ.z*0.0416f;
+    val.z =  XYZ.x*0.0556f - XYZ.y*0.2040f + XYZ.z*1.0570f;
 
-	val.x = (val.x<=0.0031308)? 12.92*val.x : (1+0.055)* pow(val.x, (1.0/2.4)) - 0.055;
-	val.y = (val.y<=0.0031308)? 12.92*val.y : (1+0.055)* pow(val.y, (1.0/2.4)) - 0.055;
-	val.z = (val.z<=0.0031308)? 12.92*val.z : (1+0.055)* pow(val.z, (1.0/2.4)) - 0.055;
+	val.x = (val.x<=0.0031308f)? 12.92f*val.x : (1.0f+0.055f)* pow(val.x, (1.0f/2.4f)) - 0.055f;
+	val.y = (val.y<=0.0031308f)? 12.92f*val.y : (1.0f+0.055f)* pow(val.y, (1.0f/2.4f)) - 0.055f;
+	val.z = (val.z<=0.0031308f)? 12.92f*val.z : (1.0f+0.055f)* pow(val.z, (1.0f/2.4f)) - 0.055f;
 
 	val.w = XYZ.w;
     return val;
@@ -160,19 +160,19 @@ __kernel void clXYZtoRGB(__read_only image2d_t srce, __write_only image2d_t dest
 
 float Ffor(float t)
 {
-    return ((t > 0.008856)? pow(t, (1.0/3.0)) : (7.787*t + 16.0/116.0));
+    return ((t > 0.008856f)? pow(t, (1.0f/3.0f)) : (7.787f*t + 16.0f/116.0f));
 }
 
 float4 RGBtoLAB(float4 RGB)
 {
-	const float4 D65 = (float4)(0.9505, 1.0, 1.0890, 0.0);
+	const float4 D65 = (float4)(0.9505f, 1.0f, 1.0890f, 0.0f);
 
 	float4 XYZ = RGBtoXYZ(RGB);
 
 	float4 LAB;
-    LAB.x = 116.0 *  Ffor(XYZ.y/D65.y) -16;
-    LAB.y = 500.0 * (Ffor(XYZ.x/D65.x) - Ffor(XYZ.y/D65.y));
-    LAB.z = 200.0 * (Ffor(XYZ.y/D65.y) - Ffor(XYZ.z/D65.z));
+    LAB.x = 116.0f *  Ffor(XYZ.y/D65.y) -16.0f;
+    LAB.y = 500.0f * (Ffor(XYZ.x/D65.x) - Ffor(XYZ.y/D65.y));
+    LAB.z = 200.0f * (Ffor(XYZ.y/D65.y) - Ffor(XYZ.z/D65.z));
 	LAB.w = XYZ.w;
     return LAB;
 }
@@ -181,15 +181,15 @@ float4 LABtoRGB(float4 LAB)
 {
 	const float4 D65 = (float4)(0.9505, 1.0, 1.0890, 0.0);
 
-    float fy = (LAB.x+16)/116.0;
-    float fx = fy + (LAB.y/500.0);
-    float fz = fy - (LAB.z/200.0);
+    float fy = (LAB.x+16.0f)/116.0f;
+    float fx = fy + (LAB.y/500.0f);
+    float fz = fy - (LAB.z/200.0f);
 
     float delta = 6.0/29.0;
     float4 XYZ = (float4)(
-				(fx > delta)? D65.x * (fx*fx*fx) : (fx - 16.0/116.0)*3*(delta*delta)*D65.x,
-				(fy > delta)? D65.y * (fy*fy*fy) : (fy - 16.0/116.0)*3*(delta*delta)*D65.y,
-				(fz > delta)? D65.z * (fz*fz*fz) : (fz - 16.0/116.0)*3*(delta*delta)*D65.z,
+				(fx > delta)? D65.x * (fx*fx*fx) : (fx - 16.0f/116.0f)*3*(delta*delta)*D65.x,
+				(fy > delta)? D65.y * (fy*fy*fy) : (fy - 16.0f/116.0f)*3*(delta*delta)*D65.y,
+				(fz > delta)? D65.z * (fz*fz*fz) : (fz - 16.0f/116.0f)*3*(delta*delta)*D65.z,
 				 LAB.w);
 
 	return XYZtoRGB(XYZ);

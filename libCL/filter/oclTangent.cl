@@ -17,7 +17,7 @@
 //EG UK Theory and Practice of Computer Graphics, pp. 51–58.
 __kernel void clTangent(__read_only image2d_t dx, __read_only image2d_t dy, __write_only image2d_t dt, int w, int h)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
     if (x < w && y < h) 

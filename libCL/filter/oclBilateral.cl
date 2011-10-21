@@ -31,7 +31,7 @@ float gaussian(float4 center, float4 sample, float4 mask, float scalar)
 
 __kernel void clIso2D(__read_only image2d_t imageIn, __write_only image2d_t imageOut, int r, float range, float4 mask, int w, int h)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
 
@@ -62,7 +62,7 @@ __kernel void clIso2D(__read_only image2d_t imageIn, __write_only image2d_t imag
 
 __kernel void clAniso2Dtang(__read_only image2d_t imageIn, __write_only image2d_t imageOut, int radius, float range, __read_only image2d_t vector, float4 mask, int w, int h)
 {	
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
 
@@ -111,7 +111,7 @@ __kernel void clAniso2Dtang(__read_only image2d_t imageIn, __write_only image2d_
 
 __kernel void clAniso2Dorth(__read_only image2d_t imageIn, __write_only image2d_t imageOut, int radius, float range, __read_only image2d_t vector, float4 mask, int w, int h)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
 
