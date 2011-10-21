@@ -12,17 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-__kernel void clQuantizeLAB(__read_only image2d_t srce, __write_only image2d_t dest)
+__kernel void clQuantizeLAB(__read_only image2d_t srce, __write_only image2d_t dest, float binL, float binA, float binB, float sharpness)
 {
 	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
 	int x = get_global_id(0);
 	int y = get_global_id(1);
 	float4 LAB = read_imagef(srce, sampler, (int2)(x,y));
-
-	const float binL = 10.2;
-	const float binA = 10.1;
-	const float binB = 10.1;
-	const float sharpness = 10.099;
 
 	float bL = LAB.x - fmod(LAB.x, binL) + binL/2.0;
 	float bA = LAB.y - fmod(LAB.y, binA) + binA/2.0;

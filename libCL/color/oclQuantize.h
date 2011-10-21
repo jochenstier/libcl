@@ -25,7 +25,7 @@ class oclQuantize : public oclProgram
 
 		int compile();
 
-        int quantizeLAB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
+        int quantizeLAB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, float ibinL, float ibinA, float ibinB, float iSharpness);
 
 
     protected:

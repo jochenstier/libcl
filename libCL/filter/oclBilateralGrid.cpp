@@ -18,15 +18,34 @@
 oclBilateralGrid::oclBilateralGrid(oclContext& iContext)
 : oclProgram(iContext, "oclBilateralGrid")
 // kernels
+, bfGrid1Da(iContext, "bfGrid1Da")
+, bfGrid1Db(iContext, "bfGrid1Db")
+, bfGrid3D(iContext, "bfTempB")
+// kernels
 , clSplit(*this)
-, clSlice2D(*this)
-, clSlice3D(*this)
+, clSlice(*this)
+, clEqualize(*this)
+// programs
+, mConvolute(iContext)
+, mMemory(iContext)
+// vars
+, bfCurr(&bfGrid1Da)
+, bfTemp(&bfGrid1Db)
 {
+    mGridSize[0] = 16;
+    mGridSize[1] = 16;
+    mGridSize[2] = 32;
+
+    cl_image_format lFormat = { CL_RGBA,  CL_FLOAT };
+    bfGrid3D.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, lFormat, mGridSize[0], mGridSize[1], mGridSize[2]);
+    bfGrid1Da.create<cl_float4>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mGridSize[0]*mGridSize[1]*mGridSize[2]);
+    bfGrid1Db.create<cl_float4>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mGridSize[0]*mGridSize[1]*mGridSize[2]);
+
 	addSourceFile("filter\\oclBilateralGrid.cl");
 
 	exportKernel(clSplit);
-	exportKernel(clSlice2D);
-	exportKernel(clSlice3D);
+	exportKernel(clSlice);
+	exportKernel(clEqualize);
 }
 
 //
@@ -36,20 +55,20 @@ oclBilateralGrid::oclBilateralGrid(oclContext& iContext)
 int oclBilateralGrid::compile()
 {
 	clSplit = 0;
-	clSlice2D = 0;
-	clSlice3D = 0;
+	clSlice = 0;
+	clEqualize = 0;
 
-	if (!oclProgram::compile())
+	if (!oclProgram::compile() || !mConvolute.compile() || !mMemory.compile())
 	{
 		return 0;
 	}
 
 	clSplit = createKernel("clSplit");
 	KERNEL_VALIDATE(clSplit)
-	clSlice2D = createKernel("clSlice2D");
-	KERNEL_VALIDATE(clSlice2D)
-	clSlice3D = createKernel("clSlice3D");
-	KERNEL_VALIDATE(clSlice3D)
+	clSlice = createKernel("clSlice");
+	KERNEL_VALIDATE(clSlice)
+	clEqualize = createKernel("clEqualize");
+	KERNEL_VALIDATE(clEqualize)
 	return 1;
 }
 
@@ -57,71 +76,122 @@ int oclBilateralGrid::compile()
 //
 //
 
-int oclBilateralGrid::split(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, oclImage3D& bfGrid)
+void oclBilateralGrid::resize(cl_uint iGridW, cl_uint iGridH, cl_uint iGridD)
 {
-	size_t lLocalSize[2];
-	lLocalSize[0] = floor(sqrt(1.0*clSplit.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-	lLocalSize[1] = floor(sqrt(1.0*clSplit.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
+    mGridSize[0] = iGridW;
+    mGridSize[1] = iGridH;
+    mGridSize[2] = iGridD;
+    bfGrid3D.resize(mGridSize[0], mGridSize[1], mGridSize[2]);
+    bfGrid1Da.resize<cl_float4>(mGridSize[0]*mGridSize[1]*mGridSize[2]);
+    bfGrid1Db.resize<cl_float4>(mGridSize[0]*mGridSize[1]*mGridSize[2]);
+}
 
-	cl_uint lImageWidth = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
-	cl_uint lImageHeight = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+//
+//
+//
+
+int oclBilateralGrid::split(oclDevice& iDevice, oclImage2D& bfSrce, cl_float4 iMask)
+{
+	cl_uint lImageW = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+	cl_uint lImageH = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+    if (lImageW%mGridSize[0] != 0 || lImageH%mGridSize[1] != 0)
+    {
+        Log(WARN, this) << "Image dimensions should be divisible by grid dimensions";
+    }
+    lImageH /= mGridSize[1];
+    lImageW /= mGridSize[0];
+
+    mMemory.memSet(iDevice, bfGrid1Da, oclMemory::c0000);
+
+    bfCurr = &bfGrid1Da;
 	clSetKernelArg(clSplit, 0, sizeof(cl_mem), bfSrce);
-	clSetKernelArg(clSplit, 1, sizeof(cl_mem), bfDest);
-	clSetKernelArg(clSplit, 2, sizeof(cl_mem), &iRadius);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clSplit, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clSplit.getEvent());
+	clSetKernelArg(clSplit, 1, sizeof(cl_mem), *bfCurr);
+	clSetKernelArg(clSplit, 2, sizeof(cl_uint), &lImageW);
+	clSetKernelArg(clSplit, 3, sizeof(cl_uint), &lImageH);
+	clSetKernelArg(clSplit, 4, sizeof(cl_float4), &iMask);
+	sStatusCL = clEnqueueNDRangeKernel(iDevice, clSplit, 3, NULL, mGridSize, NULL, 0, NULL, clSplit.getEvent());
+	ENQUEUE_VALIDATE
+
+	return true;
+}
+
+int oclBilateralGrid::slice(oclDevice& iDevice, oclImage2D& bfSrce, cl_float4 iMask, oclImage2D& bfDest)
+{
+    size_t origin[3] = { 0, 0, 0,}; 
+	size_t offset = 0; 
+    size_t region[3] = { mGridSize[0], mGridSize[1], mGridSize[2] }; 
+
+    sStatusCL = clEnqueueCopyBufferToImage (iDevice,
+											*bfCurr,
+											bfGrid3D,
+											offset,
+											origin,
+											region,
+											0,
+											0,
+											0);
+    oclSuccess("clEnqueueCopyBufferToImage", this);
+
+	size_t lGlobalSize[2];
+	lGlobalSize[0] = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+	lGlobalSize[1] = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+    clSetKernelArg(clSlice, 0, sizeof(cl_mem), bfSrce);
+	clSetKernelArg(clSlice, 1, sizeof(cl_float4), &iMask);
+	clSetKernelArg(clSlice, 2, sizeof(cl_mem), bfDest);
+	clSetKernelArg(clSlice, 3, sizeof(cl_mem), bfGrid3D);
+	sStatusCL = clEnqueueNDRangeKernel(iDevice, clSlice, 2, NULL, lGlobalSize, NULL, 0, NULL, clSlice.getEvent());
 	ENQUEUE_VALIDATE
 
 	return true;
 }
 
 
-int oclBilateralGrid::slice(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, oclImage2D& bfLine, cl_float4 iMask)
+int oclBilateralGrid::equalize(oclDevice& iDevice, cl_float4 iMask)
 {
 	size_t lLocalSize[2];
-	lLocalSize[0] = floor(sqrt(1.0*clSlice2D.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-	lLocalSize[1] = floor(sqrt(1.0*clSlice2D.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-
-	cl_uint lImageWidth = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
-	cl_uint lImageHeight = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
-	size_t lGlobalSize[2];
-	lGlobalSize[0] = ceil((float)lImageWidth/lLocalSize[0])*lLocalSize[0];
-	lGlobalSize[1] = ceil((float)lImageHeight/lLocalSize[1])*lLocalSize[1];
-
-	clSetKernelArg(clSlice2D, 0, sizeof(cl_mem), bfSrce);
-	clSetKernelArg(clSlice2D, 1, sizeof(cl_mem), bfDest);
-	clSetKernelArg(clSlice2D, 2, sizeof(cl_uint), &iRadius);
-	clSetKernelArg(clSlice2D, 3, sizeof(cl_float), &iRange);
-	clSetKernelArg(clSlice2D, 4, sizeof(cl_mem), bfLine);
-	clSetKernelArg(clSlice2D, 5, sizeof(cl_float4), &iMask);
- 	clSetKernelArg(clSlice2D, 6, sizeof(cl_uint), &lImageWidth);
-	clSetKernelArg(clSlice2D, 7, sizeof(cl_uint), &lImageHeight);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clSlice2D, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clSlice2D.getEvent());
+	lLocalSize[0] = 1;
+	lLocalSize[1] = 1;
+	clSetKernelArg(clEqualize, 0, sizeof(cl_mem), *bfCurr);
+	clSetKernelArg(clEqualize, 1, sizeof(cl_float4), &iMask);
+	clSetKernelArg(clEqualize, 2, sizeof(cl_int), &mGridSize[2]);
+	clSetKernelArg(clEqualize, 3, sizeof(cl_float)*mGridSize[2], 0);
+	clSetKernelArg(clEqualize, 4, sizeof(cl_float4)*mGridSize[2], 0);
+	sStatusCL = clEnqueueNDRangeKernel(iDevice, clEqualize, 2, NULL, mGridSize, lLocalSize, 0, NULL, clEqualize.getEvent());
 	ENQUEUE_VALIDATE
 
-	return true;
+	return 1;
 }
 
 
-int oclBilateralGrid::slice3D(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, oclImage3D& bfGrid)
+cl_int4 oclBilateralGrid::sAxisX = { 1, 0, 0, 0 };
+cl_int4 oclBilateralGrid::sAxisY = { 0, 1, 0, 0 };
+cl_int4 oclBilateralGrid::sAxisZ = { 0, 0, 1, 0 };
+
+int oclBilateralGrid::smoothXY(oclDevice& iDevice, oclBuffer& iFilter)
 {
-	size_t lGlobalSize[2];
-	lGlobalSize[0] = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);;
-	lGlobalSize[1] = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);;
-	clSetKernelArg(clSlice3D, 0, sizeof(cl_mem), bfSrce);
-	clSetKernelArg(clSlice3D, 1, sizeof(cl_mem), bfDest);
-	clSetKernelArg(clSlice3D, 2, sizeof(cl_mem), bfGrid);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clSlice3D, 2, NULL, lGlobalSize, NULL, 0, NULL, clSlice3D.getEvent());
-	ENQUEUE_VALIDATE
-	return true;
+    mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisX, iFilter);
+    mConvolute.iso3Dsep(iDevice, *bfTemp, *bfCurr, mGridSize, sAxisY, iFilter);
+	return 1;
 }
 
-	local clSlice1D = event:getKernel("clSlice1D")
-	cl.clSetKernelArg(clSlice1D, 0, bfSrce)
-	cl.clSetKernelArg(clSlice1D, 1, bfDest)
-	cl.clSetKernelArg(clSlice1D, 2, grid1D)
-	cl.clSetKernelArg(clSlice1D, 3, cl.cl_int, _G.GRIDW)
-	cl.clSetKernelArg(clSlice1D, 4, cl.cl_int, _G.GRIDH)
-	cl.clSetKernelArg(clSlice1D, 5, cl.cl_int, _G.GRIDZ)
-	cl.clSetKernelArg(clSlice1D, 6, cl.cl_int, localSize[1])
-	cl.clSetKernelArg(clSlice1D, 7, cl.cl_int, localSize[2])
-	cl.clEnqueueNDRangeKernel(clSlice1D, 2, { _G.IMAGEW, _G.IMAGEH })
+int oclBilateralGrid::smoothXYZ(oclDevice& iDevice, oclBuffer& iFilter)
+{
+    mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisX, iFilter);
+    mConvolute.iso3Dsep(iDevice, *bfTemp, *bfCurr, mGridSize, sAxisY, iFilter);
+    mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisZ, iFilter);
+
+    oclBuffer* lTemp = bfCurr;
+    bfCurr = bfTemp;
+    bfTemp = lTemp;
+	return 1;
+};
+
+int oclBilateralGrid::smoothZ(oclDevice& iDevice, oclBuffer& iFilter)
+{
+    mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisZ, iFilter);
+
+    oclBuffer* lTemp = bfCurr;
+    bfCurr = bfTemp;
+    bfTemp = lTemp;
+	return 1;
+};
