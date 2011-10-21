@@ -13,149 +13,99 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-float gaussian(float4 center, float4 sample, float4 mask, float scalar)
+__kernel void clSplit(__read_only image2d_t image, __global float4* grid, int sw, int sh, float4 mask)
 {
-	float sRange = dot(sample,mask);
-	float cRange = dot(center,mask);
+	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
+	int gx = get_global_id(0);
+	int gy = get_global_id(1);
+	int gz = get_global_id(2);
+	int gw = get_global_size(0);
+	int gh = get_global_size(1);
+	int gd = get_global_size(2);
 
-	// range domain
-	float r2 = scalar*(cRange-sRange);
-	float gr = exp(-r2*r2);
-
-	// spatial domain
-	float s2 = sRange*sRange;
-	float gs = exp(-s2);
-
-	return gs*gr;
-}
-
-__kernel void clIso2D(__read_only image2d_t imageIn, __write_only image2d_t imageOut, int r, float range, float4 mask, int w, int h)
-{
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
-    int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
-    int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
-
-    if (x < w && y < h) 
+	float4 slice = (float4)0;
+	for (int x=0; x<sw; x++)
 	{
-        float4 nom = 0.0f;
-        float4 den = 0.0f;
-		float scalar = 0.5/(range*range);
-
-        float4 dc = read_imagef(imageIn, sampler, (float2)(x,y)); 
-		for(int i = -r; i <= r; i++)
+		for (int y=0; y<sh; y++)
 		{
-			for(int j = -r; j <= r; j++)
+			float4 RGBA = read_imagef(image, sampler, (int2)(x+gx*sw,y+gy*sh));
+			int z = dot(RGBA, mask)*(gd-1) + 0.5;
+			if (z == gz)
 			{
-				int lx = min(max(x+j, 0), w-1); 
-				int ly = min(max(y+i, 0), h-1);
-				float4 dp = read_imagef(imageIn, sampler, (float2)(lx,ly)); 
-
-				float factor = gaussian(dc,dp,mask,scalar);
-				nom += dp * factor;
-				den += factor;
+				RGBA.w = 1.0;
+				slice += RGBA;
 			}
 		}
-
-		write_imagef(imageOut, (int2)(x,y), (float4)(nom/den));
 	}
+
+	int index = gz*gw*gh+gy*gw+gx;
+	grid[index] = slice;
 }
 
-__kernel void clAniso2Dtang(__read_only image2d_t imageIn, __write_only image2d_t imageOut, int radius, float range, __read_only image2d_t vector, float4 mask, int w, int h)
-{	
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
-    int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
-    int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
+//
+//
+//
 
-    if (x < w && y < h) 
-	{
-		float2 lMin = (float2)(0,0);
-		float2 lMax = (float2)(w-1, h-1);
-		float scalar = 0.5/(range*range);
-
-		float2 p = (float2)(x,y);
-		float4 dc = read_imagef(imageIn, sampler, p);
-        float4 nom = dc;
-        float4 den = 1.0;
-
-		float4 c = read_imagef(vector, sampler, p);
-
-		// forward
-		float4 dxy = c;
-		p = (float2)(x,y);
-		for (int d=1; d<radius; d++)
-		{
-			p = clamp(p+dxy.xy, lMin, lMax);
-			dxy = read_imagef(vector, sampler, p);
-			float4 dp = read_imagef(imageIn, sampler, p); 
-			float factor = gaussian(dc,dp,mask,scalar);
-			nom += dp * factor;
-			den += factor;
-		}
-
-		// backward
-		dxy = c;
-		p = (float2)(x,y);
-		for (int d=1; d<radius; d++)
-		{
-			p = clamp(p-dxy.xy, lMin, lMax);
-			dxy = read_imagef(vector, sampler, p);
-			float4 dp = read_imagef(imageIn, sampler, p); 
-			float factor = gaussian(dc,dp,mask,scalar);
-			nom += dp * factor;
-			den += factor;
-		}
-	
-		write_imagef(imageOut, (int2)(x,y), (float4)(nom/den));
-	}	
-}
-
-__kernel void clAniso2Dorth(__read_only image2d_t imageIn, __write_only image2d_t imageOut, int radius, float range, __read_only image2d_t vector, float4 mask, int w, int h)
+__kernel void clSlice(__read_only image2d_t srce, float4 mask, __write_only image2d_t dest, __read_only image3d_t grid)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_REPEAT;
-    int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
-    int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
+	const sampler_t srceSampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
+	int x = get_global_id(0);
+	int y = get_global_id(1);
+	float4 RGBA = read_imagef(srce, srceSampler, (int2)(x,y));
 
-    if (x < w && y < h) 
-	{
-		float2 lMin = (float2)(0,0);
-		float2 lMax = (float2)(w-1, h-1);
-		float scalar = 0.5/(range*range);
+	float w = get_global_size(0);
+	float h = get_global_size(1);
+	const sampler_t gridSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP;
+	float4 GRID = read_imagef(grid, gridSampler, (float4)(x/w,y/h,dot(RGBA, mask),0));
 
-		float2 p = (float2)(x,y);
-		float4 dc = read_imagef(imageIn, sampler, p);
-        float4 nom = dc;
-        float4 den = 1.0;
-
-		float4 c = read_imagef(vector, sampler, p);
-
-		// forward
-		float4 dxy = c;
-		p = (float2)(x,y);
-		for (int d=1; d<=radius; d++)
-		{
-			p = clamp(p+(float2)(-dxy.y, dxy.x), lMin, lMax);
-			dxy = read_imagef(vector, sampler, p);
-			float4 dp = read_imagef(imageIn, sampler, p); 
-			float factor = gaussian(dc,dp,mask,scalar);
-			nom += dp * factor;
-			den += factor;
-		}
-
-		// backward
-		dxy = c;
-		p = (float2)(x,y);
-		for (int d=1; d<=radius; d++)
-		{
-			p = clamp(p-(float2)(-dxy.y, dxy.x), lMin, lMax);
-			dxy = read_imagef(vector, sampler, p);
-			float4 dp = read_imagef(imageIn, sampler, p); 
-			float factor = gaussian(dc,dp,mask,scalar);
-			nom += dp * factor;
-			den += factor;
-		}
-	
-		write_imagef(imageOut, (int2)(x,y), (float4)(nom/den));
-	}
+	GRID.xyz /= GRID.w;
+	GRID.w = 1.0;
+	write_imagef(dest, (int2)(x,y), GRID);
 }
 
+//
+//
+//
 
+__kernel void clEqualize(__global float4* grid, float4 mask0, int gd, __local float* lut, __local float4* hist)
+{
+	int x = get_global_id(0);
+	int y = get_global_id(1);
+	int gw = get_global_size(0);
+	int gh = get_global_size(1);
+
+	float total;
+
+	total = 0;
+	for (int z=0; z<gd; z++)
+	{
+		hist[z] = grid[z*gw*gh+y*gw+x];
+		total += hist[z].w;
+	}
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	float4 mask1; // = as_float4(isequal(mask0, (float4)0.0f));
+	mask1.x = mask0.x == 0.0f ? 1.0 : 0.0;
+	mask1.y = mask0.y == 0.0f ? 1.0 : 0.0;
+	mask1.z = mask0.z == 0.0f ? 1.0 : 0.0;
+	mask1.w = mask0.w == 0.0f ? 1.0 : 0.0;
+
+	if (total != 0.0f)
+	{
+		float sum = 0;
+		for (int z=0; z<gd; z++)
+		{
+			sum += hist[z].w;
+			lut[z] = sum/total;
+		}
+
+		// dstribution
+		for (int z=0; z<gd; z++)
+		{
+			float4 color = hist[z];
+			color = color*mask1 + mask0*(float4)(lut[z]*color.w);
+			color.w = hist[z].w;
+			grid[z*gw*gh+y*gw+x] = color;
+		}
+	}
+}

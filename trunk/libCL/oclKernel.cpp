@@ -83,7 +83,7 @@ cl_event* oclKernel::getEvent()
     {
         if (mEvent)
         {
-           // sStatusCL = clReleaseEvent(mEvent); this causes a memory leak but at least profing works on NVIDIA
+            sStatusCL = clReleaseEvent(mEvent); //this causes a memory leak but at least profing works on NVIDIA
             oclSuccess("clReleaseEvent", this);
             mEvent = 0;
         }
@@ -162,31 +162,37 @@ void oclKernel::profile(bool iState)
 
 cl_ulong oclKernel::getStartTime()
 {
-    cl_ulong lStartTime;
-    clWaitForEvents (1, &mEvent);
-    sStatusCL = clGetEventProfilingInfo(mEvent,
-                                      CL_PROFILING_COMMAND_START,
-                                      sizeof(cl_ulong),
-                                      &lStartTime,
-                                      0);
-    if (oclSuccess("clGetEventProfilingInfo", this))
+    cl_ulong lStartTime = 0;
+    if (mEvent)
     {
-        mStartTime = lStartTime;
+        clWaitForEvents (1, &mEvent);
+        sStatusCL = clGetEventProfilingInfo(mEvent,
+                                          CL_PROFILING_COMMAND_START,
+                                          sizeof(cl_ulong),
+                                          &lStartTime,
+                                          0);
+        if (oclSuccess("clGetEventProfilingInfo", this))
+        {
+            mStartTime = lStartTime;
+        }
     }
     return mStartTime;
 }
 cl_ulong oclKernel::getEndTime()
 {
-    cl_ulong lEndtime;
-    clWaitForEvents (1, &mEvent);
-    sStatusCL = clGetEventProfilingInfo(mEvent,
-                                      CL_PROFILING_COMMAND_END,
-                                      sizeof(cl_ulong),
-                                      &lEndtime,
-                                      0);
-    if (oclSuccess("clGetEventProfilingInfo", this))
+    cl_ulong lEndtime = 0;
+    if (mEvent)
     {
-        mEndTime = lEndtime;
+        clWaitForEvents (1, &mEvent);
+        sStatusCL = clGetEventProfilingInfo(mEvent,
+                                          CL_PROFILING_COMMAND_END,
+                                          sizeof(cl_ulong),
+                                          &lEndtime,
+                                          0);
+        if (oclSuccess("clGetEventProfilingInfo", this))
+        {
+            mEndTime = lEndtime;
+        }
     }
     return mEndTime;
 }

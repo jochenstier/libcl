@@ -27,8 +27,8 @@ class oclBilateral : public oclProgram
 		int compile();
 
 		int iso2D(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, cl_float4 iMask);
-		int aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, oclImage2D& bfLine, cl_float4 iMask);
-		int aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, oclImage2D& bfLine, cl_float4 iMask);
+		int aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, oclImage2D& bfVector, cl_float4 iMask);
+		int aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, oclImage2D& bfVector, cl_float4 iMask);
 
     protected:
 

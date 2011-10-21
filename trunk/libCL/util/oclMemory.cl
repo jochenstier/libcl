@@ -13,11 +13,14 @@
 // limitations under the License.
 
 
-__kernel void clMemSet(__write_only image2d_t dest, float4 value)
+__kernel void clMemSetImage(__write_only image2d_t dest, float4 value)
 {
 	int x = get_global_id(0);
 	int y = get_global_id(1);
 	write_imagef(dest, (int2)(x,y), value);
 }
 
-
+__kernel void clMemSetBuffer(__global float4* dest, float4 value)
+{
+	dest[get_global_id(0)] = value;
+}

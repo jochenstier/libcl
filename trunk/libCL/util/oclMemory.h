@@ -16,6 +16,7 @@
 
 #include "oclProgram.h"
 #include "oclImage2D.h"
+#include "oclBuffer.h"
 
 class oclMemory : public oclProgram
 {
@@ -28,10 +29,12 @@ class oclMemory : public oclProgram
 		int compile();
         
         int memSet(oclDevice& iDevice, oclImage2D& bfDest, cl_float4 iValue);
+        int memSet(oclDevice& iDevice, oclBuffer& bfDest, cl_float4 iValue);
 
     protected:
 
- 		oclKernel clMemSet;
+ 		oclKernel clMemSetImage;
+ 		oclKernel clMemSetBuffer;
 };      
 
 #endif

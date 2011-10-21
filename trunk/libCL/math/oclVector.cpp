@@ -61,7 +61,7 @@ int oclVector::normalize(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfD
     return 1;
 };
 
-int oclVector::Xor(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_float4 iMask)
+int oclVector::xor(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_float4 iMask)
 {
     size_t lGlobalSize[2];
     lGlobalSize[0] = bfSrce.dim(0);

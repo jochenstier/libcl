@@ -19,6 +19,9 @@
 #include "oclImage2D.h"
 #include "oclImage3D.h"
 
+#include "filter/oclConvolute.h"
+#include "util/oclMemory.h"
+
 class oclBilateralGrid : public oclProgram
 {
     public: 
@@ -27,15 +30,36 @@ class oclBilateralGrid : public oclProgram
 
 		int compile();
 
-		int split(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, cl_float4 iMask);
-		int slice2D(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, oclImage2D& bfLine, cl_float4 iMask);
-		int slice3D(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, oclImage3D& bfGrid);
+		int split(oclDevice& iDevice, oclImage2D& bfSrce, cl_float4 iMask);
+		int slice(oclDevice& iDevice, oclImage2D& bfSrce, cl_float4 iMask, oclImage2D& bfDest);
+		int equalize(oclDevice& iDevice, cl_float4 iMask);
+
+		int smoothZ(oclDevice& iDevice, oclBuffer& iKernel);
+		int smoothXY(oclDevice& iDevice, oclBuffer& iKernel);
+		int smoothXYZ(oclDevice& iDevice, oclBuffer& iKernel);
+
+		void resize(cl_uint iGridW, cl_uint iGridH, cl_uint iGridD);
 
     protected:
 
+        static cl_int4 sAxisX;
+        static cl_int4 sAxisY;
+        static cl_int4 sAxisZ;
+        oclConvolute mConvolute;
+        oclMemory mMemory;
+
+    	size_t mGridSize[3];
+
 		oclKernel clSplit;
-		oclKernel clSlice2D;
-		oclKernel clSlice3D;
+		oclKernel clSlice;
+		oclKernel clEqualize;
+
+        oclImage3D bfGrid3D;
+        oclBuffer bfGrid1Da;
+        oclBuffer bfGrid1Db;
+
+        oclBuffer* bfCurr;
+        oclBuffer* bfTemp;
 };      
 
 #endif
