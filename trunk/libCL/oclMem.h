@@ -21,6 +21,7 @@ class oclMem : public oclObject
     public:
 
         oclMem(oclContext& iContext, char* iName ="");
+        ~oclMem();
         oclContext& getContext();
 
         //

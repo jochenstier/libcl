@@ -54,6 +54,17 @@ oclFluid3D::oclFluid3D(oclContext& iContext)
 	bfSortedVelocity.create<cl_float4>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mParticleCount);
 	bfParams.create<Params>(CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 1, &mParams);
 
+   /*
+    oclBuffer* ll = new oclBuffer(iContext, "dsdsdsdsd");
+    for (int i=0; i<100; i++)
+    {
+        ll->create<cl_uint>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, cBucketCount);
+        delete ll;
+        ll = new oclBuffer(iContext, "dsdsdsdsd");
+    }
+    */
+    
+
 	bfPosition = new oclBuffer(iContext, "bfPosition");
 	bfPosition->setOwner(this); 
 	bfVelocity = new oclBuffer(iContext, "bfVelocity");
@@ -86,12 +97,12 @@ void oclFluid3D::setParticleCount(size_t iSize)
 
 	mParticleCount = iSize;
 
-	bfCell.resize<cl_uint>(mParticleCount);
-	bfCellStart.resize<cl_uint>(cBucketCount);
-	bfCellEnd.resize<cl_uint>(cBucketCount);
-	bfIndex.resize<cl_uint>(mParticleCount);
-	bfSortedPosition.resize<cl_float4>(mParticleCount);
-	bfSortedVelocity.resize<cl_float4>(mParticleCount);
+    bfCell.resize<cl_uint>(mParticleCount);
+    bfCellStart.resize<cl_uint>(cBucketCount);
+    bfCellEnd.resize<cl_uint>(cBucketCount);
+    bfIndex.resize<cl_uint>(mParticleCount);
+    bfSortedPosition.resize<cl_float4>(mParticleCount);
+    bfSortedVelocity.resize<cl_float4>(mParticleCount);
 
 	bfPosition->resize<cl_float4>(mParticleCount);
 	if (bfPosition->getOwner<oclObject>() != this)
@@ -319,14 +330,14 @@ void oclFluid3D::addEventHandler(srtEvent& iEvent)
 
 int oclFluid3D::compute(oclDevice& iDevice)
 {
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clHash, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clHash.getEvent());
-	ENQUEUE_VALIDATE
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clHash, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clHash.getEvent());
+    ENQUEUE_VALIDATE
 
-	// sort
-	if (!mRadixSort.compute(iDevice, bfCell, bfIndex, 0, 24))
-	{
-		return false;
-	}
+     // sort
+    if (!mRadixSort.compute(iDevice, bfCell, bfIndex, 0, 24))
+    {
+	    return false;
+    }
 
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clReorder, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clReorder.getEvent());
 	ENQUEUE_VALIDATE
@@ -358,6 +369,7 @@ int oclFluid3D::compute(oclDevice& iDevice)
 		sStatusCL = clEnqueueNDRangeKernel(iDevice, clIntegrateVelocity, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clIntegrateVelocity.getEvent());
 		ENQUEUE_VALIDATE
 	}
+
 	return true;
 }
 
