@@ -61,7 +61,7 @@ int oclBilinearPyramid::compute(oclDevice& iDevice, oclImage2D& bfSrce)
 {
 	cl_uint lIw = pow(2.0f, ceil(log(bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH)/2.0f)/log(2.0f)));
 	cl_uint lIh = pow(2.0f, ceil(log(bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT)/2.0f)/log(2.0f)));
-    int lLevels = log(1.0*min(lIw,lIh))/log(2.0f);
+    unsigned int lLevels = log(1.0*min(lIw,lIh))/log(2.0f);
 
     // resize pyramid if necessary
     cl_uint lLw = mLevel[0]->getImageInfo<size_t>(CL_IMAGE_WIDTH)/2;
@@ -76,7 +76,7 @@ int oclBilinearPyramid::compute(oclDevice& iDevice, oclImage2D& bfSrce)
         cl_image_format lFormat = { CL_RGBA,  CL_HALF_FLOAT };
         lLw = lIw;
         lLh = lIh;
-        for (int i=0; i<lLevels; i++)
+        for (unsigned int i=0; i<lLevels; i++)
         {
             mLevel[i] = new oclImage2D(mContext, "Level");
             mLevel[i]->create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, lFormat, lLw, lLh);
@@ -125,7 +125,7 @@ int oclBilinearPyramid::compute(oclDevice& iDevice, oclImage2D& bfSrce)
 }
 
 
-oclImage2D* oclBilinearPyramid::getLevel(int iLevel)
+oclImage2D* oclBilinearPyramid::getLevel(unsigned int iLevel)
 {
     // do not return last level. It is useless
     if (iLevel < mLevel.size()-1)

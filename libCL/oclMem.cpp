@@ -26,6 +26,11 @@ oclMem::oclMem(oclContext& iContext, char* iName)
 {
 }
 
+oclMem::~oclMem()
+{
+    destroy();
+}
+
 cl_mem& oclMem::getMem ()
 {
     return mMemPtr;
@@ -69,6 +74,10 @@ bool oclMem::unmap(oclDevice& iDevice)
                                             NULL, 
                                             NULL);
         mMapping = 0;
+        if (!(mMapping & CL_MEM_USE_HOST_PTR))
+        {
+            mHostPtr = 0;
+        }
         return oclSuccess("clEnqueueUnmapMemObject", this);
     }
     return false;
