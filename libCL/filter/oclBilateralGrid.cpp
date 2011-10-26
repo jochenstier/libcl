@@ -25,8 +25,8 @@ oclBilateralGrid::oclBilateralGrid(oclContext& iContext)
 , clSplit(*this)
 , clSlice(*this)
 , clEqualize(*this)
+, clConvolute(*this)
 // programs
-, mConvolute(iContext)
 , mMemory(iContext)
 // vars
 , bfCurr(&bfGrid1Da)
@@ -58,7 +58,7 @@ int oclBilateralGrid::compile()
 	clSlice = 0;
 	clEqualize = 0;
 
-	if (!oclProgram::compile() || !mConvolute.compile() || !mMemory.compile())
+	if (!oclProgram::compile() || !mMemory.compile())
 	{
 		return 0;
 	}
@@ -69,6 +69,8 @@ int oclBilateralGrid::compile()
 	KERNEL_VALIDATE(clSlice)
 	clEqualize = createKernel("clEqualize");
 	KERNEL_VALIDATE(clEqualize)
+	clConvolute = createKernel("clConvolute");
+	KERNEL_VALIDATE(clConvolute)
 	return 1;
 }
 
@@ -169,16 +171,54 @@ cl_int4 oclBilateralGrid::sAxisZ = { 0, 0, 1, 0 };
 
 int oclBilateralGrid::smoothXY(oclDevice& iDevice, oclBuffer& iFilter)
 {
-    mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisX, iFilter);
-    mConvolute.iso3Dsep(iDevice, *bfTemp, *bfCurr, mGridSize, sAxisY, iFilter);
+    cl_int lFilterSize = iFilter.dim(0)/sizeof(cl_float);
+	clSetKernelArg(clConvolute, 3, sizeof(cl_mem), iFilter);
+	clSetKernelArg(clConvolute, 4, sizeof(cl_int), &lFilterSize);
+
+	clSetKernelArg(clConvolute, 0, sizeof(cl_mem), *bfCurr);
+	clSetKernelArg(clConvolute, 1, sizeof(cl_mem), *bfTemp);
+	clSetKernelArg(clConvolute, 2, sizeof(cl_int4),  &sAxisX);
+	sStatusCL = clEnqueueNDRangeKernel(iDevice, clConvolute, 3, NULL, mGridSize, 0, 0, NULL, clConvolute.getEvent());
+	ENQUEUE_VALIDATE
+
+	clSetKernelArg(clConvolute, 0, sizeof(cl_mem), *bfTemp);
+	clSetKernelArg(clConvolute, 1, sizeof(cl_mem), *bfCurr);
+	clSetKernelArg(clConvolute, 2, sizeof(cl_int4),  &sAxisY);
+	sStatusCL = clEnqueueNDRangeKernel(iDevice, clConvolute, 3, NULL, mGridSize, 0, 0, NULL, clConvolute.getEvent());
+	ENQUEUE_VALIDATE
+
+    //mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisX, iFilter);
+    //mConvolute.iso3Dsep(iDevice, *bfTemp, *bfCurr, mGridSize, sAxisY, iFilter);
 	return 1;
 }
 
 int oclBilateralGrid::smoothXYZ(oclDevice& iDevice, oclBuffer& iFilter)
 {
-    mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisX, iFilter);
-    mConvolute.iso3Dsep(iDevice, *bfTemp, *bfCurr, mGridSize, sAxisY, iFilter);
-    mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisZ, iFilter);
+    cl_int lFilterSize = iFilter.dim(0)/sizeof(cl_float);
+	clSetKernelArg(clConvolute, 3, sizeof(cl_mem), iFilter);
+	clSetKernelArg(clConvolute, 4, sizeof(cl_int), &lFilterSize);
+
+	clSetKernelArg(clConvolute, 0, sizeof(cl_mem), *bfCurr);
+	clSetKernelArg(clConvolute, 1, sizeof(cl_mem), *bfTemp);
+	clSetKernelArg(clConvolute, 2, sizeof(cl_int4),  &sAxisX);
+	sStatusCL = clEnqueueNDRangeKernel(iDevice, clConvolute, 3, NULL, mGridSize, 0, 0, NULL, clConvolute.getEvent());
+	ENQUEUE_VALIDATE
+
+	clSetKernelArg(clConvolute, 0, sizeof(cl_mem), *bfTemp);
+	clSetKernelArg(clConvolute, 1, sizeof(cl_mem), *bfCurr);
+	clSetKernelArg(clConvolute, 2, sizeof(cl_int4),  &sAxisY);
+	sStatusCL = clEnqueueNDRangeKernel(iDevice, clConvolute, 3, NULL, mGridSize, 0, 0, NULL, clConvolute.getEvent());
+	ENQUEUE_VALIDATE
+
+	clSetKernelArg(clConvolute, 0, sizeof(cl_mem), *bfCurr);
+	clSetKernelArg(clConvolute, 1, sizeof(cl_mem), *bfTemp);
+	clSetKernelArg(clConvolute, 2, sizeof(cl_int4),  &sAxisZ);
+	sStatusCL = clEnqueueNDRangeKernel(iDevice, clConvolute, 3, NULL, mGridSize, 0, 0, NULL, clConvolute.getEvent());
+	ENQUEUE_VALIDATE
+
+    //mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisX, iFilter);
+    //mConvolute.iso3Dsep(iDevice, *bfTemp, *bfCurr, mGridSize, sAxisY, iFilter);
+    //mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisZ, iFilter);
 
     oclBuffer* lTemp = bfCurr;
     bfCurr = bfTemp;
@@ -188,7 +228,17 @@ int oclBilateralGrid::smoothXYZ(oclDevice& iDevice, oclBuffer& iFilter)
 
 int oclBilateralGrid::smoothZ(oclDevice& iDevice, oclBuffer& iFilter)
 {
-    mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisZ, iFilter);
+    cl_int lFilterSize = iFilter.dim(0)/sizeof(cl_float);
+	clSetKernelArg(clConvolute, 3, sizeof(cl_mem), iFilter);
+	clSetKernelArg(clConvolute, 4, sizeof(cl_int), &lFilterSize);
+
+	clSetKernelArg(clConvolute, 0, sizeof(cl_mem), *bfCurr);
+	clSetKernelArg(clConvolute, 1, sizeof(cl_mem), *bfTemp);
+	clSetKernelArg(clConvolute, 2, sizeof(cl_int4),  &sAxisX);
+	sStatusCL = clEnqueueNDRangeKernel(iDevice, clConvolute, 3, NULL, mGridSize, 0, 0, NULL, clConvolute.getEvent());
+	ENQUEUE_VALIDATE
+
+    //mConvolute.iso3Dsep(iDevice, *bfCurr, *bfTemp, mGridSize, sAxisZ, iFilter);
 
     oclBuffer* lTemp = bfCurr;
     bfCurr = bfTemp;
