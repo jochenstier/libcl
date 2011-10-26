@@ -19,7 +19,6 @@
 #include "oclImage2D.h"
 #include "oclImage3D.h"
 
-#include "filter/oclConvolute.h"
 #include "util/oclMemory.h"
 
 class oclBilateralGrid : public oclProgram
@@ -45,7 +44,6 @@ class oclBilateralGrid : public oclProgram
         static cl_int4 sAxisX;
         static cl_int4 sAxisY;
         static cl_int4 sAxisZ;
-        oclConvolute mConvolute;
         oclMemory mMemory;
 
     	size_t mGridSize[3];
@@ -53,6 +51,7 @@ class oclBilateralGrid : public oclProgram
 		oclKernel clSplit;
 		oclKernel clSlice;
 		oclKernel clEqualize;
+		oclKernel clConvolute;
 
         oclImage3D bfGrid3D;
         oclBuffer bfGrid1Da;

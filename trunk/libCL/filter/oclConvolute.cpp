@@ -69,15 +69,11 @@ void calcGauss2D(float iSigma, float* iBuffer, int iWidth, int iHeigth)
 oclConvolute::oclConvolute(oclContext& iContext)
 : oclProgram(iContext, "oclConvolute")
 // kernels
-, clIso3Dsep(*this)
-
 , clIso2D(*this)
 , clIso2Dsep(*this)
 , clAniso2Dtang(*this)
 , clAniso2Dorth(*this)
 {
-    exportKernel(clIso3Dsep);
-
     exportKernel(clIso2D);
     exportKernel(clIso2Dsep);
     exportKernel(clAniso2Dtang);
@@ -92,8 +88,6 @@ oclConvolute::oclConvolute(oclContext& iContext)
 
 int oclConvolute::compile()
 {
-	clIso3Dsep = 0;
-
 	clIso2D = 0;
 	clIso2Dsep = 0;
 	clAniso2Dtang = 0;
@@ -103,9 +97,6 @@ int oclConvolute::compile()
 	{
 		return 0;
 	}
-
-	clIso3Dsep = createKernel("clIso3Dsep");
-	KERNEL_VALIDATE(clIso3Dsep)
 
 	clIso2D = createKernel("clIso2D");
 	KERNEL_VALIDATE(clIso2D)
@@ -250,42 +241,21 @@ bool oclConvolute::DoG2D(float iSigmaA, float iSigmaB, float iSensitivity, oclBu
 //
 //
 
-int oclConvolute::iso3Dsep(oclDevice& iDevice, oclBuffer& bfSource, oclBuffer& bfDest, size_t iDim[3], cl_int4 iAxis, oclBuffer& bfFilter)
-{
-    cl_int lFilterSize = bfFilter.dim(0)/sizeof(cl_float);
-	clSetKernelArg(clIso3Dsep, 0, sizeof(cl_mem), bfSource);
-	clSetKernelArg(clIso3Dsep, 1, sizeof(cl_mem), bfDest);
-	clSetKernelArg(clIso3Dsep, 2, sizeof(cl_int4),  &iAxis);
-	clSetKernelArg(clIso3Dsep, 3, sizeof(cl_mem), bfFilter);
-	clSetKernelArg(clIso3Dsep, 4, sizeof(cl_int), &lFilterSize);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clIso3Dsep, 3, NULL, iDim, 0, 0, NULL, clIso3Dsep.getEvent());
-	ENQUEUE_VALIDATE
-	return true;
-}   
-
-//
-//
-//
-
 int oclConvolute::iso2D(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, oclBuffer& bfFilter, int iFilterW, int iFilterH)
 {
-	size_t lLocalSize[2];
-	lLocalSize[0] = floor(sqrt(1.0*clIso2D.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-	lLocalSize[1] = floor(sqrt(1.0*clIso2D.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-
-	cl_uint lImageWidth = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
-	cl_uint lImageHeight = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+	cl_uint lIw = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+	cl_uint lIh = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
 	size_t lGlobalSize[2];
-	lGlobalSize[0] = ceil((float)lImageWidth/lLocalSize[0])*lLocalSize[0];
-	lGlobalSize[1] = ceil((float)lImageHeight/lLocalSize[1])*lLocalSize[1];
+	size_t lLocalSize[2];
+    clIso2D.localSize2D(iDevice, lGlobalSize, lLocalSize, lIw, lIh);
 
 	clSetKernelArg(clIso2D, 0, sizeof(cl_mem), bfSrce);
 	clSetKernelArg(clIso2D, 1, sizeof(cl_mem), bfDest);
 	clSetKernelArg(clIso2D, 2, sizeof(cl_mem), bfFilter);
 	clSetKernelArg(clIso2D, 3, sizeof(cl_uint), &iFilterW);
 	clSetKernelArg(clIso2D, 4, sizeof(cl_uint), &iFilterH);
-	clSetKernelArg(clIso2D, 5, sizeof(cl_uint), &lImageWidth);
-	clSetKernelArg(clIso2D, 6, sizeof(cl_uint), &lImageHeight);
+	clSetKernelArg(clIso2D, 5, sizeof(cl_uint), &lIw);
+	clSetKernelArg(clIso2D, 6, sizeof(cl_uint), &lIh);
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clIso2D, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clIso2D.getEvent());
 	ENQUEUE_VALIDATE
 	return true;
@@ -293,15 +263,11 @@ int oclConvolute::iso2D(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDe
 
 int oclConvolute::iso2Dsep(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int2 iAxis, oclBuffer& bfFilter)
 {
-	size_t lLocalSize[2];
-	lLocalSize[0] = floor(sqrt(1.0*clIso2Dsep.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-	lLocalSize[1] = floor(sqrt(1.0*clIso2Dsep.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-
-	cl_uint lImageWidth = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
-	cl_uint lImageHeight = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+	cl_uint lIw = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+	cl_uint lIh = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
 	size_t lGlobalSize[2];
-	lGlobalSize[0] = ceil((float)lImageWidth/lLocalSize[0])*lLocalSize[0];
-	lGlobalSize[1] = ceil((float)lImageHeight/lLocalSize[1])*lLocalSize[1];
+	size_t lLocalSize[2];
+    clIso2Dsep.localSize2D(iDevice, lGlobalSize, lLocalSize, lIw, lIh);
 
     cl_int lFilterSize = bfFilter.dim(0)/sizeof(cl_float);
     if (lFilterSize %2 == 0)
@@ -313,8 +279,8 @@ int oclConvolute::iso2Dsep(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& b
 	clSetKernelArg(clIso2Dsep, 2, sizeof(cl_int2),  &iAxis);
 	clSetKernelArg(clIso2Dsep, 3, sizeof(cl_mem), bfFilter);
 	clSetKernelArg(clIso2Dsep, 4, sizeof(cl_int), &lFilterSize);
- 	clSetKernelArg(clIso2Dsep, 5, sizeof(cl_uint), &lImageWidth);
-	clSetKernelArg(clIso2Dsep, 6, sizeof(cl_uint), &lImageHeight);
+ 	clSetKernelArg(clIso2Dsep, 5, sizeof(cl_uint), &lIw);
+	clSetKernelArg(clIso2Dsep, 6, sizeof(cl_uint), &lIh);
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clIso2Dsep, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clIso2Dsep.getEvent());
 	ENQUEUE_VALIDATE
 	return true;
@@ -324,15 +290,11 @@ int oclConvolute::iso2Dsep(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& b
 
 int oclConvolute::aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, oclImage2D& bfLine, oclBuffer& bfFilter)
 {	
-	size_t lLocalSize[2];
-	lLocalSize[0] = floor(sqrt(1.0*clAniso2Dtang.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-	lLocalSize[1] = floor(sqrt(1.0*clAniso2Dtang.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-
-	cl_uint lImageWidth = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
-	cl_uint lImageHeight = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+	cl_uint lIw = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+	cl_uint lIh = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
 	size_t lGlobalSize[2];
-	lGlobalSize[0] = ceil((float)lImageWidth/lLocalSize[0])*lLocalSize[0];
-	lGlobalSize[1] = ceil((float)lImageHeight/lLocalSize[1])*lLocalSize[1];
+	size_t lLocalSize[2];
+    clAniso2Dtang.localSize2D(iDevice, lGlobalSize, lLocalSize, lIw, lIh);
 
     cl_int lFilterSize = bfFilter.dim(0)/sizeof(cl_float);
     if (lFilterSize %2 == 0)
@@ -345,8 +307,8 @@ int oclConvolute::aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D
 	clSetKernelArg(clAniso2Dtang, 2, sizeof(cl_mem), bfLine);
 	clSetKernelArg(clAniso2Dtang, 3, sizeof(cl_mem), bfFilter);
 	clSetKernelArg(clAniso2Dtang, 4, sizeof(cl_uint), &lFilterSize);
- 	clSetKernelArg(clAniso2Dtang, 5, sizeof(cl_uint), &lImageWidth);
-	clSetKernelArg(clAniso2Dtang, 6, sizeof(cl_uint), &lImageHeight);
+ 	clSetKernelArg(clAniso2Dtang, 5, sizeof(cl_uint), &lIw);
+	clSetKernelArg(clAniso2Dtang, 6, sizeof(cl_uint), &lIh);
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clAniso2Dtang, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clAniso2Dtang.getEvent());
 	ENQUEUE_VALIDATE
 
@@ -355,15 +317,11 @@ int oclConvolute::aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D
 
 int oclConvolute::aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, oclImage2D& bfLine, oclBuffer& bfFilter)
 {	
-	size_t lLocalSize[2];
-	lLocalSize[0] = floor(sqrt(1.0*clAniso2Dorth.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-	lLocalSize[1] = floor(sqrt(1.0*clAniso2Dorth.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-
-	cl_uint lImageWidth = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
-	cl_uint lImageHeight = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+	cl_uint lIw = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+	cl_uint lIh = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
 	size_t lGlobalSize[2];
-	lGlobalSize[0] = ceil((float)lImageWidth/lLocalSize[0])*lLocalSize[0];
-	lGlobalSize[1] = ceil((float)lImageHeight/lLocalSize[1])*lLocalSize[1];
+	size_t lLocalSize[2];
+    clAniso2Dorth.localSize2D(iDevice, lGlobalSize, lLocalSize, lIw, lIh);
 
     cl_int lFilterSize = bfFilter.dim(0)/sizeof(cl_float);
     if (lFilterSize %2 == 0)
@@ -376,8 +334,8 @@ int oclConvolute::aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D
 	clSetKernelArg(clAniso2Dorth, 2, sizeof(cl_mem), bfLine);
 	clSetKernelArg(clAniso2Dorth, 3, sizeof(cl_mem), bfFilter);
 	clSetKernelArg(clAniso2Dorth, 4, sizeof(cl_uint), &lFilterSize);
- 	clSetKernelArg(clAniso2Dorth, 5, sizeof(cl_uint), &lImageWidth);
-	clSetKernelArg(clAniso2Dorth, 6, sizeof(cl_uint), &lImageHeight);
+ 	clSetKernelArg(clAniso2Dorth, 5, sizeof(cl_uint), &lIw);
+	clSetKernelArg(clAniso2Dorth, 6, sizeof(cl_uint), &lIh);
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clAniso2Dorth, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clAniso2Dorth.getEvent());
 	ENQUEUE_VALIDATE
 

@@ -50,21 +50,17 @@ int oclSobel::compile()
 
 int oclSobel::compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDx, oclImage2D& bfDy)
 {
-	size_t lLocalSize[2];
-	lLocalSize[0] = floor(sqrt(1.0*clSobel.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-	lLocalSize[1] = floor(sqrt(1.0*clSobel.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice)));
-
-	cl_uint lImageWidth = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
-	cl_uint lImageHeight = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+	cl_uint lIw = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+	cl_uint lIh = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
 	size_t lGlobalSize[2];
-	lGlobalSize[0] = ceil((float)lImageWidth/lLocalSize[0])*lLocalSize[0];
-	lGlobalSize[1] = ceil((float)lImageHeight/lLocalSize[1])*lLocalSize[1];
+	size_t lLocalSize[2];
+    clSobel.localSize2D(iDevice, lGlobalSize, lLocalSize, lIw, lIh);
 
-	clSetKernelArg(clSobel, 0, sizeof(cl_mem), bfSrce);
+    clSetKernelArg(clSobel, 0, sizeof(cl_mem), bfSrce);
 	clSetKernelArg(clSobel, 1, sizeof(cl_mem), bfDx);
 	clSetKernelArg(clSobel, 2, sizeof(cl_mem), bfDy);
- 	clSetKernelArg(clSobel, 3, sizeof(cl_uint), &lImageWidth);
-	clSetKernelArg(clSobel, 4, sizeof(cl_uint), &lImageHeight);
+ 	clSetKernelArg(clSobel, 3, sizeof(cl_uint), &lIw);
+	clSetKernelArg(clSobel, 4, sizeof(cl_uint), &lIh);
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clSobel, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clSobel.getEvent());
 
 	ENQUEUE_VALIDATE
