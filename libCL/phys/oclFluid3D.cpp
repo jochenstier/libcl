@@ -317,7 +317,7 @@ int oclFluid3D::compile()
 	// init fluid parameters
 	clSetKernelArg(clInitFluid, 0, sizeof(cl_mem), bfParams);
 	clEnqueueTask(mContext.getDevice(0), clInitFluid, 0, NULL, clInitFluid.getEvent());
-	bfParams.map(mContext.getDevice(0), CL_MAP_READ);
+	bfParams.map(CL_MAP_READ);
 
 	return bindBuffers();
 }

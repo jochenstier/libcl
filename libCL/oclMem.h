@@ -31,8 +31,8 @@ class oclMem : public oclObject
         operator bool ();
 
         //
-        virtual bool map(oclDevice& iDevice, cl_map_flags iMapping) = 0;
-        virtual bool unmap(oclDevice& iDevice);
+        virtual bool map(cl_map_flags iMapping, int iDevice = 0) = 0;
+        virtual bool unmap(int iDevice = 0);
         cl_map_flags getMapping();
         template <class TYPE> __inline  TYPE* ptr();
 

@@ -168,8 +168,8 @@ int oclBvhTrimesh::compute(oclDevice& iDevice, oclBuffer& bfVertex, oclBuffer& b
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clComputeAABBs, 1, NULL, &lTriangles, NULL, 0, NULL, clComputeAABBs.getEvent());
 	ENQUEUE_VALIDATE
 		
-	bfBvhRoot.map(iDevice, CL_MAP_READ);
-	bfBvhRoot.unmap(iDevice);
+	bfBvhRoot.map(CL_MAP_READ);
+	bfBvhRoot.unmap();
  
 	return true;
 }

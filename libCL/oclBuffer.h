@@ -24,9 +24,9 @@ class oclBuffer : public oclMem
 
         //
         template <class TYPE> bool create(cl_mem_flags iMemFlags, size_t iElements, void* iHostPtr=0);
-        virtual bool map(oclDevice& iDevice, cl_map_flags iMapping);
-        virtual bool read(oclDevice& iDevice);
-        virtual bool write(oclDevice& iDevice);
+        virtual bool map(cl_map_flags iMapping, int iDevice = 0);
+        virtual bool read(int iDevice = 0);
+        virtual bool write(int iDevice = 0);
 
         //
         template <class TYPE> bool resize(size_t iElements, void* iHostPtr=0) ;

@@ -28,6 +28,8 @@ using namespace std;
 
 void oclInit(char* iRootPath);
 
+#define UU_LIBCL 1
+
 //
 // Error handling
 //

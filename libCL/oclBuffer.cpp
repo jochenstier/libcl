@@ -22,11 +22,11 @@ oclBuffer::oclBuffer(oclContext& iContext, char* iName)
 //
 //
 
-bool oclBuffer::map(oclDevice& iDevice, cl_map_flags iMapping)
+bool oclBuffer::map(cl_map_flags iMapping, int iDevice)
 {
     if (mMemPtr)
     {
-        mHostPtr = (unsigned char*)clEnqueueMapBuffer(iDevice, 
+        mHostPtr = (unsigned char*)clEnqueueMapBuffer(mContext.getDevice(iDevice), 
                                                        mMemPtr, 
                                                        CL_TRUE, 
                                                        iMapping, 
@@ -43,11 +43,11 @@ bool oclBuffer::map(oclDevice& iDevice, cl_map_flags iMapping)
     return false;
 }
 
-bool oclBuffer::write(oclDevice& iDevice)
+bool oclBuffer::write(int iDevice)
 {
     if (mMemPtr)
     {
-        sStatusCL = clEnqueueWriteBuffer(iDevice,
+        sStatusCL = clEnqueueWriteBuffer(mContext.getDevice(iDevice),
                                          mMemPtr,
                                          CL_TRUE,
                                          0,
@@ -62,11 +62,11 @@ bool oclBuffer::write(oclDevice& iDevice)
     return false;
 }
 
-bool oclBuffer::read(oclDevice& iDevice)
+bool oclBuffer::read(int iDevice)
 {
     if (mMemPtr)
     {
-        sStatusCL = clEnqueueReadBuffer(iDevice,
+        sStatusCL = clEnqueueReadBuffer(mContext.getDevice(iDevice),
                                          mMemPtr,
                                          CL_TRUE,
                                          0,
