@@ -23,15 +23,21 @@ class oclImage3D : public oclMem
         oclImage3D(oclContext& iContext, char* iName="oclImage3D");
 
         virtual bool create(cl_mem_flags iMemFlags, cl_image_format& iFormat, size_t iDim0, size_t iDim1, size_t iDim2, void* iHostPtr=0);
-        virtual bool map(oclDevice& iDevice, cl_map_flags iMapping);
-        virtual bool read(oclDevice& iDevice);
-        virtual bool write(oclDevice& iDevice);
+        virtual bool map(cl_map_flags iMapping, int iDevice = 0);
+        virtual bool read(int iDevice = 0);
+        virtual bool write(int iDevice = 0);
 
         //
         virtual bool resize(size_t iDim0, size_t iDim1, size_t iDim2, void* iHostPtr=0);
 
         //
         template <class RESULT> RESULT getImageInfo(cl_image_info iInfo) ;
+        // this is a hack because clGetImageInfo does not work interop images
+        virtual cl_image_format getImageFormat()
+        {
+            return getImageInfo<cl_image_format>(CL_IMAGE_FORMAT);
+        };
+
         size_t dim(int iAxis);
 
     private:

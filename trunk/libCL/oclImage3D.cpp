@@ -36,7 +36,7 @@ bool oclImage3D::resize(size_t iDim0, size_t iDim1, size_t iDim2, void* iHostPtr
     return false;
 }
 
-bool oclImage3D::map(oclDevice& iDevice, cl_map_flags iMapping)
+bool oclImage3D::map(cl_map_flags iMapping, int iDevice)
 {
     if (mMemPtr)
     {
@@ -54,7 +54,7 @@ bool oclImage3D::map(oclDevice& iDevice, cl_map_flags iMapping)
         size_t lRowpitch;
         size_t lSlicepitch;
 
-        mHostPtr = (unsigned char*)clEnqueueMapImage(iDevice, 
+        mHostPtr = (unsigned char*)clEnqueueMapImage(mContext.getDevice(iDevice), 
                                                     mMemPtr, 
                                                     CL_TRUE, 
                                                     iMapping, 
@@ -73,7 +73,7 @@ bool oclImage3D::map(oclDevice& iDevice, cl_map_flags iMapping)
     return false;
 }
 
-bool oclImage3D::write(oclDevice& iDevice)
+bool oclImage3D::write(int iDevice)
 {
     if (mMemPtr)
     {
@@ -91,7 +91,7 @@ bool oclImage3D::write(oclDevice& iDevice)
         size_t lRowpitch = 0; 
         size_t lSlicepitch = 0; 
 
-        sStatusCL = clEnqueueWriteImage (iDevice,
+        sStatusCL = clEnqueueWriteImage (mContext.getDevice(iDevice),
                                          mMemPtr,
                                          CL_TRUE,
                                          lOrigin,
@@ -108,7 +108,7 @@ bool oclImage3D::write(oclDevice& iDevice)
     return false;
 }
 
-bool oclImage3D::read(oclDevice& iDevice)
+bool oclImage3D::read(int iDevice)
 {
     if (mMemPtr)
     {
@@ -126,7 +126,7 @@ bool oclImage3D::read(oclDevice& iDevice)
         size_t lRowpitch = 0; 
         size_t lSlicepitch = 0; 
 
-        sStatusCL = clEnqueueReadImage (iDevice,
+        sStatusCL = clEnqueueReadImage (mContext.getDevice(iDevice),
                                          mMemPtr,
                                          CL_TRUE,
                                          lOrigin,

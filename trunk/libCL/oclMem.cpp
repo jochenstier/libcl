@@ -63,21 +63,23 @@ cl_map_flags oclMem::getMapping()
 
 
 
-bool oclMem::unmap(oclDevice& iDevice)
+bool oclMem::unmap(int iDevice)
 {
     if (mMemPtr)
     {
-        sStatusCL = clEnqueueUnmapMemObject(iDevice, 
+    	cl_mem_flags lMemFlags = getMemObjectInfo<cl_mem_flags>(CL_MEM_FLAGS); 
+
+        sStatusCL = clEnqueueUnmapMemObject(mContext.getDevice(iDevice), 
                                             mMemPtr, 
                                             (void*)mHostPtr, 
                                             0, 
                                             NULL, 
                                             NULL);
         mMapping = 0;
-        if (!(mMapping & CL_MEM_USE_HOST_PTR))
+        if (!(lMemFlags & CL_MEM_USE_HOST_PTR))
         {
             mHostPtr = 0;
-        }
+        } 
         return oclSuccess("clEnqueueUnmapMemObject", this);
     }
     return false;
@@ -93,50 +95,6 @@ void oclMem::destroy()
         oclSuccess("clReleaseMemObject", this);
     }
 }
-
-/*
-void oclMem::allocHostPtr()
-{
-    if (mMemFlags & CL_MEM_USE_HOST_PTR)
-    {
-        if (!mHostPtr)
-        {
-            mHostPtr = new char[byteCount()];
-        }
-    }
-    else
-    {
-        mHostPtr = 0;
-    }
-}
-
-void oclMem::deallocHostPtr()
-{
-    if (mMemFlags & CL_MEM_USE_HOST_PTR)
-    {
-        if (mHostPtr)
-        {
-            delete [] mHostPtr;
-        }
-    }
-    else
-    {
-        mHostPtr = 0;
-    }
-}
-
-void oclMem::resizeHostPtr(size_t iByteCount)
-{
-    if (mMemFlags & CL_MEM_USE_HOST_PTR)
-    {
-        if (byteCount() >= iByteCount)
-        {
-            delete [] mHostPtr;
-            mHostPtr = new char[iByteCount];
-        }
-    }
-}
-*/
 
 unsigned long oclMem::sMemoryUsed = 0;
 

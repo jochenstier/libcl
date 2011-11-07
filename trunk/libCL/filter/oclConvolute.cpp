@@ -116,7 +116,7 @@ int oclConvolute::compile()
 
 bool oclConvolute::gauss1D(float iSigma, oclBuffer& iBuffer)
 {
-    if (iBuffer.map(iBuffer.getContext().getDevice(0), CL_MAP_WRITE))
+    if (iBuffer.map(CL_MAP_WRITE))
     {
         int lKernelW = iBuffer.dim(0)/sizeof(cl_float);
         if (lKernelW < 3 || lKernelW % 2 == 0)
@@ -125,7 +125,7 @@ bool oclConvolute::gauss1D(float iSigma, oclBuffer& iBuffer)
             return false;
         }
         calcGauss1D(iSigma,  iBuffer.ptr<cl_float>(), lKernelW);
-        iBuffer.unmap(iBuffer.getContext().getDevice(0));
+        iBuffer.unmap();
         return true;
     }
     return false;
@@ -133,7 +133,7 @@ bool oclConvolute::gauss1D(float iSigma, oclBuffer& iBuffer)
 
 bool oclConvolute::gauss2D(float iSigma, oclBuffer& iBuffer, int iKernelW, int iKernelH)
 {
-    if (iBuffer.map(iBuffer.getContext().getDevice(0), CL_MAP_WRITE))
+    if (iBuffer.map(CL_MAP_WRITE))
     {
         if (iKernelW % 2 == 0 || iKernelH % 2 == 0)
         {
@@ -147,7 +147,7 @@ bool oclConvolute::gauss2D(float iSigma, oclBuffer& iBuffer, int iKernelW, int i
             return false;
         }
         calcGauss2D(iSigma,  iBuffer.ptr<cl_float>(), iKernelW, iKernelH);
-        iBuffer.unmap(iBuffer.getContext().getDevice(0));
+        iBuffer.unmap();
         return true;
     }
     return false;
@@ -159,7 +159,7 @@ bool oclConvolute::gauss2D(float iSigma, oclBuffer& iBuffer, int iKernelW, int i
 
 bool oclConvolute::DoG1D(float iSigmaA, float iSigmaB, float iSensitivity, oclBuffer& iBuffer)
 {
-    if (iBuffer.map(iBuffer.getContext().getDevice(0), CL_MAP_WRITE))
+    if (iBuffer.map(CL_MAP_WRITE))
     {
         int lKernelW = iBuffer.dim(0)/sizeof(cl_float);
         if (lKernelW < 3 || lKernelW % 2 == 0)
@@ -188,7 +188,7 @@ bool oclConvolute::DoG1D(float iSigmaA, float iSigmaB, float iSensitivity, oclBu
         }
 
 
-        iBuffer.unmap(iBuffer.getContext().getDevice(0));
+        iBuffer.unmap();
         delete lGaussA;
         delete lGaussB;
         return true;
@@ -198,7 +198,7 @@ bool oclConvolute::DoG1D(float iSigmaA, float iSigmaB, float iSensitivity, oclBu
 
 bool oclConvolute::DoG2D(float iSigmaA, float iSigmaB, float iSensitivity, oclBuffer& iBuffer, int iKernelW, int iKernelH)
 {
-    if (iBuffer.map(iBuffer.getContext().getDevice(0), CL_MAP_WRITE))
+    if (iBuffer.map(CL_MAP_WRITE))
     {
         if (iKernelW % 2 == 0 || iKernelH % 2 == 0)
         {
@@ -229,7 +229,7 @@ bool oclConvolute::DoG2D(float iSigmaA, float iSigmaB, float iSensitivity, oclBu
             lBuffer[i] -= total;
         }
 
-        iBuffer.unmap(iBuffer.getContext().getDevice(0));
+        iBuffer.unmap();
         delete lGaussA;
         delete lGaussB;
         return true;
