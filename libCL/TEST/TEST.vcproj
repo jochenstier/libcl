@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libCLd.lib OpenCL.lib OpenGL32.lib"
+				AdditionalDependencies="OpenCL.lib OpenGL32.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..;..\CL\x86"
 				GenerateDebugInformation="true"
@@ -136,7 +136,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libCL.lib OpenCL.lib  OpenGL32.lib"
+				AdditionalDependencies="OpenCL.lib  OpenGL32.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..;..\CL\x86"
 				IgnoreAllDefaultLibraries="false"
