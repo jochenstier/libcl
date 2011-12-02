@@ -81,12 +81,14 @@ cl_event* oclKernel::getEvent()
 { 
     if (mProfiling)
     {
+        /*
         if (mEvent)
         {
             sStatusCL = clReleaseEvent(mEvent); //this causes a memory leak but at least profing works on NVIDIA
             oclSuccess("clReleaseEvent", this);
             mEvent = 0;
         }
+        */
         return &mEvent; 
     }
     else
@@ -165,7 +167,7 @@ cl_ulong oclKernel::getStartTime()
     cl_ulong lStartTime = 0;
     if (mEvent)
     {
-        clWaitForEvents (1, &mEvent);
+       // clWaitForEvents (1, &mEvent);
         sStatusCL = clGetEventProfilingInfo(mEvent,
                                           CL_PROFILING_COMMAND_START,
                                           sizeof(cl_ulong),
@@ -183,7 +185,7 @@ cl_ulong oclKernel::getEndTime()
     cl_ulong lEndtime = 0;
     if (mEvent)
     {
-        clWaitForEvents (1, &mEvent);
+        //clWaitForEvents (1, &mEvent);
         sStatusCL = clGetEventProfilingInfo(mEvent,
                                           CL_PROFILING_COMMAND_END,
                                           sizeof(cl_ulong),
