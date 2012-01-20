@@ -40,7 +40,6 @@ __kernel void clSobel(__read_only image2d_t imageIn, __write_only image2d_t dx, 
 				ry += dp*ky[i+1][j+1];
 			}
 		}
-
 		write_imagef(dx, (int2)(x,y), rx);
 		write_imagef(dy, (int2)(x,y), ry);
 	}
