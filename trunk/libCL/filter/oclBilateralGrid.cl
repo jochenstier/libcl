@@ -45,7 +45,6 @@ __kernel void clSplit(__read_only image2d_t image, __global float4* grid, int sw
 //
 //
 //
-
 __kernel void clSlice(__read_only image2d_t srce, float4 mask, __write_only image2d_t dest, __read_only image3d_t grid)
 {
 	const sampler_t srceSampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
@@ -114,7 +113,7 @@ __kernel void clEqualize(__global float4* grid, float4 mask0, int gd, __local fl
 // 3D Convolution
 //
 
-__kernel void clConvolute(__global float4* srce, __global float4* dest, int4 axis, __constant float* filter, int size)
+__kernel void clConvolute(__global float4* srce, __global float4* dest, int4 axis, __global float* filter, int size)
 {
 	int x = get_global_id(0);
 	int y = get_global_id(1);

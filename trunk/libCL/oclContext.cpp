@@ -78,6 +78,61 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *clGetGLContextInfoKHR_fn)(const cl_con
 
 oclContext* oclContext::create(const char* iVendor, int iDeviceType)
 {
+    /*
+    cl_int status = CL_SUCCESS;
+
+    cl_device_type dType = CL_DEVICE_TYPE_GPU;
+
+    cl_uint numPlatforms;
+    cl_platform_id platform = NULL;
+    status = clGetPlatformIDs(0, NULL, &numPlatforms);
+
+    if (0 < numPlatforms) 
+    {
+        cl_platform_id* platforms = new cl_platform_id[numPlatforms];
+        status = clGetPlatformIDs(numPlatforms, platforms, NULL);
+        for (unsigned i = 0; i < numPlatforms; ++i) 
+        {
+            char pbuf[100];
+            status = clGetPlatformInfo(platforms[i],
+                                       CL_PLATFORM_VENDOR,
+                                       sizeof(pbuf),
+                                       pbuf,
+                                       NULL);
+            platform = platforms[i];
+            if (!strcmp(pbuf, "Advanced Micro Devices, Inc.")) 
+            {
+                break;
+            }
+        }
+        delete[] platforms;
+    }
+
+#ifdef _WIN32
+    HGLRC glCtx = wglGetCurrentContext();
+#else //!_WIN32
+    GLXContext glCtx = glXGetCurrentContext();
+#endif //!_WIN32
+    
+    cl_context_properties cpsGL[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
+#ifdef _WIN32
+                                      CL_WGL_HDC_KHR, (intptr_t) wglGetCurrentDC(),
+#else //!_WIN32
+                                      CL_GLX_DISPLAY_KHR, (intptr_t) glXGetCurrentDisplay(),
+#endif //!_WIN32
+                                      CL_GL_CONTEXT_KHR, (intptr_t) glCtx, 0};
+
+
+    cl_context context = clCreateContextFromType(
+        cpsGL,
+        dType,
+        NULL,
+        NULL,
+        &status);
+    return  new oclContext(context, "Advanced Micro Devices, Inc.");
+*/
+
+    
     cl_uint lPlatformCount = 0;
     sStatusCL = clGetPlatformIDs(0, NULL, &lPlatformCount);
     oclSuccess("clGetPlatformIDs");
@@ -171,6 +226,7 @@ oclContext* oclContext::create(const char* iVendor, int iDeviceType)
             }
         }
     }
+    
     return 0;
 }
 

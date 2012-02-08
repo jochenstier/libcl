@@ -18,12 +18,12 @@ __kernel void clSobel(__read_only image2d_t imageIn, __write_only image2d_t dx, 
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
 
-	const float kx[3][3] = { { -1, 0,  1},
-							 { -2, 0,  2},
-							 { -1, 0,  1}};
-	const float ky[3][3] = { { -1, -2, -1},
-						     {  0, 0,  0},
-						     {  1, 2,  1}};
+	float kx[3][3] = { { -1.0f, 0.0f,  1.0f},
+					   { -2.0f, 0.0f,  2.0f},
+					   { -1.0f, 0.0f,  1.0f}};
+	float ky[3][3] = { { -1.0f, -2.0f, -1.0f},
+					   {  0.0f, 0.0f,  0.0f},
+					   {  1.0f, 2.0f,  1.0f}};
 
     if (x < w && y < h) 
 	{

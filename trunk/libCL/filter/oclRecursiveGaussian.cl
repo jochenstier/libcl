@@ -77,4 +77,6 @@ __kernel void clRecursiveGaussian(__read_only image2d_t valIn,
     {
 		write_imagef(valOut, (int2)(sx+i*dxy.x,sy+i*dxy.y), lumOut[i]);
 	}
+
+	write_imagef(valOut, (int2)(sx,sy), (float4)0);
 }

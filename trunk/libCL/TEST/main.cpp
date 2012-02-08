@@ -108,11 +108,11 @@ void testRadixSort(oclContext& iContext)
     bfKey.create<cl_uint> (CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 1024);
     bfVal.create<cl_uint> (CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 1024);
 
-    if (!bfKey.map(lDevice, CL_MAP_READ | CL_MAP_WRITE))
+    if (!bfKey.map(CL_MAP_READ | CL_MAP_WRITE))
     {
         return;
     }
-    if (!bfVal.map(lDevice, CL_MAP_READ | CL_MAP_WRITE))
+    if (!bfVal.map(CL_MAP_READ | CL_MAP_WRITE))
     {
         return;
     }
@@ -124,16 +124,16 @@ void testRadixSort(oclContext& iContext)
         ptrKey[i] = rand();
         ptrVal[i] = i;
     }
-    bfVal.write(lDevice);
-    bfKey.write(lDevice);
+    bfVal.write();
+    bfKey.write();
 
     oclRadixSort clProgram(iContext);
     if (clProgram.compile())
     {
         clProgram.compute(lDevice, bfKey, bfVal, 0, 32);
 
-        bfVal.read(lDevice);
-        bfKey.read(lDevice);
+        bfVal.read();
+        bfKey.read();
         for (int i=1; i<1024; i++)
         {
             if (ptrKey[i] < ptrKey[i-1])
@@ -144,8 +144,8 @@ void testRadixSort(oclContext& iContext)
         }
     }
 
-    bfVal.unmap(lDevice);
-    bfKey.unmap(lDevice);
+    bfVal.unmap();
+    bfKey.unmap();
     Log(INFO) << "testRadixSort completed";
 }
 
@@ -164,7 +164,7 @@ void testFluid3D0(oclContext& iContext)
         oclBuffer* lBuffer = clProgram.getPositionBuffer();
         unsigned int lCount = clProgram.getParticleCount();
 
-        if (lBuffer->map(lDevice, CL_MAP_WRITE))
+        if (lBuffer->map(CL_MAP_WRITE))
         {
             // initialize particle positions
             cl_float4* lPtr = lBuffer->ptr<cl_float4>();
@@ -175,7 +175,7 @@ void testFluid3D0(oclContext& iContext)
                 lPtr[i].s[2] = (float)rand()/RAND_MAX-0.5;
                 lPtr[i].s[3] = 0;
             }
-            lBuffer->unmap(lDevice);
+            lBuffer->unmap();
         }
 
         Log(INFO) << "Computing particles for 7 seconds ";
@@ -188,7 +188,7 @@ void testFluid3D0(oclContext& iContext)
         }
         cout << "\n";
 
-        if (lBuffer->map(lDevice, CL_MAP_READ))
+        if (lBuffer->map(CL_MAP_READ))
         {
             // compute average paricle position
             cl_float4 lAvg = { 0,0,0,0};
@@ -203,7 +203,7 @@ void testFluid3D0(oclContext& iContext)
             lAvg.s[1] /= lCount;
             lAvg.s[2] /= lCount;
             Log(INFO) << "Average particle position = " << *lPtr;
-            lBuffer->unmap(lDevice);
+            lBuffer->unmap();
         }
     }
 }
@@ -222,7 +222,7 @@ void testFluid3D1(oclContext& iContext)
         oclBuffer* lBuffer = clProgram.getPositionBuffer();
         unsigned int lCount = clProgram.getParticleCount();
 
-        if (lBuffer->map(lDevice, CL_MAP_WRITE))
+        if (lBuffer->map(CL_MAP_WRITE))
         {
             // initialize particle positions
             cl_float4* lPtr = lBuffer->ptr<cl_float4>();
@@ -233,7 +233,7 @@ void testFluid3D1(oclContext& iContext)
                 lPtr[i].s[2] = (float)rand()/RAND_MAX-0.5;
                 lPtr[i].s[3] = 0;
             }
-            lBuffer->unmap(lDevice);
+            lBuffer->unmap();
         }
 
         // implement event handler structure
@@ -291,7 +291,7 @@ void testFluid3D1(oclContext& iContext)
         }
         cout << "\n";
 
-        if (lBuffer->map(lDevice, CL_MAP_READ))
+        if (lBuffer->map(CL_MAP_READ))
         {
             // compute average paricle position
             cl_float4 lAvg = { 0,0,0,0};
@@ -306,7 +306,7 @@ void testFluid3D1(oclContext& iContext)
             lAvg.s[1] /= lCount;
             lAvg.s[2] /= lCount;
             Log(INFO) << "Average particle position = " << *lPtr;
-            lBuffer->unmap(lDevice);
+            lBuffer->unmap();
         }
     }
 }
@@ -321,7 +321,7 @@ void testBvhTrimesh(oclContext& iContext)
 
     oclBuffer bfVertex(iContext, "bfVertex");
     bfVertex.create<cl_float4> (CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 1000);
-    if (bfVertex.map(lDevice, CL_MAP_WRITE))
+    if (bfVertex.map(CL_MAP_WRITE))
     {
         // initiaize vertices
         cl_float4* lPtr = bfVertex.ptr<cl_float4>();
@@ -332,14 +332,14 @@ void testBvhTrimesh(oclContext& iContext)
             lPtr[i].s[2] = (float)rand()/RAND_MAX-0.5;
             lPtr[i].s[3] = 1;
         }
-        bfVertex.unmap(lDevice);
+        bfVertex.unmap();
     }
     else return;
 
 
     oclBuffer bfIndex(iContext, "bfIndex");
     bfIndex.create<cl_uint> (CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 1000);
-    if (bfIndex.map(lDevice, CL_MAP_WRITE))
+    if (bfIndex.map(CL_MAP_WRITE))
     {
         // initiaize indecies
         cl_uint* lPtr = bfIndex.ptr<cl_uint>();
@@ -347,7 +347,7 @@ void testBvhTrimesh(oclContext& iContext)
         {
             lPtr[i] = i;
         }
-        bfIndex.unmap(lDevice);
+        bfIndex.unmap();
     }
     else return;
 
@@ -360,14 +360,14 @@ void testBvhTrimesh(oclContext& iContext)
             cl_uint lRootNode = clProgram.getRootNode();
 
             oclBuffer& lNodes = clProgram.getNodeBuffer();
-            if (lNodes.map(lDevice, CL_MAP_READ))
+            if (lNodes.map(CL_MAP_READ))
             {
                 oclBvhTrimesh::BVHNode* lPtr = lNodes.ptr<oclBvhTrimesh::BVHNode>();
                 Log(INFO) << "BVH Root (min):" << lPtr[lRootNode].bbMin;
                 Log(INFO) << "BVH Root (max):" << lPtr[lRootNode].bbMax;
                 Log(INFO) << "BVH Root (left):" << lPtr[lRootNode].left;
                 Log(INFO) << "BVH Root (right):" << lPtr[lRootNode].right;
-                lNodes.unmap(lDevice);
+                lNodes.unmap();
             }
         }
     }

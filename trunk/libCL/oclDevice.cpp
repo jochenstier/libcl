@@ -29,6 +29,7 @@ oclDevice::oclDevice(oclContext& iContext, cl_device_id iDevice)
     oclSuccess("clGetKernelInfo", this);
 
     mCommandQueue = clCreateCommandQueue(mContext, mDevice, CL_QUEUE_PROFILING_ENABLE, &sStatusCL);
+    //mCommandQueue = clCreateCommandQueue(mContext, mDevice, CL_QUEUE_PROFILING_ENABLE, &sStatusCL);
     oclSuccess("clCreateCommandQueue", this);
 };
 
