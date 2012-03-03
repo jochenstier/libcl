@@ -32,7 +32,7 @@ class oclKernel : public oclObject
 
         //
         template <class RETURN> RETURN getKernelWorkGroupInfo(cl_uint iValue, cl_device_id iDevice);
-        template <class RETURN> RETURN getKernelInfo(cl_kernel_info iInfo);
+        template <class RETURN> RETURN getKernelInfo(cl_uint iValue, cl_kernel_info iInfo);
 
         //
         void localSize2D(oclDevice& iDevice, size_t lGlobalSize[2], size_t lLocalSize[2], int iW, int iH);
@@ -75,7 +75,7 @@ template <class RETURN> RETURN oclKernel::getKernelWorkGroupInfo(cl_uint iValue,
     return lResult;
 }
 
-template <class RETURN> RETURN oclKernel::getKernelInfo(cl_kernel_info iInfo)
+template <class RETURN> RETURN oclKernel::getKernelInfo(cl_uint iValue, cl_kernel_info iInfo)
 {
     static RETURN lResult;
     clGetKernelInfo(mKernel, iValue, sizeof(RETURN), &lResult, NULL);
