@@ -13,8 +13,9 @@
 // limitations under the License.
 #include "oclBuffer.h"
 
-oclBuffer::oclBuffer(oclContext& iContext, char* iName)
+oclBuffer::oclBuffer(oclContext& iContext, char* iName, int iType)
 : oclMem(iContext, iName)
+, mType(iType)
 {
 };
 
@@ -108,4 +109,13 @@ size_t oclBuffer::dim(int iAxis)
         case 0: return getMemObjectInfo<size_t>(CL_MEM_SIZE);
     }
     return 0;
+};
+
+//
+//
+//
+
+int oclBuffer::getType()
+{
+    return mType;
 };

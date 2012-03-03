@@ -263,6 +263,18 @@
 					RelativePath=".\phys\oclFluid3D.h"
 					>
 				</File>
+				<File
+					RelativePath=".\phys\oclFluid3Dnext.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\phys\oclFluid3Dnext.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\phys\oclFluid3Dnext.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="geom"
