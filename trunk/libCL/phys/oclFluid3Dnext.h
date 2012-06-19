@@ -89,7 +89,7 @@ class oclFluid3Dnext : public oclProgram
 		oclKernel clComputePressure;
 		oclKernel clComputeForces;
 		oclKernel clIntegrateForce;
-    	oclKernel clComputeVelocity;
+    	oclKernel clIntegrateVelocity;
 
 		// buffers
 		oclBuffer bfCell;
