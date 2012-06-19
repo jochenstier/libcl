@@ -16,7 +16,7 @@
 
 #include <vector>
 
-#include "sort\\oclRadixSort.h"
+#include "sort/oclRadixSort.h"
 
 class oclFluid3Dnext : public oclProgram
 {
@@ -49,7 +49,7 @@ class oclFluid3Dnext : public oclProgram
 
         typedef struct 
         {
- 	        float deltaTime;
+	        float deltaTime;
 	        float kernelRadius;
 	        float density;
 	        float stiffness0;
@@ -61,7 +61,7 @@ class oclFluid3Dnext : public oclProgram
 	        float cellSize;
 	        int cellCountX;
 	        int cellCountY;
-        	
+
         } Params;
 
 		Params& getParameters();
@@ -72,7 +72,7 @@ class oclFluid3Dnext : public oclProgram
         virtual void addEventHandler(srtEvent& iEvent);
 
         // sizes
-		static const size_t cLocalSize = 256;
+		static const size_t cLocalSize;
 
 	protected:
 
@@ -89,7 +89,7 @@ class oclFluid3Dnext : public oclProgram
 		oclKernel clComputePressure;
 		oclKernel clComputeForces;
 		oclKernel clIntegrateForce;
-    	oclKernel clIntegrateVelocity;
+    	oclKernel clComputeVelocity;
 
 		// buffers
 		oclBuffer bfCell;
@@ -129,6 +129,6 @@ class oclFluid3Dnext : public oclProgram
 
 };      
 
-
+const size_t oclFluid3Dnext::cLocalSize = 256;
 
 #endif

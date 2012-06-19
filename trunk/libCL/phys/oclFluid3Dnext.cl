@@ -105,7 +105,7 @@ __kernel void clInitFluid(__global System* param)
 	float spacing = 1;//0.2516;
 	param->radius = 12;   
 
-	param->cellSize = 1;   
+	param->cellSize = 2;   
 	param->cellCountX = 1024/param->cellSize;   
 	param->cellCountY = 768/param->cellSize;   
 	//param->particleRadius = 0.87*pow(param->mass/param->density, 1/3.0f);
@@ -227,6 +227,7 @@ __kernel void clComputeForces(__global float4* state, __global float2* pressure,
 						Fsurface = rIJ*w;
 						//Fviscosity +=
 						//Ftension +=
+
 					}
 				}
 			}
@@ -236,135 +237,27 @@ __kernel void clComputeForces(__global float4* state, __global float2* pressure,
 	force[particle] = (Fpressure + Fviscosity + 0.25*Fsurface) - (float2)(0,9.81);
 }
 
+
+__kernel void clComputeVelocity(__global float4* currPos, __global float4* currVel, __global uint* index, __global float4* nextPos, __global float4* dspPos,  __global const System* param)
+{
+    const uint particle = get_global_id(0);
+    float4 pos0 = currPos[index[particle]];
+    float4 pos1 = nextPos[particle] + dspPos[particle];
+
+	currVel[index[particle]] = (pos1 - pos0)/param->deltaTime;
+	currPos[index[particle]] = pos1;
+}
+
 __kernel void clIntegrateForce(__global float4* state, __global float2* force, __global uint* index, __global const System* param)
 {
     const uint particle = get_global_id(0);
 	uint sorted = index[particle];
-	state[sorted].zw += force[particle]*param->deltaTime;
+
+	float4 currState = state[sorted];	
+	currState.zw += force[particle]*param->deltaTime;
+
+	state[sorted].xy += currState.zw*param->deltaTime;
+	state[sorted].xy = clamp(state[sorted].xy, (float2)(1,1), (float2)(1024,768));
+
+	state[sorted].zw = currState.zw;
 }
-
-__kernel void clIntegrateVelocity(__global float4* state, __global const System* param)
-{
-    const uint particle = get_global_id(0);
-	float4 stateI = state[particle];	
-
-	stateI.xy += stateI.zw*param->deltaTime;
-	stateI.xy = clamp(stateI.xy, (float2)(1,1), (float2)(1024,768));
-	state[particle] = stateI;
-}
-
-
-//
-//
-//
-#define QUEUE_SIZE 256
-
-typedef struct 
-{
-	float2 bbMin;
-	float2 bbMax;
-	int left;
-	int right;
-	uint bit;
-	uint trav;
-} BVHNode;
-
-bool collideLine(uint triangle, __global const float2* vertex, float4* state,__global const System* param)
-{
-	return true;
-}
-
-int intersectBox(float2 r_o, float2 r_d, float2 boxmin, float2 boxmax, float *tnear, float *tfar)
-{
-    // compute intersection of ray with all six bbox planes
-    float2 invR = (float2)(1.0f,1.0f) / normalize(r_d);
-    float2 tbot = invR * (boxmin - r_o);
-    float2 ttop = invR * (boxmax - r_o);
-
-    // re-order intersections to find smallest and largest on each axis
-    float2 tmin = min(ttop, tbot);
-    float2 tmax = max(ttop, tbot);
-
-/*
-    // find the largest tmin and the smallest tmax
-    float largest_tmin = max(max(tmin.x, tmin.y), max(tmin.x, tmin.z));
-    float smallest_tmax = min(min(tmax.x, tmax.y), min(tmax.x, tmax.z));
-
-    *tnear = largest_tmin;
-    *tfar = smallest_tmax;
-*/
-    // find the largest tmin and the smallest tmax
-    float largest_tmin = max(tmin.x, tmin.y);
-    float smallest_tmax = min(tmax.x, tmax.y);
-
-    *tnear = largest_tmin;
-    *tfar = smallest_tmax;
-
-    return smallest_tmax > largest_tmin;
-}
-
-bool collideAABB(__global const BVHNode* node, float4 particle, __global const System* param)
-{
-    float near;
-    float far;
-    if (intersectBox(particle.xy, particle.zw, node->bbMin, node->bbMax, &near, &far))
-    {
-        return near < fast_length(particle.zw);
-        //return near < max(param->particleRadius, fast_length(vel));
-    }
-    return false;
-}
-
-__kernel void clCollideBVH(__global float4* state, 
-                           __global const System* param, 
-                           __global const BVHNode* bvh, 
-                           uint bvhRoot,
-                           __global const uint2* vertex)
-{
-    uint particle = get_global_id(0);
-
-    float4 stateI = state[particle];
-
-    uint queue[QUEUE_SIZE];
-    uint head = 0;
-    uint tail = 1;
-    queue[0] = bvhRoot;
-
-    while (head != tail)
-    {
-        uint iter = queue[head];
-        head = (head+1)%QUEUE_SIZE;
-
-        uint left = bvh[iter].left;
-        uint right = bvh[iter].right;
-        if (left == right)
-        {
-			/*
-			uint2 l0 = vertex[bvh[iter].bit*2+0];
-			uint2 l1 = vertex[bvh[iter].bit*2+1];
-			uint2 l = l1 - l0;
-
-            // leaf .. intersect
-            if (collideLine(bvh[iter].bit*2, vertex, &stateI,  param))
-            {
-                state[particle] = stateI;
-                break;
-            }
-			*/
-        }
-        else
-        {
-            if (collideAABB(&bvh[left], stateI, param))
-            {
-                queue[tail] = left;
-                tail = (tail+1)%QUEUE_SIZE;
-            }
-            if (collideAABB(&bvh[right], stateI, param))
-            {
-                queue[tail] = right;
-                tail = (tail+1)%QUEUE_SIZE;
-            }
-        }
-    }
-}
-

@@ -16,7 +16,7 @@
 char* oclFluid3Dnext::EVT_INTEGRATE = "OnIntegrate";
 
 oclFluid3Dnext::oclFluid3Dnext(oclContext& iContext)
-: oclProgram(iContext, "oclFluid2D")
+: oclProgram(iContext, "oclFluid3Dnext")
 // buffers
 , bfCell(iContext, "bfCell", oclBuffer::_uint)
 , bfCellStart(iContext, "bfCellStart", oclBuffer::_uint)
@@ -42,7 +42,8 @@ oclFluid3Dnext::oclFluid3Dnext(oclContext& iContext)
 , clComputePressure(*this)
 , clComputeForces(*this)
 , clIntegrateForce(*this)
-, clIntegrateVelocity(*this)
+
+, clComputeVelocity(*this)
 
 // programs
 , mRadixSort(iContext)
@@ -71,7 +72,7 @@ oclFluid3Dnext::oclFluid3Dnext(oclContext& iContext)
 	bfBorder->create<cl_float2>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 2);
 	bfPosition->create<cl_float4>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mParticleCount);
 
-	addSourceFile("phys\\oclFluid3Dnext.cl");
+	addSourceFile("phys/oclFluid3Dnext.cl");
 
 	exportKernel(clReorder);
 	exportKernel(clHash);
@@ -214,13 +215,14 @@ int oclFluid3Dnext::bindBuffers()
 	clSetKernelArg(clIntegrateForce, 2, sizeof(cl_mem), bfIndex);
 	clSetKernelArg(clIntegrateForce, 3, sizeof(cl_mem), bfParams);
 
-	clSetKernelArg(clIntegrateVelocity, 0, sizeof(cl_mem), *bfPosition);
-	clSetKernelArg(clIntegrateVelocity, 1, sizeof(cl_mem), bfParams);
-
 	/*
 	clSetKernelArg(clIntegrateForce, 0, sizeof(cl_mem), *bfState);
 	clSetKernelArg(clIntegrateForce, 1, sizeof(cl_mem), *bfForce);
 	clSetKernelArg(clIntegrateForce, 2, sizeof(cl_mem), bfParams);
+
+	clSetKernelArg(clIntegrateVelocity, 0, sizeof(cl_mem), *bfPosition);
+	clSetKernelArg(clIntegrateVelocity, 1, sizeof(cl_mem), *bfState);
+	clSetKernelArg(clIntegrateVelocity, 2, sizeof(cl_mem), bfParams);
 
 	clSetKernelArg(clCalculateDensity, 0, sizeof(cl_mem), bfSortedState);
 	clSetKernelArg(clCalculateDensity, 2, sizeof(cl_mem), bfCellStart);
@@ -254,7 +256,7 @@ int oclFluid3Dnext::compile()
 	clComputePressure = 0;
 	clComputeForces = 0;
 	clIntegrateForce = 0;
-	clIntegrateVelocity = 0;
+	clComputeVelocity = 0;
 
 	if (!mRadixSort.compile())
 	{
@@ -284,8 +286,8 @@ int oclFluid3Dnext::compile()
 	KERNEL_VALIDATE(clComputeForces)
 	clIntegrateForce = createKernel("clIntegrateForce");
 	KERNEL_VALIDATE(clIntegrateForce)
-	clIntegrateVelocity = createKernel("clIntegrateVelocity");
-	KERNEL_VALIDATE(clIntegrateVelocity)
+	clComputeVelocity = createKernel("clComputeVelocity");
+	KERNEL_VALIDATE(clComputeVelocity)
 
     // init fluid parameters
 	clSetKernelArg(clInitFluid, 0, sizeof(cl_mem), bfParams);
@@ -326,16 +328,12 @@ int oclFluid3Dnext::compute(oclDevice& iDevice)
 	ENQUEUE_VALIDATE
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clFindBounds, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clFindBounds.getEvent());
 	ENQUEUE_VALIDATE
-
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clComputePressure, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clComputePressure.getEvent());
 	ENQUEUE_VALIDATE
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clComputeForces, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clComputeForces.getEvent());
 	ENQUEUE_VALIDATE
-
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clIntegrateForce, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clIntegrateForce.getEvent());
 	ENQUEUE_VALIDATE
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clIntegrateVelocity, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clIntegrateVelocity.getEvent());
-	ENQUEUE_VALIDATE 
 
 /*
 
