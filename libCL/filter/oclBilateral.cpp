@@ -22,7 +22,7 @@ oclBilateral::oclBilateral(oclContext& iContext)
 , clAniso2Dtang(*this)
 , clAniso2Dorth(*this)
 {
-	addSourceFile("filter\\oclBilateral.cl");
+	addSourceFile("filter/oclBilateral.cl");
 
 	exportKernel(clIso2D);
 	exportKernel(clAniso2Dtang);
