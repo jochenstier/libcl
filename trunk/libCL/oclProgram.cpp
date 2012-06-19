@@ -14,7 +14,10 @@
 #include "oclProgram.h"
 
 #include <stdio.h>
+
+#ifdef WIN32
 #include <direct.h>
+#endif
 
 oclProgram::oclProgram(oclContext& iContext, char* iName)
 : oclObject(iName)
@@ -131,15 +134,20 @@ void oclProgram::addSourceCode(char* iText)
 void oclProgram::addSourceFile(char* iPath)
 {
     char lPath[400];
+#ifdef WIN32
     _getcwd(lPath, 400);
-
     _chdir(sRootPath);
+#else
+    getcwd(lPath, 400);
+    chdir(sRootPath);
+#endif
+    
     FILE* lFile = fopen(iPath, "rb");
     if (lFile)
     {
         srtSource lSource;
         strcpy(lSource.mPath, sRootPath);
-        strcat(lSource.mPath, "\\");
+        strcat(lSource.mPath, "/");
         strcat(lSource.mPath, iPath);
 
         fseek(lFile, 0, SEEK_END);
@@ -153,7 +161,11 @@ void oclProgram::addSourceFile(char* iPath)
         mSource.push_back(lSource);
     }
     else Log(ERR, this) << "Unable to open source file " << iPath;
+#ifdef WIN32
     _chdir(lPath);
+#else
+    chdir(lPath);
+#endif
 }
 
 vector<srtSource>& oclProgram::getSource()
