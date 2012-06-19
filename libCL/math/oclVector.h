@@ -26,7 +26,7 @@ class oclVector : public oclProgram
 		int compile();
         
 		int normalize(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
-        int xor(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_float4 iMask);
+        int Xor(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_float4 iMask);
 
     protected:
 
