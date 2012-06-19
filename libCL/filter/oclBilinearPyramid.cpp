@@ -22,7 +22,7 @@ oclBilinearPyramid::oclBilinearPyramid(oclContext& iContext)
 , clDownsample(*this)
 , mLevel(1)
 {
-	addSourceFile("filter\\oclBilinearPyramid.cl");
+	addSourceFile("filter/oclBilinearPyramid.cl");
 
 	exportKernel(clUpsample);
 	exportKernel(clDownsample);

@@ -21,7 +21,7 @@ oclTangent::oclTangent(oclContext& iContext)
 , clTangent(*this)
 , clLineConv(*this)
 {
-	addSourceFile("filter\\oclTangent.cl");
+	addSourceFile("filter/oclTangent.cl");
 
 	exportKernel(clTangent);
 	exportKernel(clLineConv);

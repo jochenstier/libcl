@@ -79,7 +79,7 @@ oclConvolute::oclConvolute(oclContext& iContext)
     exportKernel(clAniso2Dtang);
     exportKernel(clAniso2Dorth);
 
-    addSourceFile("filter\\oclConvolute.cl");
+    addSourceFile("filter/oclConvolute.cl");
 }
 
 //

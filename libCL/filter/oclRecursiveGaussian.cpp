@@ -20,7 +20,7 @@ oclRecursiveGaussian::oclRecursiveGaussian(oclContext& iContext)
 // kernels
 , clRecursiveGaussian(*this)
 {
-	addSourceFile("filter\\oclRecursiveGaussian.cl");
+	addSourceFile("filter/oclRecursiveGaussian.cl");
 
 	exportKernel(clRecursiveGaussian);
 }

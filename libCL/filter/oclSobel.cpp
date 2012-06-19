@@ -21,7 +21,7 @@ oclSobel::oclSobel(oclContext& iContext)
 // kernels
 , clSobel(*this)
 {
-	addSourceFile("filter\\oclSobel.cl");
+	addSourceFile("filter/oclSobel.cl");
 
 	exportKernel(clSobel);
 }
