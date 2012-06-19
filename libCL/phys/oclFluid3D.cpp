@@ -13,6 +13,9 @@
 // limitations under the License.
 #include "oclFluid3D.h"
 
+const size_t oclFluid3D::cLocalSize = 256;
+const size_t oclFluid3D::cBucketCount = 16777216;
+
 char* oclFluid3D::EVT_INTEGRATE = "OnIntegrate";
 
 oclFluid3D::oclFluid3D(oclContext& iContext)
@@ -76,7 +79,7 @@ oclFluid3D::oclFluid3D(oclContext& iContext)
 	bfVelocity->create<cl_float4>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mParticleCount);
 	bfForce->create<cl_float4>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mParticleCount);
 
-	addSourceFile("phys\\oclFluid3D.cl");
+	addSourceFile("phys/oclFluid3D.cl");
 
 	exportKernel(clClipBox);
 	exportKernel(clGravity);
