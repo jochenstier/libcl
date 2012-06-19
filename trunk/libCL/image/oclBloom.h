@@ -19,7 +19,7 @@
 #include "oclKernel.h"
 #include "oclContext.h"
 
-#include "filter\\oclRecursiveGaussian.h"
+#include "filter/oclRecursiveGaussian.h"
 
 class oclBloom : public oclProgram
 {

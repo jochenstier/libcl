@@ -10,7 +10,9 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.#ifndef _oclBilateralGrid
+// limitations under the License.
+
+#ifndef _oclBilateralGrid
 #include "oclBilateralGrid.h"
 
 oclBilateralGrid::oclBilateralGrid(oclContext& iContext)
@@ -18,7 +20,7 @@ oclBilateralGrid::oclBilateralGrid(oclContext& iContext)
 // kernels
 , clSSAO(*this)
 {
-	addSourceFile("image\\oclBilateralGrid.cl");
+	addSourceFile("image/oclBilateralGrid.cl");
 
 	exportKernel(clSSAO);
 }
@@ -59,3 +61,5 @@ int oclBilateralGrid::compute(oclDevice& iDevice, oclImage2D& bfImage, oclImage2
 
 	return true;
 }
+
+#endif

@@ -29,7 +29,7 @@ oclToneMapping::oclToneMapping(oclContext& iContext)
     bfTempA.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, lFormat, 256, 256);
     bfTempB.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, lFormat, 256, 256);
 
-    addSourceFile("image\\oclToneMapping.cl");
+    addSourceFile("image/oclToneMapping.cl");
 
     exportKernel(clCombine);
 }
