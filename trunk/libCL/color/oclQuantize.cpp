@@ -20,7 +20,7 @@ oclQuantize::oclQuantize(oclContext& iContext)
 // kernels
 , clQuantizeLAB(*this)
 {
-    addSourceFile("color\\oclQuantize.cl");
+    addSourceFile("color/oclQuantize.cl");
 
     exportKernel(clQuantizeLAB);
 }

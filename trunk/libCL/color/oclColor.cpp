@@ -27,7 +27,7 @@ oclColor::oclColor(oclContext& iContext)
 , clRGBtoLAB(*this)
 , clLABtoRGB(*this)
 {
-    addSourceFile("color\\oclColor.cl");
+    addSourceFile("color/oclColor.cl");
 
     exportKernel(clHSVtoRGB);
     exportKernel(clRGBtoHSV);
