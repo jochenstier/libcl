@@ -1,0 +1,65 @@
+env = Environment()
+
+env.Append(CCFLAGS = ['-g', '-O3'])
+env.Append(CPPPATH=[Dir("#").abspath])
+env.Append(CPPPATH=[Dir("#/TEST").abspath])
+
+import os
+
+if os.environ.has_key('AMDAPPSDKROOT'):
+   AMDSDK=os.environ['AMDAPPSDKROOT']
+   FGLRX='/usr/lib/fglrx' # TODO: fixme!
+   env.Append(CPPPATH=[os.path.join(AMDSDK, "include"),])
+   env.Append(LIBPATH=[os.path.join(AMDSDK, "lib", "x86_64"),])
+   env.Append(LIBPATH=[os.path.join(AMDSDK, "lib", "x86"),])
+   env.Append(LIBPATH=[FGLRX,])
+
+env.Append(LIBS = ['GL', 'OpenCL', "c", "rt"]) 
+
+#image/oclBilateralGrid.cpp
+
+lib_sources = Split("""
+            oclBuffer.cpp
+            oclCommon.cpp
+            oclContext.cpp
+            oclDevice.cpp
+            oclImage2D.cpp
+            oclImage3D.cpp
+            oclKernel.cpp
+            oclMem.cpp
+            oclObject.cpp
+            oclProgram.cpp
+            sort/oclRadixSort.cpp
+            phys/oclFluid3D.cpp
+            phys/oclFluid3Dnext.cpp
+            geom/oclBvhTrimesh.cpp
+            image/oclAmbientOcclusion.cpp
+            image/oclBloom.cpp
+            image/oclToneMapping.cpp
+            color/oclColor.cpp
+            color/oclQuantize.cpp
+            math/oclVector.cpp
+            util/oclMemory.cpp
+            filter/oclBilateral.cpp
+            filter/oclBilateralGrid.cpp
+            filter/oclBilinearPyramid.cpp
+            filter/oclConvolute.cpp
+            filter/oclRecursiveGaussian.cpp
+            filter/oclSobel.cpp
+            filter/oclTangent.cpp      
+""")
+
+lib_objects = env.Object(source = lib_sources)
+
+test_sources = Split("""
+            TEST/console.cpp
+            TEST/main.cpp
+""")
+
+test_objects = env.Object(source = test_sources)
+
+env.Program(
+        target="TEST/test",
+        source=test_sources + lib_sources
+)
+
