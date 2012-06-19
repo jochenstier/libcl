@@ -28,7 +28,7 @@ oclBloom::oclBloom(oclContext& iContext, cl_image_format iFormat)
 	bfTempA.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, iFormat, 256, 256);
 	bfTempB.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, iFormat, 256, 256);
 
-	addSourceFile("image\\oclBloom.cl");
+	addSourceFile("image/oclBloom.cl");
 
 	exportKernel(clFilter);
 	exportKernel(clCombine);
