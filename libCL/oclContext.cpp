@@ -11,7 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#ifdef WIN32
 #include <windows.h>
+#endif
 
 #include "oclContext.h" 
 #include "oclDevice.h" 
@@ -155,8 +157,10 @@ oclContext* oclContext::create(const char* iVendor, int iDeviceType)
 
         cl_context_properties GL_PROPS[] = 
         {
+#ifdef WIN32
             CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
             CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
+#endif
             CL_CONTEXT_PLATFORM, (cl_context_properties)lPlatform[i], 
             0
         };
