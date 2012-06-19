@@ -30,9 +30,9 @@ class oclRadixSort : public oclProgram
 
     protected:
 
-		static const int cBits = 4;
-		static const size_t cBlockSize = 256;
-		static const size_t cMaxArraySize = cBlockSize*cBlockSize*4*cBlockSize/(1<<cBits);
+		static const int cBits;
+		static const size_t cBlockSize;
+		static const size_t cMaxArraySize;
 
 		oclKernel clBlockSort;
 		oclKernel clBlockScan;
@@ -48,7 +48,5 @@ class oclRadixSort : public oclProgram
 		void fit(oclBuffer& iBuffer, size_t iElements) ;
 
 };      
-
-
 
 #endif
