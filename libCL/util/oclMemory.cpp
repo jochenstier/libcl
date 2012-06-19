@@ -25,7 +25,7 @@ oclMemory::oclMemory(oclContext& iContext)
 , clMemSetImage(*this)
 , clMemSetBuffer(*this)
 {
-    addSourceFile("util\\oclMemory.cl");
+    addSourceFile("util/oclMemory.cl");
 
     exportKernel(clMemSetImage);
     exportKernel(clMemSetBuffer);
