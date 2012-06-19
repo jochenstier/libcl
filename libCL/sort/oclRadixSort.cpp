@@ -15,6 +15,15 @@
 
 #include <math.h>
 
+#define CBITS 4
+#define BLOCK_SIZE 256
+#define BLOCK_SIZE_CUBE BLOCK_SIZE*BLOCK_SIZE*BLOCK_SIZE
+
+const int oclRadixSort::cBits = CBITS;
+const size_t oclRadixSort::cBlockSize = BLOCK_SIZE;
+const size_t oclRadixSort::cMaxArraySize = BLOCK_SIZE_CUBE*4/(1<<CBITS);
+
+
 oclRadixSort::oclRadixSort(oclContext& iContext)
 : oclProgram(iContext, "oclRadixSort")
 // buffers
@@ -35,7 +44,7 @@ oclRadixSort::oclRadixSort(oclContext& iContext)
 	bfBlockOffset.create<cl_uint>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, cBlockSize);
 	bfBlockSum.create<cl_uint>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, cBlockSize);
 
-	addSourceFile("sort\\oclRadixSort.cl");
+	addSourceFile("sort/oclRadixSort.cl");
 
 	exportKernel(clBlockSort);
 	exportKernel(clBlockScan);
