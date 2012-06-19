@@ -1,3 +1,5 @@
+#ifdef WIN32
+
 #include <windows.h>
 
 int getKey()
@@ -22,3 +24,19 @@ int getKey()
     return 0;
 }
 
+#else
+
+#include <iostream>
+
+int getKey()
+{
+    char k;
+
+    std::cin >> k;
+
+    if ( k == 'x' || k == 'X' )
+        return 1;
+    return 0;
+}
+
+#endif
