@@ -14,6 +14,7 @@
 #include "oclFluid3Dnext.h"
 
 char* oclFluid3Dnext::EVT_INTEGRATE = "OnIntegrate";
+const size_t oclFluid3Dnext::cLocalSize = 256;
 
 oclFluid3Dnext::oclFluid3Dnext(oclContext& iContext)
 : oclProgram(iContext, "oclFluid3Dnext")
