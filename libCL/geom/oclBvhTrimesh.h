@@ -16,7 +16,7 @@
 
 #include "oclProgram.h"
 
-#include "sort\\oclRadixSort.h"
+#include "sort/oclRadixSort.h"
 
 class oclBvhTrimesh : public oclProgram
 {
@@ -26,7 +26,9 @@ class oclBvhTrimesh : public oclProgram
        ~oclBvhTrimesh();
 
 		int compile();
-        int compute(oclDevice& iDevice, oclBuffer& bfVertex, oclBuffer& bIndex);
+        int compute(oclDevice& iDevice, 
+                    oclBuffer& bfVertex, 
+                    oclBuffer& bIndex);
 
 		typedef struct 
 		{
@@ -42,7 +44,10 @@ class oclBvhTrimesh : public oclProgram
 		cl_uint getNodeCount();
 		cl_uint getRootNode();
 
+        
+
     protected:
+        static const size_t cWarpSize;
 
 		oclRadixSort mRadixSort;
 
@@ -59,7 +64,7 @@ class oclBvhTrimesh : public oclProgram
 
         static const int sBVH	= 0x001;
 
-		static const cl_uint cWarpSize = 32;
+        
 
 		oclKernel clAABB;
 		oclKernel clMorton;
@@ -75,6 +80,6 @@ class oclBvhTrimesh : public oclProgram
 		oclBuffer bfBvhNode;
 
 		cl_uint mRootNode;
-};      
+};
 
 #endif
