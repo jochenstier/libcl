@@ -97,6 +97,10 @@ int oclBvhTrimesh::compile()
 int oclBvhTrimesh::compute(oclDevice& iDevice, oclBuffer& bfVertex, 
                            oclBuffer& bfIndex)
 {
+	if (strcmp(mContext.getVendor(),oclContext::VENDOR_AMD) == 0){
+		return false;
+	}
+	
 	cl_uint lVertices = bfVertex.count<cl_float4>();
 	size_t lTriangles = bfIndex.count<size_t>()/3;
 

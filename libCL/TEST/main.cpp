@@ -115,12 +115,9 @@ int main(int argc, char* argv[])
     testFluid3D1(*lContext);
     Log(INFO) << "****** done\n";
 
-#ifdef WIN32
-    // ignore test to avoid crash
     Log(INFO) << "****** calling BVH construction ...";
     testBvhTrimesh(*lContext);
     Log(INFO) << "****** done\n";
-#endif
 
     Log(INFO) << "****** compiling all ...";
     testCompile(*lContext);
@@ -403,6 +400,8 @@ void testBvhTrimesh(oclContext& iContext)
                 Log(INFO) << "BVH Root (right):" << lPtr[lRootNode].right;
                 lNodes.unmap();
             }
+        } else {
+            Log(ERR) << "Something Failed, if running on AMD it's OK\n";
         }
     }
 };
