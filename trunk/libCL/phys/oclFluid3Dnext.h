@@ -129,6 +129,4 @@ class oclFluid3Dnext : public oclProgram
 
 };      
 
-const size_t oclFluid3Dnext::cLocalSize = 256;
-
 #endif
