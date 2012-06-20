@@ -13,6 +13,9 @@
 // limitations under the License.
 #ifdef WIN32
 #include <windows.h>
+#else
+#include <GL/glx.h>
+#include <GL/gl.h>
 #endif
 
 #include "oclContext.h" 
@@ -160,6 +163,9 @@ oclContext* oclContext::create(const char* iVendor, int iDeviceType)
 #ifdef WIN32
             CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
             CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
+#else
+            CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
+            CL_GLX_DISPLAY_KHR, (intptr_t) glXGetCurrentDisplay(),
 #endif
             CL_CONTEXT_PLATFORM, (cl_context_properties)lPlatform[i], 
             0
