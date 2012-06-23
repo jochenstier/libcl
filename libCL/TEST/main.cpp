@@ -283,18 +283,18 @@ void testFluid3D1(oclContext& iContext)
             { 
                 // call all the fluid kernels except clipBox
                 size_t lPartcleCount = mFluid.getParticleCount();
-		        sStatusCL = clEnqueueNDRangeKernel(mDevice, *clIntegrateForce, 1, NULL, &lPartcleCount, &mFluid.cLocalSize, 0, NULL, clIntegrateForce->getEvent());
-		        if (!oclSuccess("clEnqueueNDRangeKernel", &mFluid))
+                sStatusCL = clEnqueueNDRangeKernel(mDevice, *clIntegrateForce, 1, NULL, &lPartcleCount, &mFluid.cLocalSize, 0, NULL, clIntegrateForce->getEvent());
+                if (!oclSuccess("clEnqueueNDRangeKernel", &mFluid))
                 {
                     return false;
                 }
-		        sStatusCL = clEnqueueNDRangeKernel(mDevice, *clGravity, 1, NULL, &lPartcleCount, &mFluid.cLocalSize, 0, NULL, clGravity->getEvent());
-		        if (!oclSuccess("clEnqueueNDRangeKernel", &mFluid))
+                sStatusCL = clEnqueueNDRangeKernel(mDevice, *clGravity, 1, NULL, &lPartcleCount, &mFluid.cLocalSize, 0, NULL, clGravity->getEvent());
+                if (!oclSuccess("clEnqueueNDRangeKernel", &mFluid))
                 {
                     return false;
                 }
-		        sStatusCL = clEnqueueNDRangeKernel(mDevice, *clIntegrateVelocity, 1, NULL, &lPartcleCount, &mFluid.cLocalSize, 0, NULL, clIntegrateVelocity->getEvent());
-		        if (!oclSuccess("clEnqueueNDRangeKernel", &mFluid))
+                sStatusCL = clEnqueueNDRangeKernel(mDevice, *clIntegrateVelocity, 1, NULL, &lPartcleCount, &mFluid.cLocalSize, 0, NULL, clIntegrateVelocity->getEvent());
+                if (!oclSuccess("clEnqueueNDRangeKernel", &mFluid))
                 {
                     return false;
                 }

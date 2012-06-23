@@ -37,20 +37,20 @@ oclMemory::oclMemory(oclContext& iContext)
 
 int oclMemory::compile()
 {
-	clMemSetImage = 0;
-	clMemSetBuffer = 0;
+    clMemSetImage = 0;
+    clMemSetBuffer = 0;
 
-	if (!oclProgram::compile())
-	{
-		return 0;
-	}
+    if (!oclProgram::compile())
+    {
+        return 0;
+    }
 
-	clMemSetBuffer = createKernel("clMemSetBuffer");
-	KERNEL_VALIDATE(clMemSetBuffer)
-	clMemSetImage = createKernel("clMemSetImage");
-	KERNEL_VALIDATE(clMemSetImage)
+    clMemSetBuffer = createKernel("clMemSetBuffer");
+    KERNEL_VALIDATE(clMemSetBuffer)
+    clMemSetImage = createKernel("clMemSetImage");
+    KERNEL_VALIDATE(clMemSetImage)
      
-	return 1;
+    return 1;
 }
 
 
@@ -59,10 +59,10 @@ int oclMemory::memSet(oclDevice& iDevice, oclImage2D& bfDest, cl_float4 iValue)
     size_t lGlobalSize[2];
     lGlobalSize[0] = bfDest.dim(0);
     lGlobalSize[1] = bfDest.dim(1);
-	clSetKernelArg(clMemSetImage, 0, sizeof(cl_mem), bfDest);
-	clSetKernelArg(clMemSetImage, 1, sizeof(cl_float4), &iValue);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clMemSetImage, 2, NULL, lGlobalSize, 0, 0, NULL, clMemSetImage.getEvent());
-	ENQUEUE_VALIDATE
+    clSetKernelArg(clMemSetImage, 0, sizeof(cl_mem), bfDest);
+    clSetKernelArg(clMemSetImage, 1, sizeof(cl_float4), &iValue);
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clMemSetImage, 2, NULL, lGlobalSize, 0, 0, NULL, clMemSetImage.getEvent());
+    ENQUEUE_VALIDATE
     return 1;
 };
 
@@ -71,9 +71,9 @@ int oclMemory::memSet(oclDevice& iDevice, oclBuffer& bfDest, cl_float4 iValue)
 {
     size_t lGlobalSize;
     lGlobalSize = bfDest.dim(0)/sizeof(cl_float4);
-	clSetKernelArg(clMemSetBuffer, 0, sizeof(cl_mem), bfDest);
-	clSetKernelArg(clMemSetBuffer, 1, sizeof(cl_float4), &iValue);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clMemSetBuffer, 1, NULL, &lGlobalSize, 0, 0, NULL, clMemSetBuffer.getEvent());
-	ENQUEUE_VALIDATE
+    clSetKernelArg(clMemSetBuffer, 0, sizeof(cl_mem), bfDest);
+    clSetKernelArg(clMemSetBuffer, 1, sizeof(cl_float4), &iValue);
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clMemSetBuffer, 1, NULL, &lGlobalSize, 0, 0, NULL, clMemSetBuffer.getEvent());
+    ENQUEUE_VALIDATE
     return 1;
 };

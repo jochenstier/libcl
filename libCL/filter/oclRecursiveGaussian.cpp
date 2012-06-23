@@ -20,9 +20,9 @@ oclRecursiveGaussian::oclRecursiveGaussian(oclContext& iContext)
 // kernels
 , clRecursiveGaussian(*this)
 {
-	addSourceFile("filter/oclRecursiveGaussian.cl");
+    addSourceFile("filter/oclRecursiveGaussian.cl");
 
-	exportKernel(clRecursiveGaussian);
+    exportKernel(clRecursiveGaussian);
 }
 
 //
@@ -31,19 +31,19 @@ oclRecursiveGaussian::oclRecursiveGaussian(oclContext& iContext)
 
 int oclRecursiveGaussian::compile()
 {
-	clRecursiveGaussian = 0;
+    clRecursiveGaussian = 0;
 
-	if (!oclProgram::compile())
-	{
-		return 0;
-	}
+    if (!oclProgram::compile())
+    {
+        return 0;
+    }
 
-	clRecursiveGaussian = createKernel("clRecursiveGaussian");
-	KERNEL_VALIDATE(clRecursiveGaussian)
-	mLocalSize = clRecursiveGaussian.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, mContext.getDevice(0));
-	setSigma(10.1f);
+    clRecursiveGaussian = createKernel("clRecursiveGaussian");
+    KERNEL_VALIDATE(clRecursiveGaussian)
+    mLocalSize = clRecursiveGaussian.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, mContext.getDevice(0));
+    setSigma(10.1f);
 
-	return 1;
+    return 1;
 }
 
 //
@@ -58,51 +58,51 @@ void oclRecursiveGaussian::setSigma(cl_float nsigma)
     cl_float b1 = -2.0f * ema;
     cl_float b2 = ema2;
 
-	cl_float k = (1.0f - ema)*(1.0f - ema)/(1.0f + (2.0f * alpha * ema) - ema2);
-	cl_float a0 = k;
-	cl_float a1 = k * (alpha - 1.0f) * ema;
-	cl_float a2 = k * (alpha + 1.0f) * ema;
-	cl_float a3 = -k * ema2;
+    cl_float k = (1.0f - ema)*(1.0f - ema)/(1.0f + (2.0f * alpha * ema) - ema2);
+    cl_float a0 = k;
+    cl_float a1 = k * (alpha - 1.0f) * ema;
+    cl_float a2 = k * (alpha + 1.0f) * ema;
+    cl_float a3 = -k * ema2;
     cl_float coefp = (a0 + a1)/(1.0f + b1 + b2);
     cl_float coefn = (a2 + a3)/(1.0f + b1 + b2);
 
-	clSetKernelArg(clRecursiveGaussian, 5, sizeof(cl_float), &a0);
-	clSetKernelArg(clRecursiveGaussian, 6, sizeof(cl_float), &a1);
-	clSetKernelArg(clRecursiveGaussian, 7, sizeof(cl_float), &a2);
-	clSetKernelArg(clRecursiveGaussian, 8, sizeof(cl_float), &a3);
-	clSetKernelArg(clRecursiveGaussian, 9, sizeof(cl_float), &b1);
-	clSetKernelArg(clRecursiveGaussian, 10, sizeof(cl_float), &b2);
-	clSetKernelArg(clRecursiveGaussian, 11, sizeof(cl_float), &coefp);
-	clSetKernelArg(clRecursiveGaussian, 12, sizeof(cl_float), &coefn);
+    clSetKernelArg(clRecursiveGaussian, 5, sizeof(cl_float), &a0);
+    clSetKernelArg(clRecursiveGaussian, 6, sizeof(cl_float), &a1);
+    clSetKernelArg(clRecursiveGaussian, 7, sizeof(cl_float), &a2);
+    clSetKernelArg(clRecursiveGaussian, 8, sizeof(cl_float), &a3);
+    clSetKernelArg(clRecursiveGaussian, 9, sizeof(cl_float), &b1);
+    clSetKernelArg(clRecursiveGaussian, 10, sizeof(cl_float), &b2);
+    clSetKernelArg(clRecursiveGaussian, 11, sizeof(cl_float), &coefp);
+    clSetKernelArg(clRecursiveGaussian, 12, sizeof(cl_float), &coefn);
 }
 
 int oclRecursiveGaussian::compute(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfTemp, oclImage2D& bfDest)
 {
-	size_t lGlobalSize;
-	cl_uint2 dxy;
-	cl_uint lImageWidth = bfSource.getImageInfo<size_t>(CL_IMAGE_WIDTH);
-	cl_uint lImageHeight = bfSource.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+    size_t lGlobalSize;
+    cl_uint2 dxy;
+    cl_uint lImageWidth = bfSource.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+    cl_uint lImageHeight = bfSource.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
 
- 	clSetKernelArg(clRecursiveGaussian, 2, sizeof(cl_uint), &lImageWidth);
-	clSetKernelArg(clRecursiveGaussian, 3, sizeof(cl_uint), &lImageHeight);
+    clSetKernelArg(clRecursiveGaussian, 2, sizeof(cl_uint), &lImageWidth);
+    clSetKernelArg(clRecursiveGaussian, 3, sizeof(cl_uint), &lImageHeight);
 
-	dxy.s[0] = 0;
-	dxy.s[1] = 1;
-	lGlobalSize = ceil((float)lImageWidth/mLocalSize)*mLocalSize;
-	clSetKernelArg(clRecursiveGaussian, 0, sizeof(cl_mem), bfSource);
-	clSetKernelArg(clRecursiveGaussian, 1, sizeof(cl_mem), bfTemp);
-	clSetKernelArg(clRecursiveGaussian, 4, sizeof(cl_uint2), &dxy);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clRecursiveGaussian, 1, NULL, &lGlobalSize, &mLocalSize, 0, NULL, clRecursiveGaussian.getEvent());
-	ENQUEUE_VALIDATE
+    dxy.s[0] = 0;
+    dxy.s[1] = 1;
+    lGlobalSize = ceil((float)lImageWidth/mLocalSize)*mLocalSize;
+    clSetKernelArg(clRecursiveGaussian, 0, sizeof(cl_mem), bfSource);
+    clSetKernelArg(clRecursiveGaussian, 1, sizeof(cl_mem), bfTemp);
+    clSetKernelArg(clRecursiveGaussian, 4, sizeof(cl_uint2), &dxy);
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clRecursiveGaussian, 1, NULL, &lGlobalSize, &mLocalSize, 0, NULL, clRecursiveGaussian.getEvent());
+    ENQUEUE_VALIDATE
 
-	dxy.s[0] = 1;
-	dxy.s[1] = 0;
-	lGlobalSize = ceil((float)lImageHeight/mLocalSize)*mLocalSize;
-	clSetKernelArg(clRecursiveGaussian, 0, sizeof(cl_mem), bfTemp);
-	clSetKernelArg(clRecursiveGaussian, 1, sizeof(cl_mem), bfDest);
-	clSetKernelArg(clRecursiveGaussian, 4, sizeof(cl_uint2), &dxy);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clRecursiveGaussian, 1, NULL, &lGlobalSize, &mLocalSize, 0, NULL, clRecursiveGaussian.getEvent());
-	ENQUEUE_VALIDATE
+    dxy.s[0] = 1;
+    dxy.s[1] = 0;
+    lGlobalSize = ceil((float)lImageHeight/mLocalSize)*mLocalSize;
+    clSetKernelArg(clRecursiveGaussian, 0, sizeof(cl_mem), bfTemp);
+    clSetKernelArg(clRecursiveGaussian, 1, sizeof(cl_mem), bfDest);
+    clSetKernelArg(clRecursiveGaussian, 4, sizeof(cl_uint2), &dxy);
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clRecursiveGaussian, 1, NULL, &lGlobalSize, &mLocalSize, 0, NULL, clRecursiveGaussian.getEvent());
+    ENQUEUE_VALIDATE
 
-	return true;
+    return true;
 }

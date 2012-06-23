@@ -21,9 +21,9 @@ oclSobel::oclSobel(oclContext& iContext)
 // kernels
 , clSobel(*this)
 {
-	addSourceFile("filter/oclSobel.cl");
+    addSourceFile("filter/oclSobel.cl");
 
-	exportKernel(clSobel);
+    exportKernel(clSobel);
 }
 
 //
@@ -32,16 +32,16 @@ oclSobel::oclSobel(oclContext& iContext)
 
 int oclSobel::compile()
 {
-	clSobel = 0;
+    clSobel = 0;
 
-	if (!oclProgram::compile())
-	{
-		return 0;
-	}
+    if (!oclProgram::compile())
+    {
+        return 0;
+    }
 
-	clSobel = createKernel("clSobel");
-	KERNEL_VALIDATE(clSobel)
-	return 1;
+    clSobel = createKernel("clSobel");
+    KERNEL_VALIDATE(clSobel)
+    return 1;
 }
 
 //
@@ -50,19 +50,19 @@ int oclSobel::compile()
 
 int oclSobel::compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDx, oclImage2D& bfDy)
 {
-	cl_uint lIw = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
-	cl_uint lIh = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
-	size_t lGlobalSize[2];
-	size_t lLocalSize[2];
+    cl_uint lIw = bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+    cl_uint lIh = bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+    size_t lGlobalSize[2];
+    size_t lLocalSize[2];
     clSobel.localSize2D(iDevice, lGlobalSize, lLocalSize, lIw, lIh);
 
     clSetKernelArg(clSobel, 0, sizeof(cl_mem), bfSrce);
-	clSetKernelArg(clSobel, 1, sizeof(cl_mem), bfDx);
-	clSetKernelArg(clSobel, 2, sizeof(cl_mem), bfDy);
- 	clSetKernelArg(clSobel, 3, sizeof(cl_uint), &lIw);
-	clSetKernelArg(clSobel, 4, sizeof(cl_uint), &lIh);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clSobel, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clSobel.getEvent());
+    clSetKernelArg(clSobel, 1, sizeof(cl_mem), bfDx);
+    clSetKernelArg(clSobel, 2, sizeof(cl_mem), bfDy);
+    clSetKernelArg(clSobel, 3, sizeof(cl_uint), &lIw);
+    clSetKernelArg(clSobel, 4, sizeof(cl_uint), &lIh);
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clSobel, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clSobel.getEvent());
 
-	ENQUEUE_VALIDATE
-	return true;
+    ENQUEUE_VALIDATE
+    return true;
 }

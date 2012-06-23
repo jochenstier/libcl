@@ -18,9 +18,9 @@ oclAmbientOcclusion::oclAmbientOcclusion(oclContext& iContext)
 // kernels
 , clSSAO(*this)
 {
-	addSourceFile("image/oclAmbientOcclusion.cl");
+    addSourceFile("image/oclAmbientOcclusion.cl");
 
-	exportKernel(clSSAO);
+    exportKernel(clSSAO);
 }
 
 //
@@ -29,16 +29,16 @@ oclAmbientOcclusion::oclAmbientOcclusion(oclContext& iContext)
 
 int oclAmbientOcclusion::compile()
 {
-	clSSAO = 0;
+    clSSAO = 0;
 
-	if (!oclProgram::compile())
-	{
-		return 0;
-	}
+    if (!oclProgram::compile())
+    {
+        return 0;
+    }
 
-	clSSAO = createKernel("clSSAO");
-	KERNEL_VALIDATE(clSSAO)
-	return 1;
+    clSSAO = createKernel("clSSAO");
+    KERNEL_VALIDATE(clSSAO)
+    return 1;
 }
 
 //
@@ -47,15 +47,15 @@ int oclAmbientOcclusion::compile()
 
 int oclAmbientOcclusion::compute(oclDevice& iDevice, oclImage2D& bfImage, oclImage2D& bfDepth)
 {
-	clSetKernelArg(clSSAO, 0, sizeof(cl_mem), bfImage);
-	clSetKernelArg(clSSAO, 1, sizeof(cl_mem), bfDepth);
-	clSetKernelArg(clSSAO, 2, sizeof(cl_mem), bfImage);
+    clSetKernelArg(clSSAO, 0, sizeof(cl_mem), bfImage);
+    clSetKernelArg(clSSAO, 1, sizeof(cl_mem), bfDepth);
+    clSetKernelArg(clSSAO, 2, sizeof(cl_mem), bfImage);
 
-	size_t lGlobalSize[2];
-	lGlobalSize[0] = bfImage.getImageInfo<size_t>(CL_IMAGE_WIDTH);
-	lGlobalSize[1] = bfImage.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clSSAO, 2, NULL, lGlobalSize, NULL, 0, NULL, clSSAO.getEvent());
-	ENQUEUE_VALIDATE
+    size_t lGlobalSize[2];
+    lGlobalSize[0] = bfImage.getImageInfo<size_t>(CL_IMAGE_WIDTH);
+    lGlobalSize[1] = bfImage.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clSSAO, 2, NULL, lGlobalSize, NULL, 0, NULL, clSSAO.getEvent());
+    ENQUEUE_VALIDATE
 
-	return true;
+    return true;
 }

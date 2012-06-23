@@ -22,10 +22,10 @@ oclBilinearPyramid::oclBilinearPyramid(oclContext& iContext)
 , clDownsample(*this)
 , mLevel(1)
 {
-	addSourceFile("filter/oclBilinearPyramid.cl");
+    addSourceFile("filter/oclBilinearPyramid.cl");
 
-	exportKernel(clUpsample);
-	exportKernel(clDownsample);
+    exportKernel(clUpsample);
+    exportKernel(clDownsample);
 
     cl_image_format lFormat = { CL_RGBA,  CL_HALF_FLOAT };
     mLevel[0] = new oclImage2D(mContext, "Level");
@@ -38,19 +38,19 @@ oclBilinearPyramid::oclBilinearPyramid(oclContext& iContext)
 
 int oclBilinearPyramid::compile()
 {
-	clUpsample = 0;
+    clUpsample = 0;
     clDownsample = 0;
 
-	if (!oclProgram::compile())
-	{
-		return 0;
-	}
+    if (!oclProgram::compile())
+    {
+        return 0;
+    }
 
-	clUpsample = createKernel("clUpsample");
-	KERNEL_VALIDATE(clUpsample)
-	clDownsample = createKernel("clDownsample");
-	KERNEL_VALIDATE(clDownsample)
-	return 1;
+    clUpsample = createKernel("clUpsample");
+    KERNEL_VALIDATE(clUpsample)
+    clDownsample = createKernel("clDownsample");
+    KERNEL_VALIDATE(clDownsample)
+    return 1;
 }
 
 //
@@ -59,13 +59,13 @@ int oclBilinearPyramid::compile()
 
 int oclBilinearPyramid::compute(oclDevice& iDevice, oclImage2D& bfSrce)
 {
-	cl_uint lIw = pow(2.0f, ceil(log(bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH)/2.0f)/log(2.0f)));
-	cl_uint lIh = pow(2.0f, ceil(log(bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT)/2.0f)/log(2.0f)));
+    cl_uint lIw = pow(2.0f, ceil(log(bfSrce.getImageInfo<size_t>(CL_IMAGE_WIDTH)/2.0f)/log(2.0f)));
+    cl_uint lIh = pow(2.0f, ceil(log(bfSrce.getImageInfo<size_t>(CL_IMAGE_HEIGHT)/2.0f)/log(2.0f)));
     unsigned int lLevels = log(1.0*min(lIw,lIh))/log(2.0f);
 
     // resize pyramid if necessary
     cl_uint lLw = mLevel[0]->getImageInfo<size_t>(CL_IMAGE_WIDTH)/2;
-	cl_uint lLh = mLevel[0]->getImageInfo<size_t>(CL_IMAGE_HEIGHT)/2;
+    cl_uint lLh = mLevel[0]->getImageInfo<size_t>(CL_IMAGE_HEIGHT)/2;
     if (lLevels != mLevel.size() || lLw != lIw || lLh != lIh )
     {
         for (unsigned int i=0; i<mLevel.size(); i++)
@@ -86,8 +86,8 @@ int oclBilinearPyramid::compute(oclDevice& iDevice, oclImage2D& bfSrce)
     }
 
     // fill in pyramid
-	size_t lGlobalSize[2];
-	size_t lLocalSize[2];
+    size_t lGlobalSize[2];
+    size_t lLocalSize[2];
     clDownsample.localSize2D(iDevice, lGlobalSize, lLocalSize, lIw, lIh);
     clSetKernelArg(clDownsample, 0, sizeof(cl_mem), bfSrce);
     clSetKernelArg(clDownsample, 1, sizeof(cl_mem), *mLevel[0]);
@@ -101,27 +101,27 @@ int oclBilinearPyramid::compute(oclDevice& iDevice, oclImage2D& bfSrce)
         lIw /= 2;
         lIh /= 2;
         clDownsample.localSize2D(iDevice, lGlobalSize, lLocalSize, lIw, lIh);
-	    clSetKernelArg(clDownsample, 0, sizeof(cl_mem), *mLevel[i-1]);
-	    clSetKernelArg(clDownsample, 1, sizeof(cl_mem), *mLevel[i]);
- 	    clSetKernelArg(clDownsample, 2, sizeof(cl_uint), &lIw);
-	    clSetKernelArg(clDownsample, 3, sizeof(cl_uint), &lIh);
-	    sStatusCL = clEnqueueNDRangeKernel(iDevice, clDownsample, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clDownsample.getEvent());
-	    ENQUEUE_VALIDATE
+        clSetKernelArg(clDownsample, 0, sizeof(cl_mem), *mLevel[i-1]);
+        clSetKernelArg(clDownsample, 1, sizeof(cl_mem), *mLevel[i]);
+        clSetKernelArg(clDownsample, 2, sizeof(cl_uint), &lIw);
+        clSetKernelArg(clDownsample, 3, sizeof(cl_uint), &lIh);
+        sStatusCL = clEnqueueNDRangeKernel(iDevice, clDownsample, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clDownsample.getEvent());
+        ENQUEUE_VALIDATE
 
         lIw *= 2;
         lIh *= 2;
         clUpsample.localSize2D(iDevice, lGlobalSize, lLocalSize, lIw, lIh);
-	    clSetKernelArg(clUpsample, 0, sizeof(cl_mem), *mLevel[i]);
-	    clSetKernelArg(clUpsample, 1, sizeof(cl_mem), *mLevel[i-1]);
- 	    clSetKernelArg(clUpsample, 2, sizeof(cl_uint), &lIw);
-	    clSetKernelArg(clUpsample, 3, sizeof(cl_uint), &lIh);
-	    sStatusCL = clEnqueueNDRangeKernel(iDevice, clUpsample, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clUpsample.getEvent());
-	    ENQUEUE_VALIDATE
+        clSetKernelArg(clUpsample, 0, sizeof(cl_mem), *mLevel[i]);
+        clSetKernelArg(clUpsample, 1, sizeof(cl_mem), *mLevel[i-1]);
+        clSetKernelArg(clUpsample, 2, sizeof(cl_uint), &lIw);
+        clSetKernelArg(clUpsample, 3, sizeof(cl_uint), &lIh);
+        sStatusCL = clEnqueueNDRangeKernel(iDevice, clUpsample, 2, NULL, lGlobalSize, lLocalSize, 0, NULL, clUpsample.getEvent());
+        ENQUEUE_VALIDATE
         lIw /= 2;
         lIh /= 2;
     }
 
-	return true;
+    return true;
 }
 
 
