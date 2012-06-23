@@ -22,15 +22,15 @@ class oclConvolute : public oclProgram
 {
     public: 
 
-	    oclConvolute(oclContext& iContext);
+        oclConvolute(oclContext& iContext);
 
-		int compile();
+        int compile();
 
         // 2D convolutions on images and buffers
-		int iso2D(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclBuffer& bfFilter, int iFilterW, int iFilterH);
-		int iso2Dsep(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, cl_int2 iAxis, oclBuffer& bfFilter);
-		int aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclImage2D& iLine, oclBuffer& bfFilter);
-		int aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclImage2D& iLine, oclBuffer& bfFilter);
+        int iso2D(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclBuffer& bfFilter, int iFilterW, int iFilterH);
+        int iso2Dsep(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, cl_int2 iAxis, oclBuffer& bfFilter);
+        int aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclImage2D& iLine, oclBuffer& bfFilter);
+        int aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclImage2D& iLine, oclBuffer& bfFilter);
 
         // create kernels
         static bool gauss1D(float iSigma, oclBuffer& iBuffer);
@@ -41,10 +41,10 @@ class oclConvolute : public oclProgram
 
     protected:
 
- 		oclKernel clIso2D;
- 		oclKernel clIso2Dsep;
- 		oclKernel clAniso2Dtang;
- 		oclKernel clAniso2Dorth;
+        oclKernel clIso2D;
+        oclKernel clIso2Dsep;
+        oclKernel clAniso2Dtang;
+        oclKernel clAniso2Dorth;
 };      
 
 #endif

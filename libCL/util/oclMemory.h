@@ -22,19 +22,19 @@ class oclMemory : public oclProgram
 {
     public: 
 
-	    oclMemory(oclContext& iContext);
+        oclMemory(oclContext& iContext);
 
         static cl_float4 c0000;
 
-		int compile();
+        int compile();
         
         int memSet(oclDevice& iDevice, oclImage2D& bfDest, cl_float4 iValue);
         int memSet(oclDevice& iDevice, oclBuffer& bfDest, cl_float4 iValue);
 
     protected:
 
- 		oclKernel clMemSetImage;
- 		oclKernel clMemSetBuffer;
+        oclKernel clMemSetImage;
+        oclKernel clMemSetBuffer;
 };      
 
 #endif

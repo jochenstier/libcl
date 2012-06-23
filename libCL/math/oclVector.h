@@ -21,17 +21,17 @@ class oclVector : public oclProgram
 {
     public: 
 
-	    oclVector(oclContext& iContext);
+        oclVector(oclContext& iContext);
 
-		int compile();
+        int compile();
         
-		int normalize(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
+        int normalize(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
         int Xor(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_float4 iMask);
 
     protected:
 
- 		oclKernel clNormalize;
- 		oclKernel clXor;
+        oclKernel clNormalize;
+        oclKernel clXor;
 };      
 
 #endif

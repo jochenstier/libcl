@@ -22,103 +22,103 @@ class oclFluid3D : public oclProgram
 {
     public: 
 
-	    oclFluid3D(oclContext& iContext);
+        oclFluid3D(oclContext& iContext);
        ~oclFluid3D();
 
-		int compile();
+        int compile();
         int compute(oclDevice& iDevice);
-		
-		void setParticleCount(size_t iSize);
-		size_t getParticleCount();
+        
+        void setParticleCount(size_t iSize);
+        size_t getParticleCount();
 
-		int setPositionBuffer(oclBuffer* iBuffer);
-		int setVelocityBuffer(oclBuffer* iBuffer);
-		int setForceBuffer(oclBuffer* iBuffer);
+        int setPositionBuffer(oclBuffer* iBuffer);
+        int setVelocityBuffer(oclBuffer* iBuffer);
+        int setForceBuffer(oclBuffer* iBuffer);
 
-		oclBuffer* getForceBuffer();
-		oclBuffer* getPositionBuffer();
-		oclBuffer* getVelocityBuffer();
+        oclBuffer* getForceBuffer();
+        oclBuffer* getPositionBuffer();
+        oclBuffer* getVelocityBuffer();
 
-		oclBuffer& getSortedPositionBuffer();
-		oclBuffer& getSortedVelocityBuffer();
-		oclBuffer& getIndexBuffer();
+        oclBuffer& getSortedPositionBuffer();
+        oclBuffer& getSortedVelocityBuffer();
+        oclBuffer& getIndexBuffer();
 
-		oclBuffer& getParamBuffer();
+        oclBuffer& getParamBuffer();
 
-		typedef struct 
-		{
-			float deltaTime;
-			float particleRadius;
-			float cellSize;
-			float mass;
-			float viscosity;
-			float pressure;
-			float density;
-			float spacing;
-			float stiffness;
-			float viscosityConstant;
-			float pressureConstant;
-			float kernelConstant;
-			float velocitylimit;
-		} Params;
+        typedef struct 
+        {
+            float deltaTime;
+            float particleRadius;
+            float cellSize;
+            float mass;
+            float viscosity;
+            float pressure;
+            float density;
+            float spacing;
+            float stiffness;
+            float viscosityConstant;
+            float pressureConstant;
+            float kernelConstant;
+            float velocitylimit;
+        } Params;
 
-		Params& getParameters();
+        Params& getParameters();
 
 
-		// events
-		static char* EVT_INTEGRATE;
+        // events
+        static char* EVT_INTEGRATE;
         virtual void addEventHandler(srtEvent& iEvent);
 
         // sizes
-		static const size_t cLocalSize;
-		static const size_t cBucketCount;
+        static const size_t cLocalSize;
+        static const size_t cBucketCount;
 
-	protected:
+    protected:
 
-		oclRadixSort mRadixSort;
+        oclRadixSort mRadixSort;
 
-		oclKernel clIntegrateForce;
-		oclKernel clIntegrateVelocity;
-		oclKernel clHash;
-		oclKernel clReorder;
-		oclKernel clInitBounds;
-		oclKernel clFindBounds;
-		oclKernel clCalculateDensity;
-		oclKernel clCalculateForces;
-		oclKernel clInitFluid;
-		oclKernel clGravity;
-		oclKernel clClipBox;
+        oclKernel clIntegrateForce;
+        oclKernel clIntegrateVelocity;
+        oclKernel clHash;
+        oclKernel clReorder;
+        oclKernel clInitBounds;
+        oclKernel clFindBounds;
+        oclKernel clCalculateDensity;
+        oclKernel clCalculateForces;
+        oclKernel clInitFluid;
+        oclKernel clGravity;
+        oclKernel clClipBox;
 
-		oclBuffer bfCell;
-		oclBuffer bfCellStart;
-		oclBuffer bfCellEnd;
-		oclBuffer bfIndex;
-		oclBuffer bfSortedPosition;
-		oclBuffer bfSortedVelocity;
-		oclBuffer bfParams;
+        oclBuffer bfCell;
+        oclBuffer bfCellStart;
+        oclBuffer bfCellEnd;
+        oclBuffer bfIndex;
+        oclBuffer bfSortedPosition;
+        oclBuffer bfSortedVelocity;
+        oclBuffer bfParams;
 
-		oclBuffer* bfPosition;
-		oclBuffer* bfVelocity;
-		oclBuffer* bfForce;
-	
-		int bindBuffers();
+        oclBuffer* bfPosition;
+        oclBuffer* bfVelocity;
+        oclBuffer* bfForce;
+    
+        int bindBuffers();
 
-		void deleteBuffer(oclBuffer* iBuffer)
-		{
-			if (iBuffer->getOwner<oclFluid3D>() == this)
-			{
-				delete iBuffer;
-			}
-		}
+        void deleteBuffer(oclBuffer* iBuffer)
+        {
+            if (iBuffer->getOwner<oclFluid3D>() == this)
+            {
+                delete iBuffer;
+            }
+        }
 
-		Params mParams;
+        Params mParams;
 
-		size_t mParticleCount;
+        size_t mParticleCount;
 
     private:
 
 
-		srtEvent* mIntegrateCb;
+        srtEvent* mIntegrateCb;
 
 };      
 

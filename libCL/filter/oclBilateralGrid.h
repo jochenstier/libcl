@@ -25,19 +25,19 @@ class oclBilateralGrid : public oclProgram
 {
     public: 
 
-	    oclBilateralGrid(oclContext& iContext);
+        oclBilateralGrid(oclContext& iContext);
 
-		int compile();
+        int compile();
 
-		int split(oclDevice& iDevice, oclImage2D& bfSrce, cl_float4 iMask);
-		int slice(oclDevice& iDevice, oclImage2D& bfSrce, cl_float4 iMask, oclImage2D& bfDest);
-		int equalize(oclDevice& iDevice, cl_float4 iMask);
+        int split(oclDevice& iDevice, oclImage2D& bfSrce, cl_float4 iMask);
+        int slice(oclDevice& iDevice, oclImage2D& bfSrce, cl_float4 iMask, oclImage2D& bfDest);
+        int equalize(oclDevice& iDevice, cl_float4 iMask);
 
-		int smoothZ(oclDevice& iDevice, oclBuffer& iKernel);
-		int smoothXY(oclDevice& iDevice, oclBuffer& iKernel);
-		int smoothXYZ(oclDevice& iDevice, oclBuffer& iKernel);
+        int smoothZ(oclDevice& iDevice, oclBuffer& iKernel);
+        int smoothXY(oclDevice& iDevice, oclBuffer& iKernel);
+        int smoothXYZ(oclDevice& iDevice, oclBuffer& iKernel);
 
-		void resize(cl_uint iGridW, cl_uint iGridH, cl_uint iGridD);
+        void resize(cl_uint iGridW, cl_uint iGridH, cl_uint iGridD);
 
     protected:
 
@@ -46,12 +46,12 @@ class oclBilateralGrid : public oclProgram
         static cl_int4 sAxisZ;
         oclMemory mMemory;
 
-    	size_t mGridSize[3];
+        size_t mGridSize[3];
 
-		oclKernel clSplit;
-		oclKernel clSlice;
-		oclKernel clEqualize;
-		oclKernel clConvolute;
+        oclKernel clSplit;
+        oclKernel clSlice;
+        oclKernel clEqualize;
+        oclKernel clConvolute;
 
         oclImage3D bfGrid3D;
         oclBuffer bfGrid1Da;

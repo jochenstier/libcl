@@ -23,29 +23,29 @@ class oclRadixSort : public oclProgram
 {
     public: 
 
-	    oclRadixSort(oclContext& iContext);
+        oclRadixSort(oclContext& iContext);
 
-		int compile();
+        int compile();
         int compute(oclDevice& iDevice, oclBuffer& bfKey, oclBuffer& bfVal, int iStartBit, int iEndBit);
 
     protected:
 
-		static const int cBits;
-		static const size_t cBlockSize;
-		static const size_t cMaxArraySize;
+        static const int cBits;
+        static const size_t cBlockSize;
+        static const size_t cMaxArraySize;
 
-		oclKernel clBlockSort;
-		oclKernel clBlockScan;
-		oclKernel clBlockPrefix;
-		oclKernel clReorder;
+        oclKernel clBlockSort;
+        oclKernel clBlockScan;
+        oclKernel clBlockPrefix;
+        oclKernel clReorder;
 
-		oclBuffer bfTempKey;
-		oclBuffer bfTempVal;
-		oclBuffer bfBlockScan;
-		oclBuffer bfBlockSum;
-		oclBuffer bfBlockOffset;
+        oclBuffer bfTempKey;
+        oclBuffer bfTempVal;
+        oclBuffer bfBlockScan;
+        oclBuffer bfBlockSum;
+        oclBuffer bfBlockOffset;
 
-		void fit(oclBuffer& iBuffer, size_t iElements) ;
+        void fit(oclBuffer& iBuffer, size_t iElements) ;
 
 };      
 

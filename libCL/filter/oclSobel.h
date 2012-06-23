@@ -22,15 +22,15 @@ class oclSobel : public oclProgram
 {
     public: 
 
-	    oclSobel(oclContext& iContext);
+        oclSobel(oclContext& iContext);
 
-		int compile();
+        int compile();
 
-		int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDx, oclImage2D& bfDy);
+        int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDx, oclImage2D& bfDy);
 
     protected:
 
-		oclKernel clSobel;
+        oclKernel clSobel;
 };      
 
 #endif

@@ -22,64 +22,64 @@ class oclBvhTrimesh : public oclProgram
 {
     public: 
 
-	    oclBvhTrimesh(oclContext& iContext);
+        oclBvhTrimesh(oclContext& iContext);
        ~oclBvhTrimesh();
 
-		int compile();
+        int compile();
         int compute(oclDevice& iDevice, 
                     oclBuffer& bfVertex, 
                     oclBuffer& bIndex);
 
-		typedef struct 
-		{
-			cl_float4 bbMin;
-			cl_float4 bbMax;
-			cl_uint left;
-			cl_uint right;
-			cl_uint bit;
-			cl_uint trav;
-		} BVHNode;
+        typedef struct 
+        {
+            cl_float4 bbMin;
+            cl_float4 bbMax;
+            cl_uint left;
+            cl_uint right;
+            cl_uint bit;
+            cl_uint trav;
+        } BVHNode;
 
-    	oclBuffer& getNodeBuffer();
-		cl_uint getNodeCount();
-		cl_uint getRootNode();
+        oclBuffer& getNodeBuffer();
+        cl_uint getNodeCount();
+        cl_uint getRootNode();
 
         
 
     protected:
         static const size_t cWarpSize;
 
-		oclRadixSort mRadixSort;
+        oclRadixSort mRadixSort;
 
         void create();
         void destroy();
 
-		typedef struct 
-		{
-			cl_float4 bbMin;
-			cl_float4 bbMax;
-			cl_int flag;
-		} 
+        typedef struct 
+        {
+            cl_float4 bbMin;
+            cl_float4 bbMax;
+            cl_int flag;
+        } 
         srtAABB;
 
         static const int sBVH	= 0x001;
 
         
 
-		oclKernel clAABB;
-		oclKernel clMorton;
-		oclKernel clCreateNodes;
-		oclKernel clLinkNodes;
-		oclKernel clCreateLeaves;
-		oclKernel clComputeAABBs;
+        oclKernel clAABB;
+        oclKernel clMorton;
+        oclKernel clCreateNodes;
+        oclKernel clLinkNodes;
+        oclKernel clCreateLeaves;
+        oclKernel clComputeAABBs;
 
-		oclBuffer bfAABB;
-		oclBuffer bfMortonKey;
-		oclBuffer bfMortonVal;
-		oclBuffer bfBvhRoot;
-		oclBuffer bfBvhNode;
+        oclBuffer bfAABB;
+        oclBuffer bfMortonKey;
+        oclBuffer bfMortonVal;
+        oclBuffer bfBvhRoot;
+        oclBuffer bfBvhNode;
 
-		cl_uint mRootNode;
+        cl_uint mRootNode;
 };
 
 #endif

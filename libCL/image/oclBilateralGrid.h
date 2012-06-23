@@ -21,16 +21,16 @@ class oclBilateralGrid : public oclProgram
 {
     public: 
 
-	    oclBilateralGrid(oclContext& iContext);
+        oclBilateralGrid(oclContext& iContext);
 
-		int compile();
-		int compute(oclDevice& iDevice, oclImage2D& bfImage, oclImage2D& bfDepth);
+        int compile();
+        int compute(oclDevice& iDevice, oclImage2D& bfImage, oclImage2D& bfDepth);
 
-		void setSigma(cl_float iValue);
+        void setSigma(cl_float iValue);
 
     protected:
 
- 		oclKernel clSSAO;
+        oclKernel clSSAO;
 };      
 
 #endif
