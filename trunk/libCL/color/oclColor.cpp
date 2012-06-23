@@ -45,36 +45,36 @@ oclColor::oclColor(oclContext& iContext)
 
 int oclColor::compile()
 {
-	clRGBtoHSV = 0;
-	clHSVtoRGB = 0;
+    clRGBtoHSV = 0;
+    clHSVtoRGB = 0;
 
-	clRGBtoXYZ = 0;
-	clXYZtoRGB = 0;
+    clRGBtoXYZ = 0;
+    clXYZtoRGB = 0;
 
-	clRGBtoLAB = 0;
-	clLABtoRGB = 0;
+    clRGBtoLAB = 0;
+    clLABtoRGB = 0;
 
-	if (!oclProgram::compile())
-	{
-		return 0;
-	}
+    if (!oclProgram::compile())
+    {
+        return 0;
+    }
 
-	clHSVtoRGB = createKernel("clHSVtoRGB");
-	KERNEL_VALIDATE(clHSVtoRGB)
-	clRGBtoHSV = createKernel("clRGBtoHSV");
-	KERNEL_VALIDATE(clRGBtoHSV)
+    clHSVtoRGB = createKernel("clHSVtoRGB");
+    KERNEL_VALIDATE(clHSVtoRGB)
+    clRGBtoHSV = createKernel("clRGBtoHSV");
+    KERNEL_VALIDATE(clRGBtoHSV)
 
-	clRGBtoXYZ = createKernel("clRGBtoXYZ");
-	KERNEL_VALIDATE(clRGBtoXYZ)
-	clXYZtoRGB = createKernel("clXYZtoRGB");
-	KERNEL_VALIDATE(clXYZtoRGB)
+    clRGBtoXYZ = createKernel("clRGBtoXYZ");
+    KERNEL_VALIDATE(clRGBtoXYZ)
+    clXYZtoRGB = createKernel("clXYZtoRGB");
+    KERNEL_VALIDATE(clXYZtoRGB)
 
-	clRGBtoLAB = createKernel("clRGBtoLAB");
-	KERNEL_VALIDATE(clRGBtoLAB)
-	clLABtoRGB = createKernel("clLABtoRGB");
-	KERNEL_VALIDATE(clLABtoRGB)
+    clRGBtoLAB = createKernel("clRGBtoLAB");
+    KERNEL_VALIDATE(clRGBtoLAB)
+    clLABtoRGB = createKernel("clLABtoRGB");
+    KERNEL_VALIDATE(clLABtoRGB)
       
-	return 1;
+    return 1;
 }
 
 
@@ -83,9 +83,9 @@ int oclColor::invoke(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest,
     size_t lGlobalSize[2];
     lGlobalSize[0] = bfSrce.dim(0);
     lGlobalSize[1] = bfSrce.dim(1);
-	clSetKernelArg(iKernel, 0, sizeof(cl_mem), bfSrce);
-	clSetKernelArg(iKernel, 1, sizeof(cl_mem), bfDest);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, iKernel, 2, NULL, lGlobalSize, 0, 0, NULL, iKernel.getEvent());
-	ENQUEUE_VALIDATE
+    clSetKernelArg(iKernel, 0, sizeof(cl_mem), bfSrce);
+    clSetKernelArg(iKernel, 1, sizeof(cl_mem), bfDest);
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, iKernel, 2, NULL, lGlobalSize, 0, 0, NULL, iKernel.getEvent());
+    ENQUEUE_VALIDATE
     return 1;
 };

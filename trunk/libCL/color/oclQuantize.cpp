@@ -31,16 +31,16 @@ oclQuantize::oclQuantize(oclContext& iContext)
 
 int oclQuantize::compile()
 {
-	clQuantizeLAB = 0;
+    clQuantizeLAB = 0;
 
-	if (!oclProgram::compile())
-	{
-		return 0;
-	}
+    if (!oclProgram::compile())
+    {
+        return 0;
+    }
 
     clQuantizeLAB = createKernel("clQuantizeLAB");
-	KERNEL_VALIDATE(clQuantizeLAB)
-	return 1;
+    KERNEL_VALIDATE(clQuantizeLAB)
+    return 1;
 }
 
 
@@ -49,13 +49,13 @@ int oclQuantize::quantizeLAB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D&
     size_t lGlobalSize[2];
     lGlobalSize[0] = bfSrce.dim(0);
     lGlobalSize[1] = bfSrce.dim(1);
-	clSetKernelArg(clQuantizeLAB, 0, sizeof(cl_mem), bfSrce);
-	clSetKernelArg(clQuantizeLAB, 1, sizeof(cl_mem), bfDest);
-	clSetKernelArg(clQuantizeLAB, 2, sizeof(cl_float), &ibinL);
-	clSetKernelArg(clQuantizeLAB, 3, sizeof(cl_float), &ibinA);
-	clSetKernelArg(clQuantizeLAB, 4, sizeof(cl_float), &ibinB);
-	clSetKernelArg(clQuantizeLAB, 5, sizeof(cl_float), &iSharpness);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clQuantizeLAB, 2, NULL, lGlobalSize, 0, 0, NULL, clQuantizeLAB.getEvent());
-	ENQUEUE_VALIDATE
+    clSetKernelArg(clQuantizeLAB, 0, sizeof(cl_mem), bfSrce);
+    clSetKernelArg(clQuantizeLAB, 1, sizeof(cl_mem), bfDest);
+    clSetKernelArg(clQuantizeLAB, 2, sizeof(cl_float), &ibinL);
+    clSetKernelArg(clQuantizeLAB, 3, sizeof(cl_float), &ibinA);
+    clSetKernelArg(clQuantizeLAB, 4, sizeof(cl_float), &ibinB);
+    clSetKernelArg(clQuantizeLAB, 5, sizeof(cl_float), &iSharpness);
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clQuantizeLAB, 2, NULL, lGlobalSize, 0, 0, NULL, clQuantizeLAB.getEvent());
+    ENQUEUE_VALIDATE
     return 1;
 };

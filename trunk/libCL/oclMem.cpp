@@ -67,7 +67,7 @@ bool oclMem::unmap(int iDevice)
 {
     if (mMemPtr)
     {
-    	cl_mem_flags lMemFlags = getMemObjectInfo<cl_mem_flags>(CL_MEM_FLAGS); 
+        cl_mem_flags lMemFlags = getMemObjectInfo<cl_mem_flags>(CL_MEM_FLAGS); 
 
         sStatusCL = clEnqueueUnmapMemObject(mContext.getDevice(iDevice), 
                                             mMemPtr, 

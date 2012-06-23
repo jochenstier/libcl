@@ -33,19 +33,19 @@ oclVector::oclVector(oclContext& iContext)
 
 int oclVector::compile()
 {
-	clNormalize = 0;
-	clXor = 0;
+    clNormalize = 0;
+    clXor = 0;
 
-	if (!oclProgram::compile())
-	{
-		return 0;
-	}
+    if (!oclProgram::compile())
+    {
+        return 0;
+    }
 
-	clNormalize = createKernel("clNormalize");
-	KERNEL_VALIDATE(clNormalize)
-	clXor = createKernel("clXor");
-	KERNEL_VALIDATE(clXor)
-	return 1;
+    clNormalize = createKernel("clNormalize");
+    KERNEL_VALIDATE(clNormalize)
+    clXor = createKernel("clXor");
+    KERNEL_VALIDATE(clXor)
+    return 1;
 }
 
 
@@ -54,10 +54,10 @@ int oclVector::normalize(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfD
     size_t lGlobalSize[2];
     lGlobalSize[0] = bfSrce.dim(0);
     lGlobalSize[1] = bfSrce.dim(1);
-	clSetKernelArg(clNormalize, 0, sizeof(cl_mem), bfSrce);
-	clSetKernelArg(clNormalize, 1, sizeof(cl_mem), bfDest);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clNormalize, 2, NULL, lGlobalSize, 0, 0, NULL, clNormalize.getEvent());
-	ENQUEUE_VALIDATE
+    clSetKernelArg(clNormalize, 0, sizeof(cl_mem), bfSrce);
+    clSetKernelArg(clNormalize, 1, sizeof(cl_mem), bfDest);
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clNormalize, 2, NULL, lGlobalSize, 0, 0, NULL, clNormalize.getEvent());
+    ENQUEUE_VALIDATE
     return 1;
 };
 
@@ -66,10 +66,10 @@ int oclVector::Xor(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, c
     size_t lGlobalSize[2];
     lGlobalSize[0] = bfSrce.dim(0);
     lGlobalSize[1] = bfSrce.dim(1);
-	clSetKernelArg(clXor, 0, sizeof(cl_mem), bfSrce);
-	clSetKernelArg(clXor, 1, sizeof(cl_mem), bfDest);
-	clSetKernelArg(clXor, 2, sizeof(cl_float4),  &iMask);
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clXor, 2, NULL, lGlobalSize, 0, 0, NULL, clXor.getEvent());
-	ENQUEUE_VALIDATE
+    clSetKernelArg(clXor, 0, sizeof(cl_mem), bfSrce);
+    clSetKernelArg(clXor, 1, sizeof(cl_mem), bfDest);
+    clSetKernelArg(clXor, 2, sizeof(cl_float4),  &iMask);
+    sStatusCL = clEnqueueNDRangeKernel(iDevice, clXor, 2, NULL, lGlobalSize, 0, 0, NULL, clXor.getEvent());
+    ENQUEUE_VALIDATE
     return 1;
 };
