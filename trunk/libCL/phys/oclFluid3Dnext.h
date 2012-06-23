@@ -22,110 +22,110 @@ class oclFluid3Dnext : public oclProgram
 {
     public: 
 
-	    oclFluid3Dnext(oclContext& iContext);
+        oclFluid3Dnext(oclContext& iContext);
        ~oclFluid3Dnext();
 
-		int compile();
+        int compile();
         int compute(oclDevice& iDevice);
-		
-		void setParticleCount(size_t iSize);
-		size_t getParticleCount();
+        
+        void setParticleCount(size_t iSize);
+        size_t getParticleCount();
 
-		int setPositionBuffer(oclBuffer* iBuffer);
-		int setStateBuffer(oclBuffer* iBuffer);
-		int setForceBuffer(oclBuffer* iBuffer);
-		int setBorderBuffer(oclBuffer* iBuffer);
+        int setPositionBuffer(oclBuffer* iBuffer);
+        int setStateBuffer(oclBuffer* iBuffer);
+        int setForceBuffer(oclBuffer* iBuffer);
+        int setBorderBuffer(oclBuffer* iBuffer);
 
-		oclBuffer* getForceBuffer();
-		oclBuffer* getPositionBuffer();
-		oclBuffer* getStateBuffer();
-		oclBuffer* getBorderBuffer();
+        oclBuffer* getForceBuffer();
+        oclBuffer* getPositionBuffer();
+        oclBuffer* getStateBuffer();
+        oclBuffer* getBorderBuffer();
 
-		oclBuffer& getSortedPositionBuffer();
-		oclBuffer& getSortedVelocityBuffer();
-		oclBuffer& getIndexBuffer();
+        oclBuffer& getSortedPositionBuffer();
+        oclBuffer& getSortedVelocityBuffer();
+        oclBuffer& getIndexBuffer();
 
-		oclBuffer& getParamBuffer();
+        oclBuffer& getParamBuffer();
 
         typedef struct 
         {
-	        float deltaTime;
-	        float kernelRadius;
-	        float density;
-	        float stiffness0;
-	        float stiffness1;
-	        float viscosity0;
-	        float viscosity1;
-	        float radius;
+            float deltaTime;
+            float kernelRadius;
+            float density;
+            float stiffness0;
+            float stiffness1;
+            float viscosity0;
+            float viscosity1;
+            float radius;
 
-	        float cellSize;
-	        int cellCountX;
-	        int cellCountY;
+            float cellSize;
+            int cellCountX;
+            int cellCountY;
 
         } Params;
 
-		Params& getParameters();
+        Params& getParameters();
 
 
-		// events
-		static char* EVT_INTEGRATE;
+        // events
+        static char* EVT_INTEGRATE;
         virtual void addEventHandler(srtEvent& iEvent);
 
         // sizes
-		static const size_t cLocalSize;
+        static const size_t cLocalSize;
 
-	protected:
+    protected:
 
-		oclRadixSort mRadixSort;
+        oclRadixSort mRadixSort;
 
-		// kernels
-		oclKernel clHash;
-		oclKernel clReorder;
-		oclKernel clInitBounds;
-		oclKernel clFindBounds;
+        // kernels
+        oclKernel clHash;
+        oclKernel clReorder;
+        oclKernel clInitBounds;
+        oclKernel clFindBounds;
 
-		oclKernel clInitFluid;
+        oclKernel clInitFluid;
 
-		oclKernel clComputePressure;
-		oclKernel clComputeForces;
-		oclKernel clIntegrateForce;
-    	oclKernel clComputeVelocity;
+        oclKernel clComputePressure;
+        oclKernel clComputeForces;
+        oclKernel clIntegrateForce;
+        oclKernel clComputeVelocity;
 
-		// buffers
-		oclBuffer bfCell;
-		oclBuffer bfCellStart; 
-		oclBuffer bfCellEnd;
-		oclBuffer bfIndex;
+        // buffers
+        oclBuffer bfCell;
+        oclBuffer bfCellStart; 
+        oclBuffer bfCellEnd;
+        oclBuffer bfIndex;
 
-		oclBuffer bfPressure;
-		oclBuffer bfForce;
-		oclBuffer bfSortedState;
+        oclBuffer bfPressure;
+        oclBuffer bfForce;
+        oclBuffer bfSortedState;
 
-		oclBuffer bfParams;
+        oclBuffer bfParams;
 
-		oclBuffer* bfBorder;
-		oclBuffer* bfPosition;
-	
-		int bindBuffers();
+        oclBuffer* bfBorder;
+        oclBuffer* bfPosition;
+    
+        int bindBuffers();
 
-		void deleteBuffer(oclBuffer* iBuffer)
-		{
-			if (iBuffer->getOwner<oclFluid3Dnext>() == this)
-			{
-				delete iBuffer;
-			}
-		}
+        void deleteBuffer(oclBuffer* iBuffer)
+        {
+            if (iBuffer->getOwner<oclFluid3Dnext>() == this)
+            {
+                delete iBuffer;
+            }
+        }
 
-		Params mParams;
+        Params mParams;
 
-		size_t mParticleCount;
-	    size_t mCellCount;
+        size_t mParticleCount;
+        size_t mCellCount;
 
 
     private:
 
 
-		srtEvent* mIntegrateCb;
+        srtEvent* mIntegrateCb;
 
 };      
 

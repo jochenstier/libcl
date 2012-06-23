@@ -22,19 +22,19 @@ class oclBilateral : public oclProgram
 {
     public: 
 
-	    oclBilateral(oclContext& iContext);
+        oclBilateral(oclContext& iContext);
 
-		int compile();
+        int compile();
 
-		int iso2D(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, cl_float4 iMask);
-		int aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, oclImage2D& bfVector, cl_float4 iMask);
-		int aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, oclImage2D& bfVector, cl_float4 iMask);
+        int iso2D(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, cl_float4 iMask);
+        int aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, oclImage2D& bfVector, cl_float4 iMask);
+        int aniso2Dorth(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, oclImage2D& bfVector, cl_float4 iMask);
 
     protected:
 
-		oclKernel clIso2D;
-		oclKernel clAniso2Dtang;
-		oclKernel clAniso2Dorth;
+        oclKernel clIso2D;
+        oclKernel clAniso2Dtang;
+        oclKernel clAniso2Dorth;
 };      
 
 #endif

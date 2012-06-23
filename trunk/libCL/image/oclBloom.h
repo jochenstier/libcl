@@ -25,9 +25,9 @@ class oclBloom : public oclProgram
 {
     public: 
 
-	    oclBloom(oclContext& iContext, cl_image_format iFormat = sDefaultFormat);
+        oclBloom(oclContext& iContext, cl_image_format iFormat = sDefaultFormat);
 
-		int compile();
+        int compile();
         int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
 
         void setSmoothing(cl_float iValue);
@@ -36,15 +36,15 @@ class oclBloom : public oclProgram
 
     protected:
 
-		oclRecursiveGaussian mGaussian;
+        oclRecursiveGaussian mGaussian;
 
-		oclKernel clFilter;
-		oclKernel clCombine;
+        oclKernel clFilter;
+        oclKernel clCombine;
 
-		oclImage2D bfTempA;
-		oclImage2D bfTempB;
+        oclImage2D bfTempA;
+        oclImage2D bfTempB;
 
-		static cl_image_format sDefaultFormat;
+        static cl_image_format sDefaultFormat;
 };      
 
 #endif

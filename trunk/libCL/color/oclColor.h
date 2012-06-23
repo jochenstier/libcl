@@ -21,35 +21,35 @@ class oclColor : public oclProgram
 {
     public: 
 
-	    oclColor(oclContext& iContext);
+        oclColor(oclContext& iContext);
 
-		int compile();
+        int compile();
         
         // apply separable convolution over iAxis to 3D buffer
-		int RGBtoHSV(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
+        int RGBtoHSV(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
         {
             return invoke(iDevice, bfSrce, bfDest, clRGBtoHSV);
         };
-		int HSVtoRGB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
+        int HSVtoRGB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
         {
             return invoke(iDevice, bfSrce, bfDest, clHSVtoRGB);
         };
 
 
-		int RGBtoXYZ(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
+        int RGBtoXYZ(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
         {
             return invoke(iDevice, bfSrce, bfDest, clRGBtoXYZ);
         };
-		int XYZtoRGB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
+        int XYZtoRGB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
         {
             return invoke(iDevice, bfSrce, bfDest, clXYZtoRGB);
         };
 
-		int RGBtoLAB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
+        int RGBtoLAB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
         {
             return invoke(iDevice, bfSrce, bfDest, clRGBtoLAB);
         };
-		int LABtoRGB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
+        int LABtoRGB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
         {
             return invoke(iDevice, bfSrce, bfDest, clLABtoRGB);
         };
@@ -59,13 +59,13 @@ class oclColor : public oclProgram
 
         int invoke(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, oclKernel& iKernel);
 
- 		oclKernel clHSVtoRGB;
- 		oclKernel clRGBtoHSV;
+        oclKernel clHSVtoRGB;
+        oclKernel clRGBtoHSV;
 
- 		oclKernel clRGBtoXYZ;
- 		oclKernel clXYZtoRGB;
+        oclKernel clRGBtoXYZ;
+        oclKernel clXYZtoRGB;
 
- 		oclKernel clRGBtoLAB;
+        oclKernel clRGBtoLAB;
         oclKernel clLABtoRGB;
 };      
 

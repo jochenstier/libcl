@@ -22,17 +22,17 @@ class oclTangent : public oclProgram
 {
     public: 
 
-	    oclTangent(oclContext& iContext);
+        oclTangent(oclContext& iContext);
 
-		int compile();
+        int compile();
 
-		int compute(oclDevice& iDevice, oclImage2D& bfDx, oclImage2D& bfDy, oclImage2D& bfDest);
-		int lineConv(oclDevice& iDevice, oclImage2D& bfVector, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iDepth);
+        int compute(oclDevice& iDevice, oclImage2D& bfDx, oclImage2D& bfDy, oclImage2D& bfDest);
+        int lineConv(oclDevice& iDevice, oclImage2D& bfVector, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iDepth);
 
     protected:
 
-		oclKernel clTangent;
-		oclKernel clLineConv;
+        oclKernel clTangent;
+        oclKernel clLineConv;
 };      
 
 #endif

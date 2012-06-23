@@ -21,17 +21,17 @@ class oclRecursiveGaussian : public oclProgram
 {
     public: 
 
-	    oclRecursiveGaussian(oclContext& iContext);
+        oclRecursiveGaussian(oclContext& iContext);
 
-		int compile();
-		int compute(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfTemp, oclImage2D& bfDest);
+        int compile();
+        int compute(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfTemp, oclImage2D& bfDest);
 
-		void setSigma(cl_float iValue);
+        void setSigma(cl_float iValue);
 
     protected:
 
- 		oclKernel clRecursiveGaussian;
-		size_t mLocalSize;
+        oclKernel clRecursiveGaussian;
+        size_t mLocalSize;
 
 };      
 
