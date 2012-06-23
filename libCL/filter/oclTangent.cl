@@ -17,61 +17,61 @@
 //EG UK Theory and Practice of Computer Graphics, pp. 51–58.
 __kernel void clTangent(__read_only image2d_t dx, __read_only image2d_t dy, __write_only image2d_t dt, int w, int h)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
+    const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
     if (x < w && y < h) 
-	{
-		float4 dFx = read_imagef(dx, sampler, (float2)(x,y)); 
-		float4 dFy = read_imagef(dy, sampler, (float2)(x,y)); 
+    {
+        float4 dFx = read_imagef(dx, sampler, (float2)(x,y)); 
+        float4 dFy = read_imagef(dy, sampler, (float2)(x,y)); 
 
-		float E = dot(dFx,dFx);
-		float F = dot(dFx,dFy);
-		float G = dot(dFy,dFy);
+        float E = dot(dFx,dFx);
+        float F = dot(dFx,dFy);
+        float G = dot(dFy,dFy);
 
-		float Lambda2 = 0.5*(E+G-sqrt((E-G)*(E-G)+4*F*F));
-		write_imagef(dt, (int2)(x,y), (float4)(Lambda2-G, F, 0, 0));
-	}
+        float Lambda2 = 0.5*(E+G-sqrt((E-G)*(E-G)+4*F*F));
+        write_imagef(dt, (int2)(x,y), (float4)(Lambda2-G, F, 0, 0));
+    }
 }
 
 __kernel void clLineConv(__read_only image2d_t vector, __read_only image2d_t srce, __write_only image2d_t dest, int depth, int w, int h)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP;
-	int x = get_global_id(0);
-	int y = get_global_id(1);
+    const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP;
+    int x = get_global_id(0);
+    int y = get_global_id(1);
     if (x < w && y < h) 
-	{
-		float2 lMin = (float2)(0,0);
-		float2 lMax = (float2)(get_global_size(0)-1, get_global_size(1)-1);
+    {
+        float2 lMin = (float2)(0,0);
+        float2 lMax = (float2)(get_global_size(0)-1, get_global_size(1)-1);
 
-		float2 p = (float2)(x,y);
-		float4 c = read_imagef(vector, sampler, p);
-		float4 result = read_imagef(srce, sampler, p);
+        float2 p = (float2)(x,y);
+        float4 c = read_imagef(vector, sampler, p);
+        float4 result = read_imagef(srce, sampler, p);
 
-		// forward
-		float n = 0.25;
-		float4 dxy = c;
-		p = (float2)(x,y);
-		for (int d=0; d<depth; d++)
-		{
-			p = clamp(p+dxy.xy, lMin, lMax);
-			dxy = read_imagef(vector, sampler, p);
-			result += read_imagef(srce, sampler, p);//*0.5*n;
-			n*=0.5;
-		}
+        // forward
+        float n = 0.25;
+        float4 dxy = c;
+        p = (float2)(x,y);
+        for (int d=0; d<depth; d++)
+        {
+            p = clamp(p+dxy.xy, lMin, lMax);
+            dxy = read_imagef(vector, sampler, p);
+            result += read_imagef(srce, sampler, p);//*0.5*n;
+            n*=0.5;
+        }
 
-		// backward
-		n = 0.25;
-		dxy = c;
-		p = (float2)(x,y);
-		for (int d=0; d<depth; d++)
-		{
-			p = clamp(p-dxy.xy, lMin, lMax);
-			dxy = read_imagef(vector, sampler, p);
-			result += read_imagef(srce, sampler, p);//*0.5*n;
-			n*=0.5;
-		}
-	
-		write_imagef(dest, (int2)(x,y), result/(2*depth+1));
-	}
+        // backward
+        n = 0.25;
+        dxy = c;
+        p = (float2)(x,y);
+        for (int d=0; d<depth; d++)
+        {
+            p = clamp(p-dxy.xy, lMin, lMax);
+            dxy = read_imagef(vector, sampler, p);
+            result += read_imagef(srce, sampler, p);//*0.5*n;
+            n*=0.5;
+        }
+    
+        write_imagef(dest, (int2)(x,y), result/(2*depth+1));
+    }
 }

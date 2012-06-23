@@ -14,19 +14,19 @@
 
 __kernel void clQuantizeLAB(__read_only image2d_t srce, __write_only image2d_t dest, float binL, float binA, float binB, float sharpness)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
-	int x = get_global_id(0);
-	int y = get_global_id(1);
-	float4 LAB = read_imagef(srce, sampler, (int2)(x,y));
+    const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
+    int x = get_global_id(0);
+    int y = get_global_id(1);
+    float4 LAB = read_imagef(srce, sampler, (int2)(x,y));
 
-	float bL = LAB.x - fmod(LAB.x, binL) + binL/2.0;
-	float bA = LAB.y - fmod(LAB.y, binA) + binA/2.0;
-	float bB = LAB.z - fmod(LAB.z, binB) + binB/2.0;
-	LAB.x = bL + binL/2.0f*tanh(sharpness*(LAB.x - bL));
-	LAB.y = bA + binA/2.0f*tanh(sharpness*(LAB.y - bA));
-	LAB.z = bB + binB/2.0f*tanh(sharpness*(LAB.z - bB));
+    float bL = LAB.x - fmod(LAB.x, binL) + binL/2.0;
+    float bA = LAB.y - fmod(LAB.y, binA) + binA/2.0;
+    float bB = LAB.z - fmod(LAB.z, binB) + binB/2.0;
+    LAB.x = bL + binL/2.0f*tanh(sharpness*(LAB.x - bL));
+    LAB.y = bA + binA/2.0f*tanh(sharpness*(LAB.y - bA));
+    LAB.z = bB + binB/2.0f*tanh(sharpness*(LAB.z - bB));
 
-	write_imagef(dest, (int2)(x,y), LAB);
+    write_imagef(dest, (int2)(x,y), LAB);
 }
 
 
