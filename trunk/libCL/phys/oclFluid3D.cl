@@ -116,7 +116,7 @@ __kernel void clFindBounds(__global uint* cellStart, __global uint* cellEnd, __g
 // Compute smoothed particle hydrodynamics 
 //
 #ifndef M_PI_F
-	#define M_PI_F M_PI
+    #define M_PI_F M_PI
 #endif
 
 #define DensityVariable(smoothinglength, distance) pow(smoothinglength*smoothinglength - distance*distance, 3.0f)
@@ -274,9 +274,9 @@ __kernel void clEmitter(__global float4* posIn, __global float4* velIn, uint emi
     const uint particle = get_global_id(0);
     if (particle > emit && particle < emit+100)
     {
-	int index = emit - particle;
-	posIn[particle] = (float4)(index/10*2*param->particleRadius,0.6,0.6+index%10*2*param->particleRadius,1);
-	velIn[particle] = (float4)(0,emitSpeed,0,1);
+    int index = emit - particle;
+    posIn[particle] = (float4)(index/10*2*param->particleRadius,0.6,0.6+index%10*2*param->particleRadius,1);
+    velIn[particle] = (float4)(0,emitSpeed,0,1);
     }
 }
 

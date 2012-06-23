@@ -15,32 +15,32 @@
 
 __kernel void clDownsample(__read_only image2d_t imageIn, __write_only image2d_t imageOut, int imgw, int imgh)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP_TO_EDGE;
+    const sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
     if (x < imgw && y < imgh) 
-	{
-		float dw = 1.0/imgw;
-		float dh = 1.0/imgh;
-		float sx = x*dw+0.5*dw;
-		float sy = y*dh+0.5*dh;
-		float4 sample = read_imagef(imageIn, sampler, (float2)(sx,sy));
-		write_imagef(imageOut, (int2)(x,y), sample);
-	}
+    {
+        float dw = 1.0/imgw;
+        float dh = 1.0/imgh;
+        float sx = x*dw+0.5*dw;
+        float sy = y*dh+0.5*dh;
+        float4 sample = read_imagef(imageIn, sampler, (float2)(sx,sy));
+        write_imagef(imageOut, (int2)(x,y), sample);
+    }
 }
 
 __kernel void clUpsample(__read_only image2d_t imageIn, __write_only image2d_t imageOut, int imgw, int imgh)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP_TO_EDGE;
+    const sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
     if (x < imgw && y < imgh) 
-	{
-		float dw = 1.0/imgw;
-		float dh = 1.0/imgh;
-		float sx = x*dw+0.5*dw;
-		float sy = y*dh+0.5*dh;
-		float4 sample = read_imagef(imageIn, sampler, (float2)(sx,sy));
-		write_imagef(imageOut, (int2)(x,y), sample);
-	}
+    {
+        float dw = 1.0/imgw;
+        float dh = 1.0/imgh;
+        float sx = x*dw+0.5*dw;
+        float sy = y*dh+0.5*dh;
+        float4 sample = read_imagef(imageIn, sampler, (float2)(sx,sy));
+        write_imagef(imageOut, (int2)(x,y), sample);
+    }
 }

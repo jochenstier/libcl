@@ -15,19 +15,19 @@
 
 __kernel void clNormalize(__read_only image2d_t srce, __write_only image2d_t dest)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
-	int x = get_global_id(0);
-	int y = get_global_id(1);
-	int2 idx = (int2)(x,y);
-	write_imagef(dest, idx, normalize(read_imagef(srce, sampler, idx)));
+    const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
+    int x = get_global_id(0);
+    int y = get_global_id(1);
+    int2 idx = (int2)(x,y);
+    write_imagef(dest, idx, normalize(read_imagef(srce, sampler, idx)));
 }
 
 __kernel void clXor(__read_only image2d_t srce, __write_only image2d_t dest, float4 iMask)
 {
-	const sampler_t srceSampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
-	int x = get_global_id(0);
-	int y = get_global_id(1);
-	float4 RGBA = read_imagef(srce, srceSampler, (int2)(x,y));
+    const sampler_t srceSampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
+    int x = get_global_id(0);
+    int y = get_global_id(1);
+    float4 RGBA = read_imagef(srce, srceSampler, (int2)(x,y));
 
-	write_imagef(dest, (int2)(x,y), RGBA*iMask+(1.0-iMask));
+    write_imagef(dest, (int2)(x,y), RGBA*iMask+(1.0-iMask));
 }

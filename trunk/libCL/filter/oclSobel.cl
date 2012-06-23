@@ -14,33 +14,33 @@
 
 __kernel void clSobel(__read_only image2d_t imageIn, __write_only image2d_t dx, __write_only image2d_t dy, int w, int h)
 {
-	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
+    const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
     int x = mul24(get_group_id(0), get_local_size(0)) + get_local_id(0);
     int y = mul24(get_group_id(1), get_local_size(1)) + get_local_id(1);
 
-	float kx[3][3] = { { -1.0f, 0.0f,  1.0f},
-					   { -2.0f, 0.0f,  2.0f},
-					   { -1.0f, 0.0f,  1.0f}};
-	float ky[3][3] = { { -1.0f, -2.0f, -1.0f},
-					   {  0.0f, 0.0f,  0.0f},
-					   {  1.0f, 2.0f,  1.0f}};
+    float kx[3][3] = { { -1.0f, 0.0f,  1.0f},
+                       { -2.0f, 0.0f,  2.0f},
+                       { -1.0f, 0.0f,  1.0f}};
+    float ky[3][3] = { { -1.0f, -2.0f, -1.0f},
+                       {  0.0f, 0.0f,  0.0f},
+                       {  1.0f, 2.0f,  1.0f}};
 
     if (x < w && y < h) 
-	{
-		float4 rx = (float4)0;
-		float4 ry = (float4)0;
-		for(int i = -1; i <= 1; i++)
-		{
-			for(int j = -1; j <= 1; j++)
-			{
-				int lx = min(max(x+j, 0), w-1); 
-				int ly = min(max(y+i, 0), h-1);
-				float4 dp = read_imagef(imageIn, sampler, (float2)(lx,ly)); 
-				rx += dp*kx[i+1][j+1];
-				ry += dp*ky[i+1][j+1];
-			}
-		}
-		write_imagef(dx, (int2)(x,y), rx);
-		write_imagef(dy, (int2)(x,y), ry);
-	}
+    {
+        float4 rx = (float4)0;
+        float4 ry = (float4)0;
+        for(int i = -1; i <= 1; i++)
+        {
+            for(int j = -1; j <= 1; j++)
+            {
+                int lx = min(max(x+j, 0), w-1); 
+                int ly = min(max(y+i, 0), h-1);
+                float4 dp = read_imagef(imageIn, sampler, (float2)(lx,ly)); 
+                rx += dp*kx[i+1][j+1];
+                ry += dp*ky[i+1][j+1];
+            }
+        }
+        write_imagef(dx, (int2)(x,y), rx);
+        write_imagef(dy, (int2)(x,y), ry);
+    }
 }
