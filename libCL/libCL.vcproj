@@ -252,18 +252,6 @@
 				Name="phys"
 				>
 				<File
-					RelativePath=".\phys\oclFluid2D.cl"
-					>
-				</File>
-				<File
-					RelativePath=".\phys\oclFluid2D.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\phys\oclFluid2D.h"
-					>
-				</File>
-				<File
 					RelativePath=".\phys\oclFluid3D.cl"
 					>
 				</File>
@@ -291,18 +279,6 @@
 			<Filter
 				Name="geom"
 				>
-				<File
-					RelativePath=".\geom\oclBvhLines.cl"
-					>
-				</File>
-				<File
-					RelativePath=".\geom\oclBvhLines.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\geom\oclBvhLines.h"
-					>
-				</File>
 				<File
 					RelativePath=".\geom\oclBvhTrimesh.cl"
 					>
