@@ -106,7 +106,7 @@ oclProgram& oclKernel::getProgram()
 //
 //
 
-void oclKernel::localSize2D(oclDevice& iDevice, size_t lGlobalSize[2], size_t lLocalSize[2], int iW, int iH)
+void oclKernel::localSize2D(oclDevice& iDevice, size_t lGlobalSize[2], size_t lLocalSize[2], size_t iW, size_t iH)
 {
     size_t lSize = getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, iDevice);
     lLocalSize[0] = floor(sqrt(1.0*lSize));

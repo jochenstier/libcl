@@ -64,6 +64,7 @@ class Log
         Log& operator<< (double iValue);
 
         Log& operator<< (cl_float4& iValue);
+        Log& operator<< (cl_float2& iValue);
 
     private:
 

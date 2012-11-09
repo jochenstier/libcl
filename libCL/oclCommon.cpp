@@ -232,6 +232,11 @@ Log& Log::operator<< (double iValue)
     return *this;
 }
 
+Log& Log::operator<< (cl_float2& iValue) 
+{
+    mStream << "( " << iValue.s[0] << "," << iValue.s[1] << ")";
+    return *this;
+}
 Log& Log::operator<< (cl_float4& iValue) 
 {
     mStream << "( " << iValue.s[0] << "," << iValue.s[1] << "," << iValue.s[2] << "," << iValue.s[3] << ")";
