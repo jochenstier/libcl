@@ -35,7 +35,7 @@ class oclKernel : public oclObject
         template <class RETURN> RETURN getKernelInfo(cl_uint iValue, cl_kernel_info iInfo);
 
         //
-        void localSize2D(oclDevice& iDevice, size_t lGlobalSize[2], size_t lLocalSize[2], int iW, int iH);
+        void localSize2D(oclDevice& iDevice, size_t lGlobalSize[2], size_t lLocalSize[2], size_t iW, size_t iH);
 
         //
         cl_ulong getStartTime();
