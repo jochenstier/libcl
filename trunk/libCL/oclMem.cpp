@@ -61,8 +61,6 @@ cl_map_flags oclMem::getMapping()
     return mMapping;
 }
 
-
-
 bool oclMem::unmap(int iDevice)
 {
     if (mMemPtr)
@@ -85,7 +83,6 @@ bool oclMem::unmap(int iDevice)
     return false;
 }
 
-
 void oclMem::destroy()
 {
     if (mMemPtr)
@@ -94,6 +91,28 @@ void oclMem::destroy()
         mMemPtr = 0;
         oclSuccess("clReleaseMemObject", this);
     }
+}
+
+bool oclMem::acquireGLObject(int iDevice)
+{
+	sStatusCL = clEnqueueAcquireGLObjects(mContext.getDevice(iDevice),
+                                                  1,
+                                                  &mMemPtr,
+                                                  0,
+                                                  0,
+                                                  NULL);
+    return oclSuccess("clEnqueueAcquireGLObjects", this);
+}
+
+bool oclMem::releaseGLObject(int iDevice)
+{
+	sStatusCL = clEnqueueReleaseGLObjects(mContext.getDevice(iDevice),
+                                                  1,
+                                                  &mMemPtr,
+                                                  0,
+                                                  0,
+                                                  NULL);
+    return oclSuccess("clEnqueueAcquireGLObjects", this);
 }
 
 unsigned long oclMem::sMemoryUsed = 0;

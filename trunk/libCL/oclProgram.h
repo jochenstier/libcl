@@ -79,7 +79,7 @@ class oclProgram : public oclObject
 
         vector<oclKernel*> mKernels;
         void exportKernel(oclKernel& iKernel);
-
+		void exportProgram(oclProgram& iProgram);
     //
     // Event Interface
     //

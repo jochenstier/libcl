@@ -43,7 +43,10 @@ class oclMem : public oclObject
         template <class RESULT> RESULT getMemObjectInfo(cl_mem_info iInfo);
         virtual size_t dim(int iAxis) = 0;
 
-    protected:
+		bool acquireGLObject(int iDevice);
+		bool releaseGLObject(int iDevice);
+
+	protected:
 
         oclContext& mContext;
         void* mHostPtr;

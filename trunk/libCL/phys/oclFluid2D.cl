@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 typedef struct 
 {
  	float dT;
@@ -23,27 +22,52 @@ typedef struct
 	int cellCountX;
 	int cellCountY;
 
-	float p0;
+	float particleSize;
+	float particleMass;
+
+	float restDensity;
 	float vmax;
 	float B;
 
 } System;
 
+typedef struct
+{
+	float2 pos;
+	float2 vel;
+	//float2 fff;
+
+} Particle;
+
+typedef union
+{
+	struct
+	{
+		float density;
+		float nearDensity;
+		float pressure;
+		float nearPressure;
+	};
+
+	float4 s;
+
+} State;
 
 //
-// map particles into voxel grid
+// GRID
 //
-__kernel void clHash(__global uint* cell, __global uint* index, __global float4* state, __global const System* param)
+
+__kernel void clHash(__global uint* cell, __global uint* index, __global Particle* state, __global const System* param)
 {
     const uint particle = get_global_id(0);
     int2 grid;
-    grid.x = (int)floor(state[particle].x/param->cellSize);
-    grid.y = (int)floor(state[particle].y/param->cellSize);
+    grid.x = (int)floor(state[particle].pos.x/param->cellSize);
+    grid.y = (int)floor(state[particle].pos.y/param->cellSize);
     cell[particle] = grid.y*param->cellCountX + grid.x;
     index[particle] = particle;
 }
 
-__kernel void clReorder(__global const uint *index, __global const float4* stateIn, __global float4* stateOut)
+__kernel void clReorder(__global const uint *index, __global const Particle* stateIn, __global Particle* stateOut)
 {
     const uint particle= get_global_id(0);
 	uint sortedIndex = index[particle];
@@ -88,395 +112,89 @@ __kernel void clFindBounds(__global uint* cellStart, __global uint* cellEnd, __g
 }
 
 
+
 //
 // Compute smoothed particle hydrodynamics 
 //
 
+#define kRestDensity 82.0f
+#define kStiffness 0.08f
+#define kNearStiffness 0.1f
+#define kSurfaceTension 21.00035f  // 0.0004f
+#define kLinearViscocity 0.5f
+#define kQuadraticViscocity 1.0f
+#define kPi 3.1415926535f
+
+#define kParticleRadius 0.05f/5   // 0.05f
+#define kH (22*kParticleRadius)  // 6*kParticleRadius
+
+#define kNorm (20/(2*kPi*kH*kH))
+#define kNearNorm (30/(2*kPi*kH*kH))
+
+
 __kernel void clInitFluid(__global System* param)
 {
-	param->dT = 0.00333333333;
+	param->dT = 0.00433333333;  //0.00133333333;
 
-	float spacing = 1;//0.2516;
-
-	param->h = 0.01;  // meters
-	param->containerW = 7.68; // meters
-	param->containerH = 5.76; // meters
+	param->h = kH;  // m
+	param->containerW = 17.68; // m
+	param->containerH = 15.76; // m
 	param->cellSize = 2*param->h; 
 	param->cellCountX = param->containerW/param->cellSize+0.5;
 	param->cellCountY = param->containerH/param->cellSize+0.5;   
 
-	param->p0 = 100.0f;  // kg/m^2 for 2D instead of 1000.0f kg/m^3 for 3D
-	param->B = param->p0*340.29f/7.0f;  // 340.29f instead of 340.29f*340.29f for 2D
+	param->particleSize = kParticleRadius;   
+	param->particleMass = 0.7f;//0.7f;  
+
+	param->restDensity = kRestDensity;  
 }
 
-__kernel void clInitPressure(__global float2* pressure, __global System* param)
-{
-    uint particle = get_global_id(0);
-
-	pressure[particle].x = param->p0;
-	pressure[particle].y = 0;
-}
+//
+// SPH
+//
 
 
-
-float W(float h, float q)
-{
-	float value = 0;
-
-	q/=h;
-
-	if (q < 1)
-	{
-		value = 1.0f-3.0f/2.0f*q*q+3.0f/4.0f*q*q*q;
-	}
-	else if (q < 2.0f)
-	{
-		q = 2.0f - q;
-		value = 1.0f/4.0f*q*q*q;
-	}
-
-	return 2.0f/(3.0f*h)*value;
-}
-
-/*
-float W(float h, float q)
-{
-	q/=h;
-	if (q <= 2.0f)
-	{
-		return 0.0348151438/(h*h)*pow(2.0f - q,4.0f)*( 1.0f + 2*q);
-	}
-	return 0;
-}
+#define EPSILON 0.0000001f
 
 
-float W(float h, float q)
-{
-	float r2 = q*q;
-	float h2 = h*h;
-	return 0.39894228/h*exp(-0.5*r2/h2);
-}
-*/
-/*
-
-float W(float h, float q)
-{
-	return max(0.0f,1.56668147106/pow(h,9)*pow(h*h-q*q,3));
-}
-*/
-
-/*
-float dW(float h, float q)
-{
-	return q*W(h,q);
-}
-*/
-
-#define EPSILON = 1.192092896e-07f;
-
-
-float Wdensity(float h, float d)
-{
-	float d2 = d*d;
-	float h2 = h*h;
-	d2 = min(d2, h2);
-	return 315.0f/(64.0f*M_PI*pow(h,9))*pow(h2-d2,3);
-}
-
-float Wpressure(float h, float d)
-{
-	d = min(d, h);
-	return 15.0f/(M_PI*pow(h,6))*pow(h-d,3);
-}
-
-__kernel void clIntegrateVelocity0(__global float4* state, __global const System* param)
-{
-    uint particle = get_global_id(0);
-    float4 stateI = state[particle];
-
-	stateI.xy += stateI.zw*param->dT;
-	stateI.zw += stateI.zw*param->dT;
-}
-
-
-__kernel void clComputePressure(__global float4* state, __global float2* pressure, __global const uint* cellStart, __global const uint* cellEnd, __global const System* param)
-{
-    uint particle = get_global_id(0);
-    float4 stateI = state[particle];
-
-    int2 grid;
-    grid.x = (int)floor(stateI.x/param->cellSize);
-    grid.y = (int)floor(stateI.y/param->cellSize);
-
-	int x0=max(grid.x-1,0);
-	int x1=min(grid.x+1,param->cellCountX-1);
-	int y0=max(grid.y-1,0);
-	int y1=min(grid.y+1,param->cellCountY-1);
-
-    float p = pressure[particle].x;
-	for(int x = x0; x <= x1; x++)
-	{
-		for(int y = y0; y <= y1; y++)
-		{
-			int cell = y*param->cellCountX + x;
-
-			uint start = cellStart[cell];
-			if (start != 0xFFFFFFFFU)
-			{
-				uint end = cellEnd[cell];
-				for(uint j = start; j < end; j++)
-				{
-					if(j != particle)
-					{
-						float4 stateJ = state[j];
-						float2 r = stateI.xy - stateJ.xy;
-						//float2 v = stateI.zw - stateJ.zw;
-						float d = length(r);
-						r/=d;
-
-						p += 0.0002*Wdensity(param->h, d);
-					}
-				}
-			}
-		}
-	}
-	pressure[particle].x = p;
-	//pressure[particle].y = param->B*(pow(p/param->p0,7)-1);  
-	pressure[particle].y = 0.01*(p-param->p0);  // this should also be different for 2D
-}
-
-__kernel void clComputeForces(__global float4* state, __global float2* pressure, __global float2* force, __global const uint* cellStart, __global const uint* cellEnd, __global const System* param)
-{
-    uint particle = get_global_id(0);
-    float2 pI = pressure[particle];
-    float4 stateI = state[particle];
-
-    int2 grid;
-    grid.x = (int)floor(stateI.x/param->cellSize);
-    grid.y = (int)floor(stateI.y/param->cellSize);
-
-	int x0=max(grid.x-1,0);
-	int x1=min(grid.x+1,param->cellCountX-1);
-	int y0=max(grid.y-1,0);
-	int y1=min(grid.y+1,param->cellCountY-1);
-
-	float2 Fs = 0;
-	float2 Fp  = 0;
-	float2 Fv = 0;
-
-    float2 dsp = 0;
-	for(int x = x0; x <= x1; x++)
-	{
-		for(int y = y0; y <= y1; y++)
-		{
-			int cell = y*param->cellCountX + x;
-
-			uint start = cellStart[cell];
-			if (start != 0xFFFFFFFFU)
-			{
-				uint end = cellEnd[cell];
-				for(uint j = start; j < end; j++)
-				{
-					if(j != particle)
-					{
-						float4 stateJ = state[j];
-						float2 r = stateI.xy - stateJ.xy;
-						//float2 v = stateI.zw - stateJ.zw;
-						float d = length(r);
-						r/=d;
-
-						// pressure
-						float2 pJ = pressure[j];
-						//Fp += -(pI.y/(pI.x*pI.x) + pJ.y/(pJ.x*pJ.x))*Wpressure(param->h, d)*r;
-						//Fp += -(pI.y/(pI.x*pI.x) + pJ.y/(pJ.x*pJ.x))*Wpressure(param->h, d)*r;
-						Fp += 0.0002f*(pI.y+pJ.y)/(2.0f*pJ.x)*Wpressure(param->h, d)*r;
-
-/*
-						// viscosity
-						// f = particles[nIdx].Mass * ((particles[nIdx].Velocity - particles[i].Velocity) / particles[nIdx].Density) * WViscosityLap(ref dist) * Constants.VISC0SITY;
-						scalar   = 0.0002f * this.SKViscosity.CalculateLaplacian(ref dist) * this.Viscosity * 1 / particles[nIdx].Density;
-						f        = particles[nIdx].Velocity - particles[i].Velocity;
-						Vector2.Mult(ref f, scalar, out f);
-						particles[i].Force      += f;
-						particles[nIdx].Force   -= f;
-*/
-					}
-				}
-			}
-		}
-	}
-
-	force[particle] = (Fp + Fv + 0.25*Fs) - (float2)(0,9.81);
-}
-
-
-__kernel void clIntegrateHalf(__global float4* state, __global const System* param)
-{
-    uint particle = get_global_id(0);
-    float4 stateI = state[particle];
-
-	stateI.xy += stateI.zw*param->dT;
-}
-
-__kernel void clIntegrateForce(__global float4* state, __global float2* force, __global uint* index, __global const System* param)
+__kernel void clAdvanceState(__global Particle* state, __global float2* previousPosition, __global const System* param)
 {
     const uint particle = get_global_id(0);
-	uint sorted = index[particle];
-	state[sorted].zw += force[particle]*param->dT;
-}
 
-__kernel void clIntegrateVelocity(__global float4* state, __global const System* param)
-{
-    const uint particle = get_global_id(0);
-	float4 stateI = state[particle];	
-
-	stateI.xy += stateI.zw*param->dT;
-	stateI.xy = clamp(stateI.xy, (float2)(param->h,param->h), (float2)(param->containerW-param->h,param->containerH-param->h));
+	Particle stateI = state[particle];
+	previousPosition[particle] =  stateI.pos;
+	stateI.vel += (float2)(0,-9.81)*param->dT;
+	stateI.pos += stateI.vel*param->dT;
 	state[particle] = stateI;
 }
 
 
-//
-//
-//
-#define QUEUE_SIZE 256
-
-typedef struct 
+__kernel void clComputePressure(__global Particle* particle, __global State* state, __global const uint* cellStart, __global const uint* cellEnd, __read_only image2d_t borderState, __global const System* param)
 {
-	float2 bbMin;
-	float2 bbMax;
-	int left;
-	int right;
-	uint bit;
-	uint trav;
-} BVHNode;
-
-bool collideLine(uint triangle, __global const float2* vertex, float4* state,__global const System* param)
-{
-	return true;
-}
-
-bool collideAABB(__global const BVHNode* node, float4 particle, __global const System* param)
-{
-    float2 invR = (float2)(1.0f,1.0f) / normalize(particle.zw);
-    float2 tbot = invR * (node->bbMin - particle.xy);
-    float2 ttop = invR * (node->bbMax - particle.xy);
-
-    float2 tmin = min(ttop, tbot);
-    float2 tmax = max(ttop, tbot);
-
-    // find the largest tmin and the smallest tmax
-    float near = max(tmin.x, tmin.y);
-    float far = min(tmax.x, tmax.y);
-
-	if (far >= near)
-	{
-        return near < fast_length(particle.zw*param->dT);
-    }
-    return false;
-}
-
-__kernel void clCollideBVH(__global float4* state, 
-                           __global const System* param, 
-                           __global const BVHNode* bvh, 
-                           uint bvhRoot,
-                           __global const float2* line)
-{
-    uint particle = get_global_id(0);
-
-    float4 stateI = state[particle];
-
-    uint queue[QUEUE_SIZE];
-    uint head = 0;
-    uint tail = 1;
-    queue[0] = bvhRoot;
-
-    while (head != tail)
-    {
-        uint iter = queue[head];
-        head = (head+1)%QUEUE_SIZE;
-
-        uint left = bvh[iter].left;
-        uint right = bvh[iter].right;
-        if (left == right)
-        {
-			float4 stateJ = state[particle];
-
-			float2 u0 = line[bvh[iter].bit*2+0];
-			float2 u1 = line[bvh[iter].bit*2+1];
-			float2 u = u1 - u0;
-
-			float2 v0 = stateJ.xy;
-			float2 v1 = stateJ.xy+stateJ.zw* param->dT;
-			float2 v = v1 - v0;
-
-			float2 w = u0 - v0;
-			float D = u.x*v.y - u.y*v.x;
-			float s = v.x*w.y - v.y*w.x;
-			float t = u.x*w.y - u.y*w.x;
-
-			if (fabs(D) > .000001f)
-			{
-				s = s/D;        
-				t = t/D;        
-				if ((s >= 0 && s <= 1) && (t >= 0 && t <=1))
-				{
-					float2 n = sign(D)*normalize((float2)(-u.y, u.x));
-
-					// postition
-					state[particle].xy = v0;// - v*(0.5/dot(v,n));
-					// velocity
-					state[particle].zw = state[particle].zw - n*dot(n, state[particle].zw);
-				}
-			}
-        }
-        else
-        {
-            if (collideAABB(&bvh[left], stateI, param))
-            {
-                queue[tail] = left;
-                tail = (tail+1)%QUEUE_SIZE;
-            }
-            if (collideAABB(&bvh[right], stateI, param))
-            {
-                queue[tail] = right;
-                tail = (tail+1)%QUEUE_SIZE;
-            }
-        }
-    }
-}
-
-
-
-
-
-
-/*
-__kernel void clIntegrateVelocity0(__global float4* state, __global const System* param)
-{
-    uint particle = get_global_id(0);
-    float4 stateI = state[particle];
-
-	stateI.xy += stateI.zw*param->dT;
-	stateI.zw += stateI.zw*param->dT;
-}
-
-
-__kernel void clComputePressure(__global float4* state, __global float2* pressure, __global const uint* cellStart, __global const uint* cellEnd, __global const System* param)
-{
-    uint particle = get_global_id(0);
-    float4 stateI = state[particle];
+    uint index = get_global_id(0);
+    Particle particleI = particle[index];
 
     int2 grid;
-    grid.x = (int)floor(stateI.x/param->cellSize);
-    grid.y = (int)floor(stateI.y/param->cellSize);
+    grid.x = (int)floor(particleI.pos.x/param->cellSize);
+    grid.y = (int)floor(particleI.pos.y/param->cellSize);
 
 	int x0=max(grid.x-1,0);
 	int x1=min(grid.x+1,param->cellCountX-1);
 	int y0=max(grid.y-1,0);
 	int y1=min(grid.y+1,param->cellCountY-1);
 
-    float p = pressure[particle].x;
+	float density = 0;
+	float nearDensity = 0;
+
+	State wall;
+    const sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP_TO_EDGE;
+	wall.s = read_imagef(borderState, sampler, particleI.pos/(float2)(param->containerW, param->containerH));
+	if (wall.density != 0)
+	{
+		density += wall.density;
+		nearDensity += wall.nearDensity;
+	}
+
 	for(int x = x0; x <= x1; x++)
 	{
 		for(int y = y0; y <= y1; y++)
@@ -489,44 +207,47 @@ __kernel void clComputePressure(__global float4* state, __global float2* pressur
 				uint end = cellEnd[cell];
 				for(uint j = start; j < end; j++)
 				{
-					if(j != particle)
+					if(j != index)
 					{
-						float4 stateJ = state[j];
-						float2 r = stateI.xy - stateJ.xy;
-						float2 v = stateI.zw - stateJ.zw;
-						float d = length(r);
-						r/=d;
+						Particle particleJ = particle[j];
+						float2 dxy = particleJ.pos - particleI.pos;
+						float r = length(dxy);
 
-						p += dot(v,r)*dW(param->h, d);
+						if (r > EPSILON && r < param->h)
+						{
+							float a = 1 - r/param->h;
+							density += param->particleMass * a*a*a * kNorm;
+							nearDensity += param->particleMass * a*a*a*a * kNearNorm;
+						}
 					}
 				}
 			}
 		}
 	}
-	pressure[particle].x = p;
-	pressure[particle].y = param->B*(pow(p/param->p0,7)-1);
+
+	state[index].density = density;
+	state[index].nearDensity = nearDensity; 
+	state[index].pressure = kStiffness * (density - param->particleMass*kRestDensity);
+	state[index].nearPressure = kNearStiffness * nearDensity; 
 }
 
-__kernel void clComputeForces(__global float4* state, __global float2* pressure, __global float2* force, __global const uint* cellStart, __global const uint* cellEnd, __global const System* param)
+__kernel void clComputePosition(__global Particle* particle, __global State* state, __global float2* relaxedPosition, __global const uint* cellStart, __global const uint* cellEnd, __read_only image2d_t borderState, __read_only image2d_t borderVector, __global const System* param)
 {
-    uint particle = get_global_id(0);
-    float2 pI = pressure[particle];
-    float4 stateI = state[particle];
+    uint index = get_global_id(0);
+    State stateI = state[index];
+    Particle particleI = particle[index];
 
     int2 grid;
-    grid.x = (int)floor(stateI.x/param->cellSize);
-    grid.y = (int)floor(stateI.y/param->cellSize);
+    grid.x = (int)floor(particleI.pos.x/param->cellSize);
+    grid.y = (int)floor(particleI.pos.y/param->cellSize);
 
 	int x0=max(grid.x-1,0);
 	int x1=min(grid.x+1,param->cellCountX-1);
 	int y0=max(grid.y-1,0);
 	int y1=min(grid.y+1,param->cellCountY-1);
 
-	float2 Fviscosity = 0;
-	float2 Fp  = 0;
-	float2 Fsurface = 0;
+	float2 rxy = particleI.pos;
 
-    float2 dsp = 0;
 	for(int x = x0; x <= x1; x++)
 	{
 		for(int y = y0; y <= y1; y++)
@@ -539,52 +260,158 @@ __kernel void clComputeForces(__global float4* state, __global float2* pressure,
 				uint end = cellEnd[cell];
 				for(uint j = start; j < end; j++)
 				{
-					if(j != particle)
+					if(j != index)
 					{
-						float4 stateJ = state[j];
-						float2 r = stateI.xy - stateJ.xy;
-						float2 v = stateI.zw - stateJ.zw;
-						float d = length(r);
-						r/=d;
-						float w = dW(param->h, d);
+						Particle particleJ = particle[j];
+						float2 dxy = particleJ.pos- particleI.pos;
+						float r = length(dxy);
 
-						float2 pJ = pressure[j];
-						Fp = -(pI.y/(pI.x*pI.x) + pJ.y/(pJ.x*pJ.x))*w*r;
+						if (r > EPSILON && r < param->h)
+						{
+							State stateJ = state[j];
 
-						//Fviscosity +=
-						//Ftension +=
+							float a = 1 - r/param->h;
+
+							// pressure
+							float d = (param->dT*param->dT) * ((stateI.nearPressure + stateJ.nearPressure)*a*a*a*kNearNorm + (stateI.pressure + stateJ.pressure)*a*a*kNorm) / 2;
+							rxy -= dxy*d/(r*param->particleMass);
+
+							// surface tension
+							if (param->particleMass == param->particleMass)
+							{
+								rxy += (param->dT*param->dT) * (kSurfaceTension/param->particleMass) * param->particleMass*(a*a*a*kNearNorm+a*a*kNorm )/ 2* dxy;
+							}
+
+							// viscocity
+							float2 duv = particleJ.vel - particleJ.vel;
+							float u = dot(duv, dxy);
+							if (u > 0)
+							{
+								u /= r;
+								float I = 0.5f * param->dT * a * (kLinearViscocity*u + kQuadraticViscocity*u*u);
+								rxy -= I * dxy * param->dT;
+							}
+						}
 					}
 				}
 			}
 		}
 	}
 
-	force[particle] = (Fp + Fviscosity + 0.25*Fsurface);// - (float2)(0,9.81);
+	State wall;
+    const sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE | CLK_FILTER_LINEAR | CLK_ADDRESS_CLAMP_TO_EDGE;
+	wall.s = read_imagef(borderState, sampler, rxy/(float2)(param->containerW, param->containerH));
+	if (wall.density != 0)
+	{
+		float4 normal = read_imagef(borderVector, sampler, rxy/(float2)(param->containerW, param->containerH));
+		float a = 1 - normal.z/param->h;
+		float d = (param->dT*param->dT) * ((stateI.nearPressure + wall.nearPressure)*a*a*a*kNearNorm + (stateI.pressure+wall.pressure)*a*a*kNorm)/ 2;
+		rxy += normal.xy*d/param->particleMass;
+	}
+
+	relaxedPosition[index] = rxy;
 }
 
 
-__kernel void clIntegrateHalf(__global float4* state, __global const System* param)
-{
-    uint particle = get_global_id(0);
-    float4 stateI = state[particle];
-
-	stateI.xy += stateI.zw*param->dT;
-}
-
-__kernel void clIntegrateForce(__global float4* state, __global float2* force, __global uint* index, __global const System* param)
+__kernel void clUpdateState(__global Particle* state, __global float2* previousPosition, __global float2* relaxedPosition, __global uint* index, __global const System* param)
 {
     const uint particle = get_global_id(0);
 	uint sorted = index[particle];
-	state[sorted].zw += force[particle]*param->dT;
+
+	float2 dxy = relaxedPosition[particle].xy - previousPosition[sorted];
+	float l = length(dxy);
+	dxy = dxy*min(l, 2.9*param->particleSize)/l;
+	state[sorted].vel = dxy/param->dT;
+	state[sorted].pos = previousPosition[sorted]+dxy;
 }
 
-__kernel void clIntegrateVelocity(__global float4* state, __global const System* param)
+//
+//
+//
+
+__kernel void clComputeBorder(__read_only image2d_t borderIn, __write_only image2d_t vecOut, __write_only image2d_t stateOut, __global const System* param)
 {
-    const uint particle = get_global_id(0);
-	float4 stateI = state[particle];	
+    const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
+    int x = get_global_id(0);
+    int y = get_global_id(1);
+    int w = get_global_size(0);
+    int h = get_global_size(1);
 
-	stateI.xy += stateI.zw*param->dT;
-	stateI.xy = clamp(stateI.xy, (float2)(param->h,param->h), (float2)(param->containerW-param->h,param->containerH-param->h));
-	state[particle] = stateI;
+	float4 pixel = read_imagef(borderIn, sampler, (int2)(x,y));
+
+	float dmin=10000;
+	int dW = w*param->h/param->containerW + 0.5;
+	int dH = h*param->h/param->containerH + 0.5;
+	float dX = param->containerW/w;
+	float dY = param->containerH/h;
+
+
+	float4 vector = 0;
+	float density = 0;
+	float nearDensity = 0;
+
+	if (pixel.w == 1.0f)
+	{
+		// inside wall
+		density = param->particleMass *  kNorm;
+		nearDensity = param->particleMass *  kNearNorm;
+		for (int i= max(x-dW,0); i<min(x+dW,w); i++)
+		{
+			for (int j=max(y-dH,0); j<min(y+dH,h); j++)
+			{
+				float4 neighbour = read_imagef(borderIn, sampler, (int2)(i,j));
+				if (neighbour.w != 1.0f)
+				{
+					float2 dxy = (float2)(i*dX, j*dY) - (float2)(x*dX, y*dY);
+					float r = length(dxy);
+					if (r < dmin)
+					{
+						vector.xy = dxy/r;
+						vector.z = r;
+						dmin = r;
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		// outside wall
+		for (int i= max(x-dW,0); i<min(x+dW,w); i++)
+		{
+			for (int j=max(y-dH,0); j<min(y+dH,h); j++)
+			{
+				float4 neighbour = read_imagef(borderIn, sampler, (int2)(i,j));
+				if (neighbour.w == 1.0f)
+				{
+					float2 dxy = (float2)(x*dX, y*dY) - (float2)(i*dX, j*dY);
+					float r = length(dxy);
+					if (r < param->h)
+					{
+						float s = (dX*dY)/(2*M_PI*param->particleSize*param->particleSize);
+						float a = 1 - r/param->h;
+						density += s*param->particleMass * a*a*a * kNorm;
+						nearDensity += s*param->particleMass * a*a*a*a * kNearNorm;
+
+						if (r < dmin)
+						{
+							vector.xy = dxy/r;
+							vector.z = r;
+							dmin = r;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	write_imagef(vecOut, (int2)(x,y), (float4)vector);
+
+	float4 state;
+	state.x = density;
+	state.y = nearDensity; 
+	state.z = kStiffness * (density - param->particleMass*kRestDensity);
+	state.w = kNearStiffness * nearDensity; 
+	write_imagef(stateOut, (int2)(x,y), state);
+
 }
-*/

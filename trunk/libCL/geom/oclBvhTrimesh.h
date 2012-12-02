@@ -34,8 +34,8 @@ class oclBvhTrimesh : public oclProgram
         {
             cl_float4 bbMin;
             cl_float4 bbMax;
-            cl_uint left;
-            cl_uint right;
+            cl_int left;
+            cl_int right;
             cl_uint bit;
             cl_uint trav;
         } BVHNode;
