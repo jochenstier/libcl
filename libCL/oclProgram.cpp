@@ -185,6 +185,14 @@ cl_kernel oclProgram::createKernel(const char* iName)
 }
 
 
+void oclProgram::exportProgram(oclProgram& iProgram)
+{
+	for(vector<oclKernel*>::iterator lIter = iProgram.mKernels.begin();  lIter != iProgram.mKernels.end(); lIter++)
+    {
+	    mKernels.push_back(*lIter);
+    }
+};
+
 void oclProgram::exportKernel(oclKernel& iKernel)
 {
     iKernel.setOwner(this);

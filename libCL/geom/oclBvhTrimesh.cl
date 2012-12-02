@@ -207,6 +207,8 @@ __kernel void clCreateLeaves(__global uint* mortonVal, __global BVHNode* bvh)
     bvh[leafstart+globalid].left = 0;
     bvh[leafstart+globalid].right = 0;
     bvh[leafstart+globalid].trav = 0;
+    bvh[leafstart+globalid].bbMin = (float4)( MAXFLOAT, MAXFLOAT,MAXFLOAT,0);
+    bvh[leafstart+globalid].bbMax = (float4)(-MAXFLOAT,-MAXFLOAT,-MAXFLOAT,0);
 
     if (globalid == 0)
     {
@@ -235,25 +237,12 @@ __kernel void clComputeAABBs(__global uint* index, __global float4* vertex, __gl
 {
     int globalid = get_global_id(0);
 
-    uint stack[128];
+    uint stack[256];
     uint top = 0;
     
     stack[top] = *bvhRoot;
     while (1)
     {
-        if (stack[top] >= globalid)
-        {
-            // turn left
-            stack[top+1] = bvh[stack[top]].left;
-        }
-        else
-        {
-            // turn right
-            stack[top+1] = bvh[stack[top]].right;
-        }
-        
-        top++;
-
         if (bvh[stack[top]].left == bvh[stack[top]].right)
         {
             // is leaf
@@ -273,6 +262,19 @@ __kernel void clComputeAABBs(__global uint* index, __global float4* vertex, __gl
             bvh[stack[top]].bbMax = bbMax;
             break;
         }
+
+        if (stack[top] >= globalid)
+        {
+            // turn left
+            stack[top+1] = bvh[stack[top]].left;
+        }
+        else
+        {
+            // turn right
+            stack[top+1] = bvh[stack[top]].right;
+        }
+        
+        top++;
     }
 
     while (top--)
@@ -283,7 +285,7 @@ __kernel void clComputeAABBs(__global uint* index, __global float4* vertex, __gl
             return;
         };  
 
-        while (atom_cmpxchg(&bvh[stack[top]].trav,2,3)==1);
+     //   while (atom_cmpxchg(&bvh[stack[top]].trav,2,3)==1);
 
         uint left = bvh[stack[top]].left;
         uint right = bvh[stack[top]].right;

@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "sort\\oclRadixSort.h"
+#include "oclImage2D.h"
 
 class oclFluid2D : public oclProgram
 {
@@ -25,25 +26,16 @@ class oclFluid2D : public oclProgram
 	    oclFluid2D(oclContext& iContext);
        ~oclFluid2D();
 
-		int compile();
+		int compile(); 
         int compute(oclDevice& iDevice);
 		
 		void setParticleCount(size_t iSize);
 		size_t getParticleCount();
 
-		int setPositionBuffer(oclBuffer* iBuffer);
 		int setStateBuffer(oclBuffer* iBuffer);
-		int setForceBuffer(oclBuffer* iBuffer);
-		int setBorderBuffer(oclBuffer* iBuffer);
-
-		oclBuffer* getForceBuffer();
-		oclBuffer* getPositionBuffer();
 		oclBuffer* getStateBuffer();
-		oclBuffer* getBorderBuffer();
 
-		oclBuffer& getSortedPositionBuffer();
-		oclBuffer& getSortedVelocityBuffer();
-		oclBuffer& getIndexBuffer();
+		void computeBorder(oclImage2D* iBuffer);
 
 		oclBuffer& getParamBuffer();
 
@@ -58,11 +50,23 @@ class oclFluid2D : public oclProgram
 	        int cellCountX;
 	        int cellCountY;
 
+	        float particleSize;
+	        float particleMass;
+
 	        float p0; 
 	        float vmax;
 	        float B;
 
         } Params;
+
+        typedef struct 
+        {
+ 	        cl_float2 pos;
+	        cl_float2 vel;
+	        float mass;
+	        float unused;
+
+        } Particle;
 
 		Params& getParameters();
 
@@ -85,14 +89,13 @@ class oclFluid2D : public oclProgram
 		oclKernel clFindBounds;
 
 		oclKernel clInitFluid;
-        oclKernel clInitPressure;
 
+		oclKernel clAdvanceState;
 		oclKernel clComputePressure;
-		oclKernel clComputeForces;
-		oclKernel clIntegrateForce;
-    	oclKernel clIntegrateVelocity;
+		oclKernel clComputePosition;
+		oclKernel clUpdateState;
 
-    	oclKernel clCollideBVH;
+    	oclKernel clComputeBorder;
 
 		// buffers
 		oclBuffer bfCell;
@@ -101,17 +104,19 @@ class oclFluid2D : public oclProgram
 		oclBuffer bfIndex;
 
 		oclBuffer bfPressure;
-		oclBuffer bfForce;
+		oclBuffer bfRelaxedPos;
+		oclBuffer bfPreviousPos;
+		oclBuffer* bfState;
 		oclBuffer bfSortedState;
 
 		oclBuffer bfParams;
 
-		oclBuffer* bfBorder;
-		oclBuffer* bfPosition;
+		oclImage2D bfBorderState;
+		oclImage2D bfBorderVector;
 	
 		int bindBuffers();
 
-		void deleteBuffer(oclBuffer* iBuffer)
+		void deleteBuffer(oclMem* iBuffer)
 		{
 			if (iBuffer->getOwner<oclFluid2D>() == this)
 			{
