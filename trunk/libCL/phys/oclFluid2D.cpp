@@ -110,7 +110,7 @@ void oclFluid2D::setParticleCount(size_t iSize)
 	bfPressure.resize<cl_float4>(mParticleCount);
 	bfRelaxedPos.resize<cl_float2>(mParticleCount);
 	bfPreviousPos.resize<cl_float2>(mParticleCount);
-	bfSortedState.resize<cl_float4>(mParticleCount);
+	bfSortedState.resize<Particle>(mParticleCount);
 
 	bfState->resize<cl_float4>(mParticleCount);
 	if (bfState->getOwner<oclObject>() != this)
@@ -346,7 +346,8 @@ int oclFluid2D::compute(oclDevice& iDevice)
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clComputePressure, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clComputePressure.getEvent());
 	ENQUEUE_VALIDATE
 
-		/*
+	
+	/*
 	if (bfPressure.map(CL_MAP_READ))
 	{
         int lDim = bfPressure.dim(0)/sizeof(cl_float4);
@@ -361,6 +362,19 @@ int oclFluid2D::compute(oclDevice& iDevice)
    
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clComputePosition, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clComputePosition.getEvent());
 	ENQUEUE_VALIDATE
+
+		/*
+	if (bfRelaxedPos.map(CL_MAP_READ))
+	{
+        int lDim = bfRelaxedPos.dim(0)/sizeof(cl_float2);
+		cl_float2* lPtr = bfRelaxedPos.ptr<cl_float2>();
+		for (int i=0; i<10; i++)
+		{
+			Log(INFO) << i << " force " << lPtr[i];
+		}
+		bfRelaxedPos.unmap();
+	}
+	*/
 
 	sStatusCL = clEnqueueNDRangeKernel(iDevice, clUpdateState, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clUpdateState.getEvent());
 	ENQUEUE_VALIDATE
@@ -397,31 +411,7 @@ int oclFluid2D::compute(oclDevice& iDevice)
 	}
 	bfState->releaseGLObject(0);
 	*/
- /**/
-    /*
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clCalculateDensity, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clCalculateDensity.getEvent());
-	ENQUEUE_VALIDATE
 
-	sStatusCL = clEnqueueNDRangeKernel(iDevice, clCalculateForces, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clCalculateForces.getEvent());
-	ENQUEUE_VALIDATE
-
-	// resolve soft constraints
-	if (mIntegrateCb)
-	{ 
-		(*mIntegrateCb)(*this);
-	}
-	else
-	{
-		sStatusCL = clEnqueueNDRangeKernel(iDevice, clClipBox, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clClipBox.getEvent());
-		ENQUEUE_VALIDATE
-		sStatusCL = clEnqueueNDRangeKernel(iDevice, clUpdateState, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clUpdateState.getEvent());
-		ENQUEUE_VALIDATE
-		sStatusCL = clEnqueueNDRangeKernel(iDevice, clApplyGravity, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clApplyGravity.getEvent());
-		ENQUEUE_VALIDATE
-		sStatusCL = clEnqueueNDRangeKernel(iDevice, clIntegrateVelocity, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clIntegrateVelocity.getEvent());
-		ENQUEUE_VALIDATE
-	}
-	*/
 	return true;
 }
 
