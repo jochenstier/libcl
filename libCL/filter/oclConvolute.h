@@ -22,9 +22,7 @@ class oclConvolute : public oclProgram
 {
     public: 
 
-        oclConvolute(oclContext& iContext);
-
-        int compile();
+        oclConvolute(oclContext& iContext, oclProgram* iParent = 0);
 
         // 2D convolutions on images and buffers
         int iso2D(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfDest, oclBuffer& bfFilter, int iFilterW, int iFilterH);

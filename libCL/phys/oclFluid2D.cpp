@@ -15,8 +15,8 @@
 
 char* oclFluid2D::EVT_INTEGRATE = "OnIntegrate";
 
-oclFluid2D::oclFluid2D(oclContext& iContext)
-: oclProgram(iContext, "oclFluid2D")
+oclFluid2D::oclFluid2D(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclFluid2D", iParent)
 // buffers
 , bfCell(iContext, "bfCell", oclBuffer::_uint)
 , bfCellStart(iContext, "bfCellStart", oclBuffer::_uint)
@@ -35,22 +35,22 @@ oclFluid2D::oclFluid2D(oclContext& iContext)
 , bfState(0)
 
 // kernels
-, clHash(*this)
-, clReorder(*this)
-, clInitBounds(*this)
-, clFindBounds(*this)
+, clHash(*this, "clHash")
+, clReorder(*this, "clReorder")
+, clInitBounds(*this, "clInitBounds")
+, clFindBounds(*this, "clFindBounds")
 
-, clInitFluid(*this)
+, clInitFluid(*this, "clInitFluid")
 
-, clAdvanceState(*this)
-, clComputePressure(*this)
-, clComputePosition(*this)
-, clUpdateState(*this)
+, clAdvanceState(*this, "clAdvanceState")
+, clComputePressure(*this, "clComputePressure")
+, clComputePosition(*this, "clComputePosition")
+, clUpdateState(*this, "clUpdateState")
 
-, clComputeBorder(*this)
+, clComputeBorder(*this, "clComputeBorder")
 
 // programs
-, mRadixSort(iContext)
+, mRadixSort(iContext, this)
 // members
 , mParticleCount(128*128)
 , mIntegrateCb(0)
@@ -81,17 +81,7 @@ oclFluid2D::oclFluid2D(oclContext& iContext)
 
 	addSourceFile("phys\\oclFluid2D.cl");
 
-	exportKernel(clReorder);
-	exportKernel(clHash);
-	exportKernel(clInitBounds);
-	exportKernel(clFindBounds);
-
-	exportKernel(clComputePressure);
-	exportKernel(clComputePosition);
-	exportKernel(clUpdateState);
-	exportKernel(clComputeBorder);
-
-	exportProgram(mRadixSort);
+	//exportProgram(mRadixSort);
 }
 
 oclFluid2D::~oclFluid2D()
@@ -239,66 +229,22 @@ int oclFluid2D::bindBuffers()
 
 int oclFluid2D::compile()
 {
-	clHash = 0;
-	clReorder = 0;
-	clInitBounds = 0;
-	clFindBounds = 0;
-
-	clInitFluid = 0;
-
-	clAdvanceState = 0;
-	clComputePressure = 0;
-	clComputePosition = 0;
-	clUpdateState = 0;
-
-	clComputeBorder = 0;
-
-	if (!mRadixSort.compile())
+	if (oclProgram::compile())
 	{
-		return 0;
+		// init fluid parameters
+		clSetKernelArg(clInitFluid, 0, sizeof(cl_mem), bfParams);
+		clEnqueueTask(mContext.getDevice(0), clInitFluid, 0, NULL, clInitFluid.getEvent());
+		bfParams.map(CL_MAP_READ);
+
+		Params& lParams = getParameters();
+		mCellCount = lParams.cellCountX*lParams.cellCountY;
+		mCellCount = (mCellCount/cLocalSize+1)*cLocalSize;
+		bfCellStart.resize<cl_uint>(mCellCount);
+		bfCellEnd.resize<cl_uint>(mCellCount);
+
+		return bindBuffers();
 	}
-
-	if (!oclProgram::compile())
-	{
-		return 0;
-	}
-
-	clHash = createKernel("clHash");
-	KERNEL_VALIDATE(clHash)
-	clReorder = createKernel("clReorder");
-	KERNEL_VALIDATE(clReorder)
-	clInitBounds = createKernel("clInitBounds");
-	KERNEL_VALIDATE(clInitBounds)
-	clFindBounds = createKernel("clFindBounds");
-	KERNEL_VALIDATE(clFindBounds)
-
-	clInitFluid = createKernel("clInitFluid");
-	KERNEL_VALIDATE(clInitFluid)
-
-	clAdvanceState = createKernel("clAdvanceState");
-	KERNEL_VALIDATE(clAdvanceState)
-	clComputePressure = createKernel("clComputePressure");
-	KERNEL_VALIDATE(clComputePressure)
-	clComputePosition = createKernel("clComputePosition");
-	KERNEL_VALIDATE(clComputePosition)
-	clUpdateState = createKernel("clUpdateState");
-	KERNEL_VALIDATE(clUpdateState)
-
-	clComputeBorder = createKernel("clComputeBorder");
-	KERNEL_VALIDATE(clComputeBorder)
-
-    // init fluid parameters
-	clSetKernelArg(clInitFluid, 0, sizeof(cl_mem), bfParams);
-	clEnqueueTask(mContext.getDevice(0), clInitFluid, 0, NULL, clInitFluid.getEvent());
-	bfParams.map(CL_MAP_READ);
-
-    Params& lParams = getParameters();
-    mCellCount = lParams.cellCountX*lParams.cellCountY;
-    mCellCount = (mCellCount/cLocalSize+1)*cLocalSize;
-	bfCellStart.resize<cl_uint>(mCellCount);
-	bfCellEnd.resize<cl_uint>(mCellCount);
-
-	return bindBuffers();
+	return false;
 }
 
 void oclFluid2D::addEventHandler(srtEvent& iEvent)

@@ -15,33 +15,14 @@
 
 #include "oclQuantize.h"
 
-oclQuantize::oclQuantize(oclContext& iContext)
-: oclProgram(iContext, "oclQuantize")
+oclQuantize::oclQuantize(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclQuantize", iParent)
 // kernels
-, clQuantizeLAB(*this)
+, clQuantizeLAB(*this, "clQuantizeLAB")
 {
     addSourceFile("color/oclQuantize.cl");
-
-    exportKernel(clQuantizeLAB);
 }
 
-//
-//
-//
-
-int oclQuantize::compile()
-{
-    clQuantizeLAB = 0;
-
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clQuantizeLAB = createKernel("clQuantizeLAB");
-    KERNEL_VALIDATE(clQuantizeLAB)
-    return 1;
-}
 
 
 int oclQuantize::quantizeLAB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, float ibinL, float ibinA, float ibinB, float iSharpness)

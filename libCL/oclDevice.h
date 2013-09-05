@@ -30,6 +30,9 @@ class oclDevice : public oclObject
         //
         template <class RESULT> RESULT getContextInfo(cl_image_info iInfo);
 
+        template <class RESULT> RESULT getDeviceInfo(cl_image_info iInfo);
+
+
         //
         operator cl_command_queue();
         cl_command_queue getQueue();
@@ -58,5 +61,12 @@ template <class RESULT> RESULT oclDevice::getContextInfo(cl_image_info iInfo)
     return lResult;
 }
 
+
+template <class RESULT> RESULT oclDevice::getDeviceInfo(cl_device_info iInfo) 
+{
+    RESULT lResult;
+    clGetDeviceInfo(*this, iInfo, sizeof(RESULT), &lResult, 0);
+    return lResult;
+}
 
 #endif

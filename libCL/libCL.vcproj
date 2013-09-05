@@ -281,8 +281,6 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
 				RelativePath=".\oclBuffer.cpp"
@@ -636,11 +634,23 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="learning"
+				>
+				<File
+					RelativePath=".\learning\oclRbm.cl"
+					>
+				</File>
+				<File
+					RelativePath=".\learning\oclRbm.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\learning\oclRbm.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

@@ -23,9 +23,8 @@ class oclRadixSort : public oclProgram
 {
     public: 
 
-        oclRadixSort(oclContext& iContext);
+        oclRadixSort(oclContext& iContext, oclProgram* iParent = 0);
 
-        int compile();
         int compute(oclDevice& iDevice, oclBuffer& bfKey, oclBuffer& bfVal, int iStartBit, int iEndBit);
 
     protected:

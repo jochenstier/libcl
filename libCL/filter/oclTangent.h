@@ -22,9 +22,7 @@ class oclTangent : public oclProgram
 {
     public: 
 
-        oclTangent(oclContext& iContext);
-
-        int compile();
+        oclTangent(oclContext& iContext, oclProgram* iParent = 0);
 
         int compute(oclDevice& iDevice, oclImage2D& bfDx, oclImage2D& bfDy, oclImage2D& bfDest);
         int lineConv(oclDevice& iDevice, oclImage2D& bfVector, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iDepth);

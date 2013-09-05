@@ -21,9 +21,7 @@ class oclVector : public oclProgram
 {
     public: 
 
-        oclVector(oclContext& iContext);
-
-        int compile();
+        oclVector(oclContext& iContext, oclProgram* iParent = 0);
         
         int normalize(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
         int Xor(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_float4 iMask);

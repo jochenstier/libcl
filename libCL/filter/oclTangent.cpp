@@ -15,35 +15,13 @@
 
 #include "oclTangent.h"
 
-oclTangent::oclTangent(oclContext& iContext)
-: oclProgram(iContext, "oclTangent")
+oclTangent::oclTangent(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclTangent", iParent)
 // kernels
-, clTangent(*this)
-, clLineConv(*this)
+, clTangent(*this, "clTangent")
+, clLineConv(*this, "clLineConv")
 {
     addSourceFile("filter/oclTangent.cl");
-
-    exportKernel(clTangent);
-    exportKernel(clLineConv);
-}
-
-//
-//
-//
-
-int oclTangent::compile()
-{
-    clTangent = 0;
-    clLineConv = 0;
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-    clTangent = createKernel("clTangent");
-    KERNEL_VALIDATE(clTangent)
-    clLineConv = createKernel("clLineConv");
-    KERNEL_VALIDATE(clLineConv)
-    return 1;
 }
 
 //

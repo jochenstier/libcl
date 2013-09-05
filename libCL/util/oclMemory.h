@@ -22,19 +22,42 @@ class oclMemory : public oclProgram
 {
     public: 
 
-        oclMemory(oclContext& iContext);
+        oclMemory(oclContext& iContext, oclProgram* iParent = 0);
 
         static cl_float4 c0000;
-
-        int compile();
         
         int memSet(oclDevice& iDevice, oclImage2D& bfDest, cl_float4 iValue);
-        int memSet(oclDevice& iDevice, oclBuffer& bfDest, cl_float4 iValue);
 
-    protected:
+        int memSet(oclDevice& iDevice, oclBuffer& bfDest, cl_float4 iValue);
+        int memSet(oclDevice& iDevice, oclBuffer& bfDest, cl_float iValue);
+
+        int random(oclDevice& iDevice, oclBuffer& bfDest, cl_float iMin, cl_float iMax);
+
+        int mean(oclDevice& iDevice, oclBuffer& bfSrce, oclBuffer& bfMean);
+        int variance(oclDevice& iDevice, oclBuffer& bfSrce, oclBuffer& bfMean, oclBuffer& bfVariance);
+        int normalize(oclDevice& iDevice, oclBuffer& bfSrce, oclBuffer& bfDest);
+
+        int min(oclDevice& iDevice, oclBuffer& bfSrce, oclBuffer& bfDest);
+        int max(oclDevice& iDevice, oclBuffer& bfSrce, oclBuffer& bfDest);
+        int sum(oclDevice& iDevice, oclBuffer& bfSrce, oclBuffer& bfDest);
+
+	protected:
+
+		size_t mMaxWorkgroupSizes[3];
+
+        oclKernel clMin;
+        oclKernel clMax;
+        oclKernel clMean;
+        oclKernel clVariance;
+        oclKernel clNormalize;
+        //oclKernel clTemp;
 
         oclKernel clMemSetImage;
-        oclKernel clMemSetBuffer;
+        oclKernel clMemSetBuffer_float4;
+        oclKernel clMemSetBuffer_float;
+
+		oclBuffer bfMean;
+		oclBuffer bfVariance;
 };      
 
 #endif

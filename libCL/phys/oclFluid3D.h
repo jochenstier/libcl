@@ -22,7 +22,7 @@ class oclFluid3D : public oclProgram
 {
     public: 
 
-        oclFluid3D(oclContext& iContext);
+        oclFluid3D(oclContext& iContext, oclProgram* iParent = 0);
        ~oclFluid3D();
 
         int compile();

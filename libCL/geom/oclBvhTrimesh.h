@@ -22,10 +22,9 @@ class oclBvhTrimesh : public oclProgram
 {
     public: 
 
-        oclBvhTrimesh(oclContext& iContext);
+        oclBvhTrimesh(oclContext& iContext, oclProgram* iParent = 0);
        ~oclBvhTrimesh();
 
-        int compile();
         int compute(oclDevice& iDevice, 
                     oclBuffer& bfVertex, 
                     oclBuffer& bIndex);

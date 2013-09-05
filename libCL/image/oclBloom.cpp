@@ -15,50 +15,21 @@
 
 #include <math.h>
 
-oclBloom::oclBloom(oclContext& iContext, cl_image_format iFormat)
-: oclProgram(iContext, "oclBloom")
-, mGaussian(iContext)
+oclBloom::oclBloom(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclBloom", iParent)
+, mGaussian(iContext, this)
 // buffers
 , bfTempA(iContext, "bfTemp0")
 , bfTempB(iContext, "bfTemp1")
 // kernels
-, clFilter(*this)
-, clCombine(*this)
+, clFilter(*this, "clFilter")
+, clCombine(*this, "clCombine")
 {
-    bfTempA.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, iFormat, 256, 256);
-    bfTempB.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, iFormat, 256, 256);
+    bfTempA.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, sDefaultFormat, 256, 256);
+    bfTempB.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, sDefaultFormat, 256, 256);
 
     addSourceFile("image/oclBloom.cl");
-
-    exportKernel(clFilter);
-    exportKernel(clCombine);
 }
-
-int oclBloom::compile()
-{
-    clFilter = 0;
-    clCombine = 0;
-
-    if (!mGaussian.compile())
-    {
-        return 0;
-    }
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clFilter = createKernel("clFilter");
-    KERNEL_VALIDATE(clFilter)
-    setThreshold(0.9f);
-
-    clCombine = createKernel("clCombine");
-    KERNEL_VALIDATE(clCombine)
-    setIntensity(0.9f);
-
-    return 1;
-}
-
 
 int oclBloom::compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
 {

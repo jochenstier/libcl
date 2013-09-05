@@ -24,8 +24,8 @@ const size_t oclRadixSort::cBlockSize = BLOCK_SIZE;
 const size_t oclRadixSort::cMaxArraySize = BLOCK_SIZE_CUBE*4/(1<<CBITS);
 
 
-oclRadixSort::oclRadixSort(oclContext& iContext)
-: oclProgram(iContext, "oclRadixSort")
+oclRadixSort::oclRadixSort(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclRadixSort", iParent)
 // buffers
 , bfTempKey(iContext, "bfTempKey")
 , bfTempVal(iContext, "bfTempVal")
@@ -33,10 +33,10 @@ oclRadixSort::oclRadixSort(oclContext& iContext)
 , bfBlockOffset(iContext, "bfBlockOffset")
 , bfBlockSum(iContext, "bfBlockSum")
 // kernels
-, clBlockSort(*this)
-, clBlockScan(*this)
-, clBlockPrefix(*this)
-, clReorder(*this)
+, clBlockSort(*this, "clBlockSort")
+, clBlockScan(*this, "clBlockScan")
+, clBlockPrefix(*this, "clBlockPrefix")
+, clReorder(*this, "clReorder")
 {
     bfTempKey.create<cl_uint>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, cBlockSize);
     bfTempVal.create<cl_uint>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, cBlockSize);
@@ -45,11 +45,6 @@ oclRadixSort::oclRadixSort(oclContext& iContext)
     bfBlockSum.create<cl_uint>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, cBlockSize);
 
     addSourceFile("sort/oclRadixSort.cl");
-
-    exportKernel(clBlockSort);
-    exportKernel(clBlockScan);
-    exportKernel(clBlockPrefix);
-    exportKernel(clReorder);
 }
 
 void oclRadixSort::fit(oclBuffer& iBuffer, size_t iElements) 
@@ -61,28 +56,6 @@ void oclRadixSort::fit(oclBuffer& iBuffer, size_t iElements)
             iBuffer.resize<cl_uint>(iElements);
         }
     }
-}
-
-//
-//
-//
-
-int oclRadixSort::compile()
-{
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clBlockSort = createKernel("clBlockSort");
-    KERNEL_VALIDATE(clBlockSort)
-    clBlockScan = createKernel("clBlockScan");
-    KERNEL_VALIDATE(clBlockScan)
-    clBlockPrefix = createKernel("clBlockPrefix");
-    KERNEL_VALIDATE(clBlockPrefix)
-    clReorder = createKernel("clReorder");
-    KERNEL_VALIDATE(clReorder)
-    return 1;
 }
 
 

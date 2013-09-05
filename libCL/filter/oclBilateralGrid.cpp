@@ -15,19 +15,19 @@
 
 #include "oclBilateralGrid.h"
 
-oclBilateralGrid::oclBilateralGrid(oclContext& iContext)
-: oclProgram(iContext, "oclBilateralGrid")
+oclBilateralGrid::oclBilateralGrid(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclBilateralGrid", iParent)
 // kernels
 , bfGrid1Da(iContext, "bfGrid1Da")
 , bfGrid1Db(iContext, "bfGrid1Db")
 , bfGrid3D(iContext, "bfTempB")
 // kernels
-, clSplit(*this)
-, clSlice(*this)
-, clEqualize(*this)
-, clConvolute(*this)
+, clSplit(*this, "clSplit")
+, clSlice(*this, "clSlice")
+, clEqualize(*this, "clEqualize")
+, clConvolute(*this, "clConvolute")
 // programs
-, mMemory(iContext)
+, mMemory(iContext, this)
 // vars
 , bfCurr(&bfGrid1Da)
 , bfTemp(&bfGrid1Db)
@@ -41,39 +41,9 @@ oclBilateralGrid::oclBilateralGrid(oclContext& iContext)
     bfGrid1Da.create<cl_float4>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mGridSize[0]*mGridSize[1]*mGridSize[2]);
     bfGrid1Db.create<cl_float4>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mGridSize[0]*mGridSize[1]*mGridSize[2]);
 
-    
     addSourceFile("filter/oclBilateralGrid.cl");
-
-    exportKernel(clSplit);
-    exportKernel(clSlice);
-    exportKernel(clEqualize);
 }
 
-//
-//
-//
-
-int oclBilateralGrid::compile()
-{
-    clSplit = 0;
-    clSlice = 0;
-    clEqualize = 0;
-
-    if (!oclProgram::compile() || !mMemory.compile())
-    {
-        return 0;
-    }
-
-    clSplit = createKernel("clSplit");
-    KERNEL_VALIDATE(clSplit)
-    clSlice = createKernel("clSlice");
-    KERNEL_VALIDATE(clSlice)
-    clEqualize = createKernel("clEqualize");
-    KERNEL_VALIDATE(clEqualize)
-    clConvolute = createKernel("clConvolute");
-    KERNEL_VALIDATE(clConvolute)
-    return 1;
-}
 
 //
 //

@@ -21,9 +21,8 @@ class oclAmbientOcclusion : public oclProgram
 {
     public: 
 
-        oclAmbientOcclusion(oclContext& iContext);
+        oclAmbientOcclusion(oclContext& iContext, oclProgram* iParent = 0);
 
-        int compile();
         int compute(oclDevice& iDevice, oclImage2D& bfImage, oclImage2D& bfDepth);
 
         void setSigma(cl_float iValue);

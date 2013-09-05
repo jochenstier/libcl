@@ -19,11 +19,16 @@
 #include <direct.h>
 #endif
 
-oclProgram::oclProgram(oclContext& iContext, char* iName)
+oclProgram::oclProgram(oclContext& iContext, char* iName, oclProgram* iParent)
 : oclObject(iName)
 , mProgram(0)
 , mContext(iContext)
+, mChildren(0)
 {
+	if (iParent)
+	{
+		iParent->mChildren.push_back(this);
+	}
 }
 
 oclProgram::~oclProgram()
@@ -52,6 +57,23 @@ oclProgram::operator cl_program ()
 
 int oclProgram::compile()
 {
+	
+	// compile all children first
+	for(vector<oclProgram*>::iterator lIter = mChildren.begin();  lIter != mChildren.end(); lIter++)
+	{
+	    if (!(*lIter)->compile())
+		{
+			return 0;
+		}
+	}
+
+
+	// release all kernels
+	for(vector<oclKernel*>::iterator lIter = mKernels.begin();  lIter != mKernels.end(); lIter++)
+    {
+	    (*(*lIter)) = 0;
+    }
+
     clrError();
     if (mProgram)
     {
@@ -88,6 +110,13 @@ int oclProgram::compile()
                                            &lSize);
         Log(KERNEL, this) << sBuffer;
         return false;
+    }
+
+	for(vector<oclKernel*>::iterator lIter = mKernels.begin();  lIter != mKernels.end(); lIter++)
+    {
+		oclKernel& lKernel = (*(*lIter));
+	    lKernel = createKernel(lKernel.getName());
+		KERNEL_VALIDATE(lKernel)
     }
     return true;
 };
@@ -184,7 +213,7 @@ cl_kernel oclProgram::createKernel(const char* iName)
     return lKernel;
 }
 
-
+/*
 void oclProgram::exportProgram(oclProgram& iProgram)
 {
 	for(vector<oclKernel*>::iterator lIter = iProgram.mKernels.begin();  lIter != iProgram.mKernels.end(); lIter++)
@@ -192,8 +221,9 @@ void oclProgram::exportProgram(oclProgram& iProgram)
 	    mKernels.push_back(*lIter);
     }
 };
+*/
 
-void oclProgram::exportKernel(oclKernel& iKernel)
+void oclProgram::addKernel(oclKernel& iKernel)
 {
     iKernel.setOwner(this);
     mKernels.push_back(&iKernel);

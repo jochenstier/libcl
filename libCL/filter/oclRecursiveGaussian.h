@@ -21,9 +21,8 @@ class oclRecursiveGaussian : public oclProgram
 {
     public: 
 
-        oclRecursiveGaussian(oclContext& iContext);
+        oclRecursiveGaussian(oclContext& iContext, oclProgram* iParent = 0);
 
-        int compile();
         int compute(oclDevice& iDevice, oclImage2D& bfSource, oclImage2D& bfTemp, oclImage2D& bfDest);
 
         void setSigma(cl_float iValue);

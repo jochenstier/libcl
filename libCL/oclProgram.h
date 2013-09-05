@@ -25,11 +25,13 @@ struct srtSource;
 
 class oclProgram : public oclObject
 {
+	friend class oclKernel;
+
     static const int MAX_BUILD_LOG = 30000;
 
     public: 
 
-        oclProgram(oclContext& iContext, char* iName);
+        oclProgram(oclContext& iContext, char* iName, oclProgram* iParent = 0);
         ~oclProgram();
 
         operator cl_program ();
@@ -78,8 +80,10 @@ class oclProgram : public oclObject
     protected:
 
         vector<oclKernel*> mKernels;
-        void exportKernel(oclKernel& iKernel);
-		void exportProgram(oclProgram& iProgram);
+        void addKernel(oclKernel& iKernel);
+
+        vector<oclProgram*> mChildren;
+
     //
     // Event Interface
     //
@@ -144,5 +148,12 @@ if (!oclSuccess("clEnqueueNDRangeKernel", this))\
 {\
     return false;\
 }\
+
+#define VALIDATE_KENEL(kernel) \
+    if (sStatusCL != CL_SUCCESS)\
+	{\
+		Log(ERR, this) << "Failure in call to clEnqueueNDRangeKernel for kernel " << #kernel << " : " << oclError(); \
+		return false;\
+	}\
 
 #endif

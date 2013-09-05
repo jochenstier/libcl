@@ -22,7 +22,7 @@ class oclFluid3Dnext : public oclProgram
 {
     public: 
 
-        oclFluid3Dnext(oclContext& iContext);
+        oclFluid3Dnext(oclContext& iContext, oclProgram* iParent = 0);
        ~oclFluid3Dnext();
 
         int compile();

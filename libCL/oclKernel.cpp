@@ -16,9 +16,10 @@
 #include "oclKernel.h"
 #include "oclDevice.h"
 #include "oclCommon.h"
+#include "oclProgram.h"
 
-oclKernel::oclKernel(oclProgram& iProgram)
-: oclObject()
+oclKernel::oclKernel(oclProgram& iProgram, char* iName)
+: oclObject(iName)
 , mKernel()
 , mEvent(0)
 , mProgram(iProgram)
@@ -26,6 +27,7 @@ oclKernel::oclKernel(oclProgram& iProgram)
 , mStartTime(0)
 , mEndTime(0)
 {
+	iProgram.addKernel(*this);
 }
 
 oclKernel::oclKernel(oclProgram& iProgram, cl_kernel& iKernel)
@@ -46,6 +48,8 @@ oclKernel::oclKernel(oclProgram& iProgram, cl_kernel& iKernel)
         oclSuccess("clGetKernelInfo", this);
         sStatusCL = clRetainKernel(mKernel);
         oclSuccess("clRetainKernel", this);
+
+		iProgram.addKernel(*this);
     }
 }
 
@@ -55,8 +59,8 @@ oclKernel::~oclKernel()
     {
         sStatusCL = clReleaseKernel(mKernel);
         oclSuccess("clReleaseKernel", this);
-        delete [] mName;
-        mName = 0;
+        //delete [] mName;
+        //mName = 0;
         cl_uint lCount;
         clGetEventInfo (mEvent, CL_EVENT_REFERENCE_COUNT, sizeof(cl_uint), &lCount, NULL);
         if (mEvent)
@@ -126,25 +130,25 @@ oclKernel& oclKernel::operator = (cl_kernel iKernel)
     {
         sStatusCL = clReleaseKernel(mKernel);
         oclSuccess("clReleaseKernel", this);
-        delete [] mName;
-        mName = 0;
+        //delete [] mName;
+        //mName = 0;
         cl_uint lCount;
         clGetEventInfo (mEvent, CL_EVENT_REFERENCE_COUNT, sizeof(cl_uint), &lCount, NULL);
         if (lCount)
         {
-            clReleaseEvent(mEvent);
+            clReleaseEvent(mEvent); 
             mEvent = 0;
         }
     }
     mKernel = iKernel;
     if (iKernel)
     {
-        size_t lSize = 0;
-        clGetKernelInfo(mKernel,CL_KERNEL_FUNCTION_NAME,0,0,&lSize);
-        oclSuccess("clGetKernelInfo", this);
-        mName = new char[lSize];
-        clGetKernelInfo(mKernel,CL_KERNEL_FUNCTION_NAME,lSize,mName,0);
-        oclSuccess("clGetKernelInfo", this);
+        //size_t lSize = 0;
+        //clGetKernelInfo(mKernel,CL_KERNEL_FUNCTION_NAME,0,0,&lSize);
+        //oclSuccess("clGetKernelInfo", this);
+        //mName = new char[lSize];
+        //clGetKernelInfo(mKernel,CL_KERNEL_FUNCTION_NAME,lSize,mName,0);
+        //oclSuccess("clGetKernelInfo", this);
         sStatusCL = clRetainKernel(mKernel);
         oclSuccess("clRetainKernel", this);
     }

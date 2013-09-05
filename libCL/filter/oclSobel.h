@@ -22,11 +22,9 @@ class oclSobel : public oclProgram
 {
     public: 
 
-        oclSobel(oclContext& iContext);
+        oclSobel(oclContext& iContext, oclProgram* iParent = 0);
 
-        int compile();
-
-        int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDx, oclImage2D& bfDy);
+		int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDx, oclImage2D& bfDy);
 
     protected:
 

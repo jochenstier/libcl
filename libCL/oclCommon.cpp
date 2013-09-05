@@ -242,3 +242,167 @@ Log& Log::operator<< (cl_float4& iValue)
     mStream << "( " << iValue.s[0] << "," << iValue.s[1] << "," << iValue.s[2] << "," << iValue.s[3] << ")";
     return *this;
 }
+
+
+
+
+//
+// printers
+//
+template <> void prtEntryN<cl_char2> (char* iBuffer, cl_char2& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%hd, %hd", (short)iBlock.s[0], (short)iBlock.s[1]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_uchar2> (char* iBuffer, cl_uchar2& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%hu, %hu", (unsigned short)iBlock.s[0], (unsigned short)iBlock.s[1]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_short2> (char* iBuffer, cl_short2& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%hd, %hd", iBlock.s[0], iBlock.s[1]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_ushort2> (char* iBuffer, cl_ushort2& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%hu, %hu", iBlock.s[0], iBlock.s[1]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_int2> (char* iBuffer, cl_int2& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%d, %d", iBlock.s[0], iBlock.s[1]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_uint2> (char* iBuffer, cl_uint2& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%u, %u", iBlock.s[0], iBlock.s[1]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_float2> (char* iBuffer, cl_float2& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%f, %f", iBlock.s[0], iBlock.s[1]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_double2> (char* iBuffer, cl_double2& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%lf, %lf", iBlock.s[0], iBlock.s[1]);
+    strcat(iBuffer, lBuffer);
+}
+
+
+
+template <> void prtEntryN<cl_char4> (char* iBuffer, cl_char4& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%hd, %hd, %hd, %hd", (short)iBlock.s[0], (short)iBlock.s[1], (short)iBlock.s[2], (short)iBlock.s[3]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_uchar4> (char* iBuffer, cl_uchar4& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%hu, %hu, %hu, %hu", (unsigned short)iBlock.s[0], (unsigned short)iBlock.s[1], (unsigned short)iBlock.s[2], (unsigned short)iBlock.s[3]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_short4> (char* iBuffer, cl_short4& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%hd, %hd, %hd, %hd", iBlock.s[0], iBlock.s[1], iBlock.s[2], iBlock.s[3]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_ushort4> (char* iBuffer, cl_ushort4& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%hu, %hu, %hu, %hu", iBlock.s[0], iBlock.s[1], iBlock.s[2], iBlock.s[3]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_int4> (char* iBuffer, cl_int4& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%d, %d, %d, %d", iBlock.s[0], iBlock.s[1], iBlock.s[2], iBlock.s[3]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_uint4> (char* iBuffer, cl_uint4& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%u, %u, %u, %u", iBlock.s[0], iBlock.s[1], iBlock.s[2], iBlock.s[3]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_float4> (char* iBuffer, cl_float4& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%f, %f, %f, %f", iBlock.s[0], iBlock.s[1], iBlock.s[2], iBlock.s[3]);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntryN<cl_double4> (char* iBuffer, cl_double4& iBlock) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%lf, %lf, %lf, %lf", iBlock.s[0], iBlock.s[1], iBlock.s[2], iBlock.s[3]);
+    strcat(iBuffer, lBuffer);
+}
+
+
+
+
+template <> void prtEntry1<cl_char> (char* iBuffer, cl_char& iValue) 
+{
+    char lBuffer[100];
+    int lValue = iValue;
+    sprintf(lBuffer, "%d", (int)lValue);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntry1<cl_uchar> (char* iBuffer, cl_uchar& iValue) 
+{
+    char lBuffer[100];
+    int lValue = iValue;
+    sprintf(lBuffer, "%u", (unsigned int)lValue);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntry1<cl_short> (char* iBuffer, cl_short& iValue) 
+{
+    char lBuffer[100];
+    int lValue = iValue;
+    sprintf(lBuffer, "%hd", lValue);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntry1<cl_ushort> (char* iBuffer, cl_ushort& iValue) 
+{
+    char lBuffer[100];
+    int lValue = iValue;
+    sprintf(lBuffer, "%hu", lValue);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntry1<cl_int> (char* iBuffer, cl_int& iValue) 
+{
+    char lBuffer[100]; 
+    int lValue = iValue;
+    sprintf(lBuffer, "%d", lValue);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntry1<cl_uint> (char* iBuffer, cl_uint& iValue) 
+{
+    char lBuffer[100];
+    int lValue = iValue;
+    sprintf(lBuffer, "%u", lValue);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntry1<cl_float> (char* iBuffer, cl_float& iValue) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%f", iValue);
+    strcat(iBuffer, lBuffer);
+}
+template <> void prtEntry1<cl_double> (char* iBuffer, cl_double& iValue) 
+{
+    char lBuffer[100];
+    sprintf(lBuffer, "%lf", iValue);
+    strcat(iBuffer, lBuffer);
+}

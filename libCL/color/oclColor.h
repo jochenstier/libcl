@@ -21,10 +21,8 @@ class oclColor : public oclProgram
 {
     public: 
 
-        oclColor(oclContext& iContext);
+        oclColor(oclContext& iContext, oclProgram* iParent = 0);
 
-        int compile();
-        
         // apply separable convolution over iAxis to 3D buffer
         int RGBtoHSV(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)
         {

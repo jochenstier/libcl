@@ -25,9 +25,7 @@ class oclBilateralGrid : public oclProgram
 {
     public: 
 
-        oclBilateralGrid(oclContext& iContext);
-
-        int compile();
+        oclBilateralGrid(oclContext& iContext, oclProgram* iParent = 0);
 
         int split(oclDevice& iDevice, oclImage2D& bfSrce, cl_float4 iMask);
         int slice(oclDevice& iDevice, oclImage2D& bfSrce, cl_float4 iMask, oclImage2D& bfDest);

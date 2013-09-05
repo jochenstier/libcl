@@ -71,7 +71,12 @@ class oclBuffer : public oclMem
         virtual size_t dim(int iAxis);
 
         int getType();
-
+/*
+		template <typename type> type operator[](int iIndex)
+		{
+			return ((type*)mHostPtr)[iIndex];
+		};
+*/
     private:
 
         int mType;

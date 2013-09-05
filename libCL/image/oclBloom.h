@@ -25,9 +25,8 @@ class oclBloom : public oclProgram
 {
     public: 
 
-        oclBloom(oclContext& iContext, cl_image_format iFormat = sDefaultFormat);
+        oclBloom(oclContext& iContext, oclProgram* iParent = 0);
 
-        int compile();
         int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
 
         void setSmoothing(cl_float iValue);
