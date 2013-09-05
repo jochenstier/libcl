@@ -22,9 +22,8 @@ class oclToneMapping : public oclProgram
 {
     public: 
 
-        oclToneMapping(oclContext& iContext);
+        oclToneMapping(oclContext& iContext, oclProgram* iParent = 0);
 
-        int compile();
         int compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest);
 
     protected:

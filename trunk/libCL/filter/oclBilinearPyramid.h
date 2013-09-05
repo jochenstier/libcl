@@ -25,9 +25,8 @@ class oclBilinearPyramid : public oclProgram
 {
     public: 
 
-        oclBilinearPyramid(oclContext& iContext);
+        oclBilinearPyramid(oclContext& iContext, oclProgram* iParent = 0);
 
-        int compile();
         int compute(oclDevice& iDevice, oclImage2D& bfSource);
 
         oclImage2D* getLevel(unsigned int iLevel);

@@ -16,8 +16,8 @@
 char* oclFluid3Dnext::EVT_INTEGRATE = "OnIntegrate";
 const size_t oclFluid3Dnext::cLocalSize = 256;
 
-oclFluid3Dnext::oclFluid3Dnext(oclContext& iContext)
-: oclProgram(iContext, "oclFluid3Dnext")
+oclFluid3Dnext::oclFluid3Dnext(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclFluid3Dnext", iParent)
 // buffers
 , bfCell(iContext, "bfCell", oclBuffer::_uint)
 , bfCellStart(iContext, "bfCellStart", oclBuffer::_uint)
@@ -33,21 +33,21 @@ oclFluid3Dnext::oclFluid3Dnext(oclContext& iContext)
 , bfBorder(0)
 
 // kernels
-, clHash(*this)
-, clReorder(*this)
-, clInitBounds(*this)
-, clFindBounds(*this)
+, clHash(*this, "clHash")
+, clReorder(*this, "clReorder")
+, clInitBounds(*this, "clInitBounds")
+, clFindBounds(*this, "clFindBounds")
 
-, clInitFluid(*this)
+, clInitFluid(*this, "clInitFluid")
 
-, clComputePressure(*this)
-, clComputeForces(*this)
-, clIntegrateForce(*this)
+, clComputePressure(*this, "clComputePressure")
+, clComputeForces(*this, "clComputeForces")
+, clIntegrateForce(*this, "clIntegrateForce")
 
-, clComputeVelocity(*this)
+, clComputeVelocity(*this, "clComputeVelocity")
 
 // programs
-, mRadixSort(iContext)
+, mRadixSort(iContext, this)
 // members
 , mParticleCount(128*128)
 , mIntegrateCb(0)
@@ -74,15 +74,6 @@ oclFluid3Dnext::oclFluid3Dnext(oclContext& iContext)
     bfPosition->create<cl_float4>(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, mParticleCount);
 
     addSourceFile("phys/oclFluid3Dnext.cl");
-
-    exportKernel(clReorder);
-    exportKernel(clHash);
-    exportKernel(clInitBounds);
-    exportKernel(clFindBounds);
-
-    exportKernel(clComputePressure);
-    exportKernel(clComputeForces);
-    exportKernel(clIntegrateForce);
 }
 
 oclFluid3Dnext::~oclFluid3Dnext()
@@ -247,60 +238,21 @@ int oclFluid3Dnext::bindBuffers()
 
 int oclFluid3Dnext::compile()
 {
-    clHash = 0;
-    clReorder = 0;
-    clInitBounds = 0;
-    clFindBounds = 0;
-
-    clInitFluid = 0;
-
-    clComputePressure = 0;
-    clComputeForces = 0;
-    clIntegrateForce = 0;
-    clComputeVelocity = 0;
-
-    if (!mRadixSort.compile())
+    if (oclProgram::compile())
     {
-        return 0;
-    }
+		// init fluid parameters
+		clSetKernelArg(clInitFluid, 0, sizeof(cl_mem), bfParams);
+		clEnqueueTask(mContext.getDevice(0), clInitFluid, 0, NULL, clInitFluid.getEvent());
+		bfParams.map(CL_MAP_READ);
 
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
+		Params& lParams = getParameters();
+		mCellCount = lParams.cellCountX*lParams.cellCountY;
+		bfCellStart.resize<cl_uint>(mCellCount);
+		bfCellEnd.resize<cl_uint>(mCellCount);
 
-    clHash = createKernel("clHash");
-    KERNEL_VALIDATE(clHash)
-    clReorder = createKernel("clReorder");
-    KERNEL_VALIDATE(clReorder)
-    clInitBounds = createKernel("clInitBounds");
-    KERNEL_VALIDATE(clInitBounds)
-    clFindBounds = createKernel("clFindBounds");
-    KERNEL_VALIDATE(clFindBounds)
-
-    clInitFluid = createKernel("clInitFluid");
-    KERNEL_VALIDATE(clInitFluid)
-
-    clComputePressure = createKernel("clComputePressure");
-    KERNEL_VALIDATE(clComputePressure)
-    clComputeForces = createKernel("clComputeForces");
-    KERNEL_VALIDATE(clComputeForces)
-    clIntegrateForce = createKernel("clIntegrateForce");
-    KERNEL_VALIDATE(clIntegrateForce)
-    clComputeVelocity = createKernel("clComputeVelocity");
-    KERNEL_VALIDATE(clComputeVelocity)
-
-    // init fluid parameters
-    clSetKernelArg(clInitFluid, 0, sizeof(cl_mem), bfParams);
-    clEnqueueTask(mContext.getDevice(0), clInitFluid, 0, NULL, clInitFluid.getEvent());
-    bfParams.map(CL_MAP_READ);
-
-    Params& lParams = getParameters();
-    mCellCount = lParams.cellCountX*lParams.cellCountY;
-    bfCellStart.resize<cl_uint>(mCellCount);
-    bfCellEnd.resize<cl_uint>(mCellCount);
-
-    return bindBuffers();
+		return bindBuffers();
+	}
+	return 0;
 }
 
 void oclFluid3Dnext::addEventHandler(srtEvent& iEvent)

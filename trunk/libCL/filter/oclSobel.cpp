@@ -16,33 +16,14 @@
 #include "oclSobel.h"
 
 
-oclSobel::oclSobel(oclContext& iContext)
-: oclProgram(iContext, "oclSobel")
+oclSobel::oclSobel(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclSobel", iParent)
 // kernels
-, clSobel(*this)
+, clSobel(*this, "clSobel")
 {
     addSourceFile("filter/oclSobel.cl");
-
-    exportKernel(clSobel);
 }
 
-//
-//
-//
-
-int oclSobel::compile()
-{
-    clSobel = 0;
-
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clSobel = createKernel("clSobel");
-    KERNEL_VALIDATE(clSobel)
-    return 1;
-}
 
 //
 //

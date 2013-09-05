@@ -15,35 +15,12 @@
 
 #include "oclRecursiveGaussian.h"
 
-oclRecursiveGaussian::oclRecursiveGaussian(oclContext& iContext)
-: oclProgram(iContext, "oclRecursiveGaussian")
+oclRecursiveGaussian::oclRecursiveGaussian(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclRecursiveGaussian", iParent)
 // kernels
-, clRecursiveGaussian(*this)
+, clRecursiveGaussian(*this, "clRecursiveGaussian")
 {
     addSourceFile("filter/oclRecursiveGaussian.cl");
-
-    exportKernel(clRecursiveGaussian);
-}
-
-//
-//
-//
-
-int oclRecursiveGaussian::compile()
-{
-    clRecursiveGaussian = 0;
-
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clRecursiveGaussian = createKernel("clRecursiveGaussian");
-    KERNEL_VALIDATE(clRecursiveGaussian)
-    mLocalSize = clRecursiveGaussian.getKernelWorkGroupInfo<size_t>(CL_KERNEL_WORK_GROUP_SIZE, mContext.getDevice(0));
-    setSigma(10.1f);
-
-    return 1;
 }
 
 //

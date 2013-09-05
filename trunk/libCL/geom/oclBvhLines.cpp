@@ -15,21 +15,21 @@
 
 #include "oclBvhLines.h"
 
-oclBvhLines::oclBvhLines(oclContext& iContext)
-: oclProgram(iContext, "oclBvhLines")
+oclBvhLines::oclBvhLines(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclBvhLines", iParent)
 // buffers
 , bfMortonKey(iContext, "bfMortonKey", oclBuffer::_uint)
 , bfMortonVal(iContext, "bfMortonVal", oclBuffer::_uint)
 , bfBvhRoot(iContext, "bfBvhRoot")
 , bfBvhNode(iContext, "bfBvhNode")
 // kernels
-, clMorton(*this)
-, clCreateNodes(*this)
-, clLinkNodes(*this)
-, clCreateLeaves(*this)
-, clComputeAABBs(*this)
+, clMorton(*this, "clMorton")
+, clCreateNodes(*this, "clCreateNodes")
+, clLinkNodes(*this, "clLinkNodes")
+, clCreateLeaves(*this, "clCreateLeaves")
+, clComputeAABBs(*this, "clComputeAABBs")
 // programs
-, mRadixSort(iContext)
+, mRadixSort(iContext, this)
 // members
 , mRootNode(0)
 {
@@ -39,50 +39,11 @@ oclBvhLines::oclBvhLines(oclContext& iContext)
 	bfBvhRoot.create<cl_uint>(CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 1, &mRootNode);
 
 	addSourceFile("geom\\oclBvhLines.cl");
-
-	exportKernel(clMorton);
-	exportKernel(clCreateNodes);
-	exportKernel(clLinkNodes);
-	exportKernel(clCreateLeaves);
-	exportKernel(clComputeAABBs);
 }
 
 oclBvhLines::~oclBvhLines()
 {
 }
-
-
-int oclBvhLines::compile()
-{
-	clMorton = 0;
-	clCreateNodes = 0;
-	clLinkNodes = 0;
-	clCreateLeaves = 0;
-	clComputeAABBs = 0;
-
-	if (!mRadixSort.compile())
-	{
-		return 0;
-	}
-
-	if (!oclProgram::compile())
-	{
-		return 0;
-	}
-
-	clMorton = createKernel("clMorton");
-	KERNEL_VALIDATE(clMorton)
-	clCreateNodes = createKernel("clCreateNodes");
-	KERNEL_VALIDATE(clCreateNodes)
-	clLinkNodes = createKernel("clLinkNodes");
-	KERNEL_VALIDATE(clLinkNodes)
-	clCreateLeaves = createKernel("clCreateLeaves");
-	KERNEL_VALIDATE(clCreateLeaves)
-	clComputeAABBs = createKernel("clComputeAABBs");
-	KERNEL_VALIDATE(clComputeAABBs)
-	return 1;
-}
-
 
 int oclBvhLines::compute(oclDevice& iDevice, oclBuffer& bfVertex)
 {

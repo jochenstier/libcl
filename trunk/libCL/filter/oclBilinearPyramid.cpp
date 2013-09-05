@@ -15,42 +15,18 @@
 
 #include "oclBilinearPyramid.h"
 
-oclBilinearPyramid::oclBilinearPyramid(oclContext& iContext)
-: oclProgram(iContext, "oclBilinearPyramid")
+oclBilinearPyramid::oclBilinearPyramid(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclBilinearPyramid", iParent)
 // kernels
-, clUpsample(*this)
-, clDownsample(*this)
+, clUpsample(*this, "clUpsample")
+, clDownsample(*this, "clDownsample")
 , mLevel(1)
 {
     addSourceFile("filter/oclBilinearPyramid.cl");
 
-    exportKernel(clUpsample);
-    exportKernel(clDownsample);
-
     cl_image_format lFormat = { CL_RGBA,  CL_HALF_FLOAT };
     mLevel[0] = new oclImage2D(mContext, "Level");
     mLevel[0]->create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, lFormat, 256, 256);
-}
-
-//
-//
-//
-
-int oclBilinearPyramid::compile()
-{
-    clUpsample = 0;
-    clDownsample = 0;
-
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clUpsample = createKernel("clUpsample");
-    KERNEL_VALIDATE(clUpsample)
-    clDownsample = createKernel("clDownsample");
-    KERNEL_VALIDATE(clDownsample)
-    return 1;
 }
 
 //

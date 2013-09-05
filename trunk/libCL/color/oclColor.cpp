@@ -15,66 +15,19 @@
 
 #include "oclColor.h"
 
-oclColor::oclColor(oclContext& iContext)
-: oclProgram(iContext, "oclColor")
+oclColor::oclColor(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclColor", iParent)
 // kernels
-, clHSVtoRGB(*this)
-, clRGBtoHSV(*this)
+, clHSVtoRGB(*this, "clHSVtoRGB")
+, clRGBtoHSV(*this, "clRGBtoHSV")
 
-, clRGBtoXYZ(*this)
-, clXYZtoRGB(*this)
+, clRGBtoXYZ(*this, "clRGBtoXYZ")
+, clXYZtoRGB(*this, "clXYZtoRGB")
 
-, clRGBtoLAB(*this)
-, clLABtoRGB(*this)
+, clRGBtoLAB(*this, "clRGBtoLAB")
+, clLABtoRGB(*this, "clLABtoRGB")
 {
     addSourceFile("color/oclColor.cl");
-
-    exportKernel(clHSVtoRGB);
-    exportKernel(clRGBtoHSV);
-
-    exportKernel(clRGBtoXYZ);
-    exportKernel(clXYZtoRGB);
-
-    exportKernel(clRGBtoLAB);
-    exportKernel(clLABtoRGB);
-}
-
-//
-//
-//
-
-int oclColor::compile()
-{
-    clRGBtoHSV = 0;
-    clHSVtoRGB = 0;
-
-    clRGBtoXYZ = 0;
-    clXYZtoRGB = 0;
-
-    clRGBtoLAB = 0;
-    clLABtoRGB = 0;
-
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clHSVtoRGB = createKernel("clHSVtoRGB");
-    KERNEL_VALIDATE(clHSVtoRGB)
-    clRGBtoHSV = createKernel("clRGBtoHSV");
-    KERNEL_VALIDATE(clRGBtoHSV)
-
-    clRGBtoXYZ = createKernel("clRGBtoXYZ");
-    KERNEL_VALIDATE(clRGBtoXYZ)
-    clXYZtoRGB = createKernel("clXYZtoRGB");
-    KERNEL_VALIDATE(clXYZtoRGB)
-
-    clRGBtoLAB = createKernel("clRGBtoLAB");
-    KERNEL_VALIDATE(clRGBtoLAB)
-    clLABtoRGB = createKernel("clLABtoRGB");
-    KERNEL_VALIDATE(clLABtoRGB)
-      
-    return 1;
 }
 
 

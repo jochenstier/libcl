@@ -15,43 +15,16 @@
 
 #include "oclBilateral.h"
 
-oclBilateral::oclBilateral(oclContext& iContext)
-: oclProgram(iContext, "oclBilateral")
+oclBilateral::oclBilateral(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclBilateral", iParent)
 // kernels
-, clIso2D(*this)
-, clAniso2Dtang(*this)
-, clAniso2Dorth(*this)
+, clIso2D(*this, "clIso2D")
+, clAniso2Dtang(*this, "clAniso2Dtang")
+, clAniso2Dorth(*this, "clAniso2Dorth")
 {
     addSourceFile("filter/oclBilateral.cl");
-
-    exportKernel(clIso2D);
-    exportKernel(clAniso2Dtang);
-    exportKernel(clAniso2Dorth);
 }
 
-//
-//
-//
-
-int oclBilateral::compile()
-{
-    clIso2D = 0;
-    clAniso2Dtang = 0;
-    clAniso2Dorth = 0;
-
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clIso2D = createKernel("clIso2D");
-    KERNEL_VALIDATE(clIso2D)
-    clAniso2Dtang = createKernel("clAniso2Dtang");
-    KERNEL_VALIDATE(clAniso2Dtang)
-    clAniso2Dorth = createKernel("clAniso2Dorth");
-    KERNEL_VALIDATE(clAniso2Dorth)
-    return 1;
-}
 
 //
 //

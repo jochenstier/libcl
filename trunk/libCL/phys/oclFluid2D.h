@@ -23,7 +23,7 @@ class oclFluid2D : public oclProgram
 {
     public: 
 
-	    oclFluid2D(oclContext& iContext);
+	    oclFluid2D(oclContext& iContext, oclProgram* iParent = 0);
        ~oclFluid2D();
 
 		int compile(); 

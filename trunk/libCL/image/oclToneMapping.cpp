@@ -13,40 +13,23 @@
 // limitations under the License.
 #include "oclToneMapping.h"
 
-oclToneMapping::oclToneMapping(oclContext& iContext)
-: oclProgram(iContext, "oclToneMapping")
+oclToneMapping::oclToneMapping(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclToneMapping", iParent)
 // buffers
 , bfTempA(iContext, "bfTempA")
 , bfTempB(iContext, "bfTempB")
 // kernels
-, clCombine(*this)
+, clCombine(*this, "clCombine")
 // programs
-, mColor(iContext)
-, mPyramid(iContext)
-, mMemory(iContext)
+, mColor(iContext, this)
+, mPyramid(iContext, this)
+, mMemory(iContext, this)
 {
     cl_image_format lFormat = { CL_RGBA,  CL_HALF_FLOAT };
     bfTempA.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, lFormat, 256, 256);
     bfTempB.create(CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, lFormat, 256, 256);
 
     addSourceFile("image/oclToneMapping.cl");
-
-    exportKernel(clCombine);
-}
-
-int oclToneMapping::compile()
-{
-    // release kernels
-    clCombine = 0;
-
-    if (!mPyramid.compile() || !mColor.compile() ||  !mMemory.compile() || !oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clCombine = createKernel("clCombine");
-    KERNEL_VALIDATE(clCombine)
-    return 1;
 }
 
 int oclToneMapping::compute(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest)

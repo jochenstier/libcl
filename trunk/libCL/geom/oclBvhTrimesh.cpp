@@ -17,8 +17,8 @@
 
 const size_t oclBvhTrimesh::cWarpSize = 32;
 
-oclBvhTrimesh::oclBvhTrimesh(oclContext& iContext)
-  : oclProgram(iContext, "oclBvhTrimesh")
+oclBvhTrimesh::oclBvhTrimesh(oclContext& iContext, oclProgram* iParent)
+  : oclProgram(iContext, "oclBvhTrimesh", iParent)
     // buffers
   , bfAABB(iContext, "bfAABB")
   , bfMortonKey(iContext, "bfMortonKey")
@@ -26,14 +26,14 @@ oclBvhTrimesh::oclBvhTrimesh(oclContext& iContext)
   , bfBvhRoot(iContext, "bfBvhRoot")
   , bfBvhNode(iContext, "bfBvhNode")
     // kernels
-  , clAABB(*this)
-  , clMorton(*this)
-  , clCreateNodes(*this)
-  , clLinkNodes(*this)
-  , clCreateLeaves(*this)
-  , clComputeAABBs(*this)
+  , clAABB(*this, "clAABB")
+  , clMorton(*this, "clMorton")
+  , clCreateNodes(*this, "clCreateNodes")
+  , clLinkNodes(*this, "clLinkNodes")
+  , clCreateLeaves(*this, "clCreateLeaves")
+  , clComputeAABBs(*this, "clComputeAABBs")
     // programs
-  , mRadixSort(iContext)
+  , mRadixSort(iContext, this)
     // members
   , mRootNode(0)
 {
@@ -44,54 +44,11 @@ oclBvhTrimesh::oclBvhTrimesh(oclContext& iContext)
     bfBvhRoot.create<cl_uint>(CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 1,  &mRootNode);
 
     addSourceFile("geom/oclBvhTrimesh.cl");
-
-    exportKernel(clAABB);
-    exportKernel(clMorton);
-    exportKernel(clCreateNodes);
-    exportKernel(clLinkNodes);
-    exportKernel(clCreateLeaves);
-    exportKernel(clComputeAABBs);
 }
 
 oclBvhTrimesh::~oclBvhTrimesh()
 {
 }
-
-
-int oclBvhTrimesh::compile()
-{
-    clAABB = 0;
-    clMorton = 0;
-    clCreateNodes = 0;
-    clLinkNodes = 0;
-    clCreateLeaves = 0;
-    clComputeAABBs = 0;
-
-    if (!mRadixSort.compile())
-    {
-        return 0;
-    }
-
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clAABB = createKernel("clAABB");
-    KERNEL_VALIDATE(clAABB)
-    clMorton = createKernel("clMorton");
-    KERNEL_VALIDATE(clMorton)
-    clCreateNodes = createKernel("clCreateNodes");
-    KERNEL_VALIDATE(clCreateNodes)
-    clLinkNodes = createKernel("clLinkNodes");
-    KERNEL_VALIDATE(clLinkNodes)
-    clCreateLeaves = createKernel("clCreateLeaves");
-    KERNEL_VALIDATE(clCreateLeaves)
-    clComputeAABBs = createKernel("clComputeAABBs");
-    KERNEL_VALIDATE(clComputeAABBs)
-    return 1;
-}
-
 
 int oclBvhTrimesh::compute(oclDevice& iDevice, oclBuffer& bfVertex, oclBuffer& bfIndex)
 {

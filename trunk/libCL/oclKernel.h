@@ -23,7 +23,7 @@ class oclKernel : public oclObject
 {
     public: 
 
-        oclKernel(oclProgram& iProgram);
+        oclKernel(oclProgram& iProgram, char* iName);
         oclKernel(oclProgram& iProgram, cl_kernel& iKernel);
        ~oclKernel();
 
@@ -89,9 +89,11 @@ template <class RETURN> RETURN oclKernel::getKernelInfo(cl_uint iValue, cl_kerne
 #define KERNEL_VALIDATE(kernel)\
 if (!kernel)\
 {\
-    Log(ERR, this) << "Kernel " << #kernel << " not found in " << mName;\
+    Log(ERR, this) << "Kernel " << kernel.getName() << " not found in " << mName;\
     return 0;\
 }\
+
+
 
 #define RETURN_ON_ERROR(val)\
 if (getError())\

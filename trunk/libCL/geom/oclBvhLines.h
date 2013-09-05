@@ -22,10 +22,9 @@ class oclBvhLines : public oclProgram
 {
     public: 
 
-	    oclBvhLines(oclContext& iContext);
+	    oclBvhLines(oclContext& iContext, oclProgram* iParent = 0);
        ~oclBvhLines();
 
-		int compile();
         int compute(oclDevice& iDevice, oclBuffer& bfVertex);
 
 		typedef struct 

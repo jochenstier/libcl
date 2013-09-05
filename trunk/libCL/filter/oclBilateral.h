@@ -22,9 +22,7 @@ class oclBilateral : public oclProgram
 {
     public: 
 
-        oclBilateral(oclContext& iContext);
-
-        int compile();
+        oclBilateral(oclContext& iContext, oclProgram* iParent = 0);
 
         int iso2D(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, cl_float4 iMask);
         int aniso2Dtang(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, cl_int iRadius, cl_float iRange, oclImage2D& bfVector, cl_float4 iMask);

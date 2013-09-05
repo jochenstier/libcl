@@ -15,37 +15,13 @@
 
 #include "oclVector.h"
 
-oclVector::oclVector(oclContext& iContext)
-: oclProgram(iContext, "oclVector")
+oclVector::oclVector(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclVector", iParent)
 // kernels
-, clNormalize(*this)
-, clXor(*this)
+, clNormalize(*this, "clNormalize")
+, clXor(*this, "clXor")
 {
     addSourceFile("math/oclVector.cl");
-
-    exportKernel(clNormalize);
-    exportKernel(clXor);
-}
-
-//
-//
-//
-
-int oclVector::compile()
-{
-    clNormalize = 0;
-    clXor = 0;
-
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clNormalize = createKernel("clNormalize");
-    KERNEL_VALIDATE(clNormalize)
-    clXor = createKernel("clXor");
-    KERNEL_VALIDATE(clXor)
-    return 1;
 }
 
 

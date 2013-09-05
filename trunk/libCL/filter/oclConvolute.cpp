@@ -66,48 +66,15 @@ void calcGauss2D(float iSigma, float* iBuffer, int iWidth, int iHeigth)
     }
 }
 
-oclConvolute::oclConvolute(oclContext& iContext)
-: oclProgram(iContext, "oclConvolute")
+oclConvolute::oclConvolute(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclConvolute", iParent)
 // kernels
-, clIso2D(*this)
-, clIso2Dsep(*this)
-, clAniso2Dtang(*this)
-, clAniso2Dorth(*this)
+, clIso2D(*this, "clIso2D")
+, clIso2Dsep(*this, "clIso2Dsep")
+, clAniso2Dtang(*this, "clAniso2Dtang")
+, clAniso2Dorth(*this, "clAniso2Dorth")
 {
-    exportKernel(clIso2D);
-    exportKernel(clIso2Dsep);
-    exportKernel(clAniso2Dtang);
-    exportKernel(clAniso2Dorth);
-
     addSourceFile("filter/oclConvolute.cl");
-}
-
-//
-//
-//
-
-int oclConvolute::compile()
-{
-    clIso2D = 0;
-    clIso2Dsep = 0;
-    clAniso2Dtang = 0;
-    clAniso2Dorth = 0;
-
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clIso2D = createKernel("clIso2D");
-    KERNEL_VALIDATE(clIso2D)
-    clIso2Dsep = createKernel("clIso2Dsep");
-    KERNEL_VALIDATE(clIso2Dsep)
-
-    clAniso2Dtang = createKernel("clAniso2Dtang");
-    KERNEL_VALIDATE(clAniso2Dtang)
-    clAniso2Dorth = createKernel("clAniso2Dorth");
-    KERNEL_VALIDATE(clAniso2Dorth)
-    return 1;
 }
 
 //

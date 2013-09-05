@@ -21,12 +21,9 @@ class oclQuantize : public oclProgram
 {
     public: 
 
-        oclQuantize(oclContext& iContext);
-
-        int compile();
+        oclQuantize(oclContext& iContext, oclProgram* iParent = 0);
 
         int quantizeLAB(oclDevice& iDevice, oclImage2D& bfSrce, oclImage2D& bfDest, float ibinL, float ibinA, float ibinB, float iSharpness);
-
 
     protected:
 

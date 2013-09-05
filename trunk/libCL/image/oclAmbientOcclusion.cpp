@@ -13,32 +13,12 @@
 // limitations under the License.
 #include "oclAmbientOcclusion.h"
 
-oclAmbientOcclusion::oclAmbientOcclusion(oclContext& iContext)
-: oclProgram(iContext, "oclAmbientOcclusion")
+oclAmbientOcclusion::oclAmbientOcclusion(oclContext& iContext, oclProgram* iParent)
+: oclProgram(iContext, "oclAmbientOcclusion", iParent)
 // kernels
-, clSSAO(*this)
+, clSSAO(*this, "clSSAO")
 {
     addSourceFile("image/oclAmbientOcclusion.cl");
-
-    exportKernel(clSSAO);
-}
-
-//
-//
-//
-
-int oclAmbientOcclusion::compile()
-{
-    clSSAO = 0;
-
-    if (!oclProgram::compile())
-    {
-        return 0;
-    }
-
-    clSSAO = createKernel("clSSAO");
-    KERNEL_VALIDATE(clSSAO)
-    return 1;
 }
 
 //
