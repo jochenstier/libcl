@@ -11,50 +11,36 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "oclImage3D.h"
+#include "oclImage1D.h"
 
-oclImage3D::oclImage3D(oclContext& iContext, char* iName)
+oclImage1D::oclImage1D(oclContext& iContext, char* iName)
 : oclMem(iContext, iName)
 {
 };      
 
-bool oclImage3D::create(cl_mem_flags iMemFlags, cl_image_format& iFormat, size_t iDim0, size_t iDim1, size_t iDim2, void* iHostPtr)
+bool oclImage1D::create(cl_mem_flags iMemFlags, cl_image_format& iFormat, size_t iDim0, void* iHostPtr)
 {
-	/*
-	cl_mem_object_type image_type;
-          size_t image_width;
-          size_t image_height;
-          size_t image_depth;
-          size_t image_array_size;
-          size_t image_row_pitch;
-          size_t image_slice_pitch;
-          cl_uint num_mip_levels;
-          cl_uint num_samples;
-          cl_mem buffer;
-		  */
 	cl_image_desc lDesc = {0};
-	lDesc.image_type = CL_MEM_OBJECT_IMAGE3D;
+	lDesc.image_type = CL_MEM_OBJECT_IMAGE1D;
 	lDesc.image_width = iDim0;
-	lDesc.image_height = iDim1;
-	lDesc.image_depth = iDim2;
+
     mMemPtr = clCreateImage(mContext, iMemFlags, &iFormat, &lDesc, iHostPtr, &sStatusCL);
-    //mMemPtr = clCreateImage3D(mContext, iMemFlags, &iFormat, iDim0, iDim1,  iDim2, 0, 0, iHostPtr, &sStatusCL);
-    return oclSuccess("clCreateImage3D", this);
+    return oclSuccess("clCreateImage1D", this);
 }
 
-bool oclImage3D::resize(size_t iDim0, size_t iDim1, size_t iDim2, void* iHostPtr) 
+bool oclImage1D::resize(size_t iDim0, void* iHostPtr) 
 {
     if (mMemPtr)
     {
         cl_mem_flags lMemFlags = getMemObjectInfo<cl_mem_flags>(CL_MEM_FLAGS); 
         cl_image_format lFormat = getImageInfo<cl_image_format>(CL_IMAGE_FORMAT);
         destroy();
-        return create(lMemFlags, lFormat, iDim0, iDim1, iDim2, iHostPtr);
+        return create(lMemFlags, lFormat, iDim0, iHostPtr);
     }
     return false;
 }
 
-bool oclImage3D::map(cl_map_flags iMapping, int iDevice)
+bool oclImage1D::map(cl_map_flags iMapping, int iDevice)
 {
     if (mMemPtr)
     {
@@ -66,8 +52,8 @@ bool oclImage3D::map(cl_map_flags iMapping, int iDevice)
         lOrigin[2] = 0;
 
         lRegion[0] = getImageInfo<size_t>(CL_IMAGE_WIDTH);
-        lRegion[1] = getImageInfo<size_t>(CL_IMAGE_HEIGHT);
-        lRegion[2] = getImageInfo<size_t>(CL_IMAGE_DEPTH);
+        lRegion[1] = 1;
+        lRegion[2] = 1;
 
         size_t lRowpitch;
         size_t lSlicepitch;
@@ -91,7 +77,7 @@ bool oclImage3D::map(cl_map_flags iMapping, int iDevice)
     return false;
 }
 
-bool oclImage3D::write(int iDevice)
+bool oclImage1D::write(int iDevice)
 {
     if (mMemPtr)
     {
@@ -103,7 +89,7 @@ bool oclImage3D::write(int iDevice)
         lOrigin[2] = 0;
 
         lRegion[0] = getImageInfo<size_t>(CL_IMAGE_WIDTH);
-        lRegion[1] = getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+        lRegion[1] = 1;
         lRegion[2] = 1;
 
         size_t lRowpitch = 0; 
@@ -126,7 +112,7 @@ bool oclImage3D::write(int iDevice)
     return false;
 }
 
-bool oclImage3D::read(int iDevice)
+bool oclImage1D::read(int iDevice)
 {
     if (mMemPtr)
     {
@@ -138,7 +124,7 @@ bool oclImage3D::read(int iDevice)
         lOrigin[2] = 0;
 
         lRegion[0] = getImageInfo<size_t>(CL_IMAGE_WIDTH);
-        lRegion[1] = getImageInfo<size_t>(CL_IMAGE_HEIGHT);
+        lRegion[1] = 1;
         lRegion[2] = 1;
 
         size_t lRowpitch = 0; 
@@ -162,7 +148,7 @@ bool oclImage3D::read(int iDevice)
 }
 
 
-size_t oclImage3D::dim(int iAxis)
+size_t oclImage1D::dim(int iAxis)
 {
     switch (iAxis)
     {

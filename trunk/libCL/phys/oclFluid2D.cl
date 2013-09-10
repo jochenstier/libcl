@@ -333,7 +333,7 @@ __kernel void clUpdateState(__global Particle* state, __global float2* previousP
 
 	float2 dxy = relaxedPosition[particle].xy - previousPosition[sorted];
 	float l = length(dxy);
-	dxy = dxy*min(l, 4.0*param->particleSize)/l;
+	dxy = dxy*min(l, 4.0f*param->particleSize)/l;
 	state[sorted].vel = dxy/param->dT;
 	state[sorted].pos = previousPosition[sorted]+dxy;
 }

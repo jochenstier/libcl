@@ -29,7 +29,7 @@ typedef struct
     float velocitylimit;
 } System;
 
-#define BUCKETS 16777216
+#define BUCKETS 262144
 
 int4 gridPosition(float4 position, float cellSize)
 {
@@ -76,9 +76,10 @@ __kernel void clReorder(__global const uint *index, __global const float4* posIn
 //
 __kernel void clInitBounds(__global uint* cellStart, __global uint* cellEnd)
 {
-    const uint index = get_global_id(0);
-    cellStart[index] = 0xFFFFFFFFU;
-    cellEnd[index] = 0xFFFFFFFFU;
+    const uint x = get_global_id(0);
+
+    cellStart[x] = 0xFFFFFFFFU; 
+    cellEnd[x] = 0xFFFFFFFFU;
 }
 
 __kernel void clFindBounds(__global uint* cellStart, __global uint* cellEnd, __global const uint* cell, __local uint *localHash)

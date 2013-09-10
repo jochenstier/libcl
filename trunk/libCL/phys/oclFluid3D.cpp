@@ -14,7 +14,7 @@
 #include "oclFluid3D.h"
 
 const size_t oclFluid3D::cLocalSize = 256;
-const size_t oclFluid3D::cBucketCount = 16777216;
+const size_t oclFluid3D::cBucketCount = 262144;
 
 char* oclFluid3D::EVT_INTEGRATE = "OnIntegrate";
 
@@ -304,8 +304,14 @@ int oclFluid3D::compute(oclDevice& iDevice)
     sStatusCL = clEnqueueNDRangeKernel(iDevice, clReorder, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clReorder.getEvent());
     ENQUEUE_VALIDATE
 
-    sStatusCL = clEnqueueNDRangeKernel(iDevice, clInitBounds, 1, NULL, &cBucketCount, &cLocalSize, 0, NULL, clInitBounds.getEvent());
+    //sStatusCL = clEnqueueNDRangeKernel(iDevice, clInitBounds, 1, NULL, &cBucketCount, 0, 0, NULL, clInitBounds.getEvent());
+    //ENQUEUE_VALIDATE
+	cl_uint lValue = 0xFFFFFFFFU;
+	sStatusCL = clEnqueueFillBuffer (iDevice, bfCellStart, &lValue, sizeof(cl_uint), 0, bfCellStart.count<cl_uint>(), 0, 0, 0);
     ENQUEUE_VALIDATE
+	sStatusCL = clEnqueueFillBuffer (iDevice, bfCellEnd, &lValue, sizeof(cl_uint), 0, bfCellStart.count<cl_uint>(), 0, 0, 0);
+    ENQUEUE_VALIDATE
+
     sStatusCL = clEnqueueNDRangeKernel(iDevice, clFindBounds, 1, NULL, &mParticleCount, &cLocalSize, 0, NULL, clFindBounds.getEvent());
     ENQUEUE_VALIDATE
 

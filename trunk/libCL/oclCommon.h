@@ -79,40 +79,36 @@ class Log
 // Printers
 // 
 
-template <class TYPE> void prtEntryN(char* iBuffer, TYPE& iBlock) 
+template <class TYPE> void prtEntry(char* iBuffer, TYPE& iBlock) 
 {
-    strcat(iBuffer, " prtEntryN not implemented for given type ");
+    strcat(iBuffer, " prtEntry not implemented for given type ");
 }
-template <> void prtEntryN<cl_uchar2> (char* iBuffer, cl_uchar2& iBlock);
-template <> void prtEntryN<cl_char2> (char* iBuffer, cl_char2& iBlock);
-template <> void prtEntryN<cl_short2> (char* iBuffer, cl_short2& iBlock);
-template <> void prtEntryN<cl_ushort2> (char* iBuffer, cl_ushort2& iBlock);
-template <> void prtEntryN<cl_int2> (char* iBuffer, cl_int2& iBlock);
-template <> void prtEntryN<cl_uint2> (char* iBuffer, cl_uint2& iBlock);
-template <> void prtEntryN<cl_float2> (char* iBuffer, cl_float2& iBlock);
-template <> void prtEntryN<cl_double2> (char* iBuffer, cl_double2& iBlock);
+template <> void prtEntry<cl_uchar2> (char* iBuffer, cl_uchar2& iBlock);
+template <> void prtEntry<cl_char2> (char* iBuffer, cl_char2& iBlock);
+template <> void prtEntry<cl_short2> (char* iBuffer, cl_short2& iBlock);
+template <> void prtEntry<cl_ushort2> (char* iBuffer, cl_ushort2& iBlock);
+template <> void prtEntry<cl_int2> (char* iBuffer, cl_int2& iBlock);
+template <> void prtEntry<cl_uint2> (char* iBuffer, cl_uint2& iBlock);
+template <> void prtEntry<cl_float2> (char* iBuffer, cl_float2& iBlock);
+template <> void prtEntry<cl_double2> (char* iBuffer, cl_double2& iBlock);
 
-template <> void prtEntryN<cl_uchar4> (char* iBuffer, cl_uchar4& iBlock);
-template <> void prtEntryN<cl_char4> (char* iBuffer, cl_char4& iBlock);
-template <> void prtEntryN<cl_short4> (char* iBuffer, cl_short4& iBlock);
-template <> void prtEntryN<cl_ushort4> (char* iBuffer, cl_ushort4& iBlock);
-template <> void prtEntryN<cl_int4> (char* iBuffer, cl_int4& iBlock);
-template <> void prtEntryN<cl_uint4> (char* iBuffer, cl_uint4& iBlock);
-template <> void prtEntryN<cl_float4> (char* iBuffer, cl_float4& iBlock);
-template <> void prtEntryN<cl_double4> (char* iBuffer, cl_double4& iBlock);
+template <> void prtEntry<cl_uchar4> (char* iBuffer, cl_uchar4& iBlock);
+template <> void prtEntry<cl_char4> (char* iBuffer, cl_char4& iBlock);
+template <> void prtEntry<cl_short4> (char* iBuffer, cl_short4& iBlock);
+template <> void prtEntry<cl_ushort4> (char* iBuffer, cl_ushort4& iBlock);
+template <> void prtEntry<cl_int4> (char* iBuffer, cl_int4& iBlock);
+template <> void prtEntry<cl_uint4> (char* iBuffer, cl_uint4& iBlock);
+template <> void prtEntry<cl_float4> (char* iBuffer, cl_float4& iBlock);
+template <> void prtEntry<cl_double4> (char* iBuffer, cl_double4& iBlock);
 
-template <class TYPE> void prtEntry1(char* iBuffer, TYPE& iBlock) 
-{
-    strcat(iBuffer, " prtEntry1 not implemented for given type ");
-}
-template <> void prtEntry1<cl_char> (char* iBuffer, cl_char& iValue);
-template <> void prtEntry1<cl_uchar> (char* iBuffer, cl_uchar& iValue);
-template <> void prtEntry1<cl_short> (char* iBuffer, cl_short& iValue);
-template <> void prtEntry1<cl_ushort> (char* iBuffer, cl_ushort& iValue);
-template <> void prtEntry1<cl_int> (char* iBuffer, cl_int& iValue);
-template <> void prtEntry1<cl_uint> (char* iBuffer, cl_uint& iValue);
-template <> void prtEntry1<cl_float> (char* iBuffer, cl_float& iValue);
-template <> void prtEntry1<cl_double> (char* iBuffer, cl_double& iValue);
+template <> void prtEntry<cl_char> (char* iBuffer, cl_char& iValue);
+template <> void prtEntry<cl_uchar> (char* iBuffer, cl_uchar& iValue);
+template <> void prtEntry<cl_short> (char* iBuffer, cl_short& iValue);
+template <> void prtEntry<cl_ushort> (char* iBuffer, cl_ushort& iValue);
+template <> void prtEntry<cl_int> (char* iBuffer, cl_int& iValue);
+template <> void prtEntry<cl_uint> (char* iBuffer, cl_uint& iValue);
+template <> void prtEntry<cl_float> (char* iBuffer, cl_float& iValue);
+template <> void prtEntry<cl_double> (char* iBuffer, cl_double& iValue);
 
 
 #endif
