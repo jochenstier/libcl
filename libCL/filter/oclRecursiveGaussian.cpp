@@ -19,6 +19,7 @@ oclRecursiveGaussian::oclRecursiveGaussian(oclContext& iContext, oclProgram* iPa
 : oclProgram(iContext, "oclRecursiveGaussian", iParent)
 // kernels
 , clRecursiveGaussian(*this, "clRecursiveGaussian")
+, mLocalSize(128)
 {
     addSourceFile("filter/oclRecursiveGaussian.cl");
 }
@@ -59,7 +60,7 @@ int oclRecursiveGaussian::compute(oclDevice& iDevice, oclImage2D& bfSource, oclI
     cl_uint2 dxy;
     cl_uint lImageWidth = bfSource.getImageInfo<size_t>(CL_IMAGE_WIDTH);
     cl_uint lImageHeight = bfSource.getImageInfo<size_t>(CL_IMAGE_HEIGHT);
-
+ 
     clSetKernelArg(clRecursiveGaussian, 2, sizeof(cl_uint), &lImageWidth);
     clSetKernelArg(clRecursiveGaussian, 3, sizeof(cl_uint), &lImageHeight);
 

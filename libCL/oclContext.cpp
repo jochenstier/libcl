@@ -26,10 +26,11 @@ char* oclContext::VENDOR_AMD = "Advanced Micro Devices, Inc.";
 char* oclContext::VENDOR_INTEL = "Intel Corporation";
 char* oclContext::VENDOR_UNKNOWN = "Unknown Vendor";
 
-oclContext::oclContext(cl_context iContext, char* iVendor)
+oclContext::oclContext(cl_context iContext, cl_platform_id iPlatform, char* iVendor)
 : oclObject("")
 , mContext(iContext)
 , mVendor(VENDOR_UNKNOWN)
+, mPlatform(iPlatform)
 {
     if (!strcmp(iVendor, VENDOR_NVIDIA))
     {
@@ -62,6 +63,11 @@ oclContext::oclContext(cl_context iContext, char* iVendor)
 oclContext::operator cl_context()  
 {  
     return mContext;  
+}
+
+oclContext::operator cl_platform_id()  
+{  
+    return mPlatform;  
 }
 
 vector<oclDevice*>& oclContext::getDevices()
@@ -209,7 +215,7 @@ oclContext* oclContext::create(const char* iVendor, int iDeviceType)
                         {
                             continue;
                         }
-                        return new oclContext(lContextCL, lBuffer);
+                        return new oclContext(lContextCL, lPlatform[i], lBuffer);
                     }
                     else
                     {
@@ -219,7 +225,7 @@ oclContext* oclContext::create(const char* iVendor, int iDeviceType)
                         {
                             continue;
                         }
-                        return new oclContext(lContextCL, lBuffer);
+                        return new oclContext(lContextCL, lPlatform[i], lBuffer);
                     }
                 }
                 break;
@@ -231,7 +237,7 @@ oclContext* oclContext::create(const char* iVendor, int iDeviceType)
                 {
                     continue;
                 }
-                return new oclContext(lContextCL, lBuffer);
+                return new oclContext(lContextCL, lPlatform[i], lBuffer);
                 break;
             }
         }

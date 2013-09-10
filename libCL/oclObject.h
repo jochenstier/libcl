@@ -42,9 +42,10 @@ class oclObject
         void* mData;
         void* mOwner;
         char* mName;
-        bool mError;
 
     private:
+
+        bool mError;
 
         oclObject(const oclObject&);
         oclObject& operator = (const oclObject&);

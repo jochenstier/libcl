@@ -30,8 +30,9 @@ class oclContext : public oclObject
         static char* VENDOR_UNKNOWN;
         static oclContext* create(const char* iVendor, int iDeviceType);
 
-        oclContext(cl_context iContext, char* iVendor=0);
+        oclContext(cl_context iContext, cl_platform_id iPlatform, char* iVendor=0);
         operator cl_context();
+        operator cl_platform_id();
 
         //
         template <class RESULT> RESULT getContextInfo(cl_image_info iInfo);
@@ -45,6 +46,7 @@ class oclContext : public oclObject
         cl_context mContext;
         vector<oclDevice*> mDevices;
         char* mVendor;
+		cl_platform_id mPlatform;
 
     private:
 

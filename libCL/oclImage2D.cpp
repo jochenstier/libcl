@@ -20,8 +20,26 @@ oclImage2D::oclImage2D(oclContext& iContext, char* iName)
 
 bool oclImage2D::create(cl_mem_flags iMemFlags, cl_image_format& iFormat, size_t iDim0, size_t iDim1, void* iHostPtr)
 {
-    mMemPtr = clCreateImage2D(mContext, iMemFlags, &iFormat, iDim0, iDim1, 0, iHostPtr, &sStatusCL);
-    return oclSuccess("clCreateImage2D", this);
+	/*
+	cl_mem_object_type image_type;
+          size_t image_width;
+          size_t image_height;
+          size_t image_depth;
+          size_t image_array_size;
+          size_t image_row_pitch;
+          size_t image_slice_pitch;
+          cl_uint num_mip_levels;
+          cl_uint num_samples;
+          cl_mem buffer;
+		  */
+	cl_image_desc lDesc = {0};
+	lDesc.image_type = CL_MEM_OBJECT_IMAGE2D;
+	lDesc.image_width = iDim0;
+	lDesc.image_height = iDim1;
+
+    mMemPtr = clCreateImage(mContext, iMemFlags, &iFormat, &lDesc, iHostPtr, &sStatusCL);
+    //mMemPtr = clCreateImage2D(mContext, iMemFlags, &iFormat, iDim0, iDim1, 0, iHostPtr, &sStatusCL);
+    return oclSuccess("clCreateImage", this);
 }
 
 bool oclImage2D::resize(size_t iDim0, size_t iDim1, void* iHostPtr) 
