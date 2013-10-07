@@ -20,6 +20,23 @@ oclImage3D::oclImage3D(oclContext& iContext, char* iName)
 
 bool oclImage3D::create(cl_mem_flags iMemFlags, cl_image_format& iFormat, size_t iDim0, size_t iDim1, size_t iDim2, void* iHostPtr)
 {
+/*
+	cl_image_format lFormat;
+	lFormat.image_channel_data_type = CL_UNSIGNED_INT16;
+	lFormat.image_channel_order = CL_RGBA;
+
+	cl_mem_flags lMemFlags; 
+	lMemFlags = CL_MEM_WRITE_ONLY;
+
+	cl_image_desc lDesc1 = {0};
+	lDesc1.image_type = CL_MEM_OBJECT_IMAGE3D;
+	lDesc1.image_width = 512;
+	lDesc1.image_height = 512;
+	lDesc1.image_depth = 512;
+    cl_mem lMemPtr = clCreateImage(mContext, lMemFlags, &lFormat, &lDesc1, 0, &sStatusCL);
+    oclSuccess("clCreateImage3D", this);
+*/
+
 	/*
 	cl_mem_object_type image_type;
           size_t image_width;
