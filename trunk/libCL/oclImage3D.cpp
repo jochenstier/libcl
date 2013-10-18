@@ -49,6 +49,7 @@ bool oclImage3D::create(cl_mem_flags iMemFlags, cl_image_format& iFormat, size_t
           cl_uint num_samples;
           cl_mem buffer;
 		  */
+
 	cl_image_desc lDesc = {0};
 	lDesc.image_type = CL_MEM_OBJECT_IMAGE3D;
 	lDesc.image_width = iDim0;
