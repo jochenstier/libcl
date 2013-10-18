@@ -57,7 +57,6 @@ oclProgram::operator cl_program ()
 
 int oclProgram::compile()
 {
-	
 	// compile all children first
 	for(vector<oclProgram*>::iterator lIter = mChildren.begin();  lIter != mChildren.end(); lIter++)
 	{
@@ -66,7 +65,6 @@ int oclProgram::compile()
 			return 0;
 		}
 	}
-
 
 	// release all kernels
 	for(vector<oclKernel*>::iterator lIter = mKernels.begin();  lIter != mKernels.end(); lIter++)
